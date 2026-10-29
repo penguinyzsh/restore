@@ -81,15 +81,15 @@ USB 可以作为备份目标；本地网络设备可用于接收备份；云端�
 
 ## 初始化后的站点引导与 WebKit 入口
 
-ReSpawn 使用独立域名站点引导信息填写、环境建立和备份恢复。
+ReSpawn 在 PS5 上提供主要的备份与恢复操作；PS5 无法直接使用时，通过独立域名站点获取引导和下载工具。
 固件 12.40 的现有首次引导流程使用局域网 Mac Host、PS5 手动 DNS、用户指南、Relapse 和 WebKit Autoloader。
 本地 Host 对 `manuals.playstation.net` 返回 Host 地址，并将用户指南 HTTPS 路径映射到入口页面。
 
 [PS5 WebKit Autoloader](https://github.com/itsPLK/ps5-webkit-autoloader) 可作为 fork 对象，研究界面和逻辑优化；项目采用 GPL-3.0。
 独立域名用于 ReSpawn 引导站点；PS5 DNS 设置需要的是 DNS 服务器 IP，实际用户指南请求仍需由 DNS 和 HTTPS 服务共同处理。
-自有公网 DNS 与站点能否在目标主机上完成这条入口，需要实机验证。
+WebKit Autoloader 项目提到通过互联网上的 DNS 服务器加载 WebKit 入口；自有公网 DNS 与 HTTPS 服务在目标 12.40 主机上的完整表现需要实机验证。
 
-恢复流程候选为：站点引导 → 配置 DNS → 用户指南 WebKit 入口 → Relapse → 载荷环境 → 选择备份和恢复内容 → 完成恢复。
+初始化后的恢复流程候选为：站点提供引导和工具下载 → 配置 DNS → 用户指南 WebKit 入口 → Relapse → 启动 PS5 上的 ReSpawn 工具 → 选择备份和恢复内容 → 完成恢复。
 
 ## 实机对照清单
 
