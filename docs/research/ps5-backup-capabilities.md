@@ -19,7 +19,7 @@ ReSpawn 旨在尽量恢复游戏、存档、系统设置、插件及配置，重
 | [elfldr](https://github.com/ps5-payload-dev/elfldr/blob/2a8da002e5292481ea964daa7342bbf4855f4c33/README.md) | 独立项目描述了新建后台进程、游戏期间运行和休眠恢复。 | 检查实际使用的加载器及载荷在这些场景中的生命周期。 |
 | [ftpsrv](https://github.com/ps5-payload-dev/ftpsrv/blob/35bae1312b14840c0f95fab93be73d6daaa93bae/README.md) | 通过 ELF 加载器运行，监听 2121，提供文件访问。 | 验证目录访问与测试文件传输。 |
 | [Save Mounter](https://github.com/n0llptr/Playstation-5-Save-Mounter/blob/1a0281ea9794afadc2e2da345ca0b66e5db45bc7/README.md) | 声明支持可越狱 PS5 固件和 PS5、PS4 等存档，使用 elfldr 与 FTP。 | 对新建测试存档执行挂载、复制、修改、恢复和游戏内读取。 |
-| [etaHEN](https://github.com/etaHEN/etaHEN/releases/tag/2.5B) | 本轮查询最新发布为 2.5B；[2.4B](https://github.com/etaHEN/etaHEN/releases/tag/2.4B)记载修复 8.40–10.01 支持。核对的说明未列出 12.40 支持。 | 将 12.40 插件、Toolbox 和配置恢复记为继续调查与实测项目。 |
+| [etaHEN Unified 社区移植版](https://github.com/GronedWaffel/etahen-11.00-13.60) | 基于 etaHEN 2.5B，列出 12.40 配置并记录社区启动反馈。 | 验证当前主机上的 Toolbox、插件和配置恢复。 |
 
 Y2JB 文档中的 Lapse 支持至 10.01；本轮为 12.40 选择 P2JB 作为候选。
 上述兼容性结论来自开源项目说明，目标主机的实际测试记录将另行对照。
@@ -54,12 +54,20 @@ PSCloud 是 ReSpawn 游戏存档功能的参考；游戏安装、系统设置、
 ### 游戏、插件与配置
 
 [etaHEN](https://github.com/etaHEN/etaHEN) 提供游戏转储、FPKG、安装服务及插件相关功能，并使用配置文件。
+[etaHEN Unified 社区移植版](https://github.com/GronedWaffel/etahen-11.00-13.60)列出 12.40 配置和社区启动反馈，其配置位于 `/data/etaHEN/config-multifw-experimental.ini`，插件位于 `/data/etaHEN/plugins/` 和 `/data/etaHEN/game_plugins/<TITLEID>/`。
+恢复时可先保存实际使用的载荷、配置和插件，再在重建环境后验证加载情况。
+
+[PS5 FPKG Restore](https://github.com/thanhsondev/PS5-FPKG-RESTORE)扫描保留的已安装游戏文件并通过系统安装服务重新登记，使游戏重新出现在游戏库。
+作者报告在固件 10.01 上完成游戏登记；12.40 和登记后启动效果需要实测。
+该项目不支持已格式化的盘、独立 DLC 和更新包。
+
 [ps5-db-backup](https://github.com/jeroendev-one/ps5-db-backup) 展示了备份游戏相关数据库的方案；其适用固件及恢复行为需按具体版本验证。
 游戏内容、安装登记、插件文件和配置需要分别验证，才能判断恢复后的使用体验。
 
 ### 官方备份与其他数据
 
 [PlayStation 官方 USB 备份文档](https://www.playstation.com/en-us/support/hardware/back-up-ps5-data-USB/)列出游戏和应用、存档、截图、视频和设置，并说明奖杯不包含在备份中。
+官方备份不包含外置 USB 扩展存储和 M.2 SSD 中的游戏；恢复备份会清除主机当前数据。
 账号、主机和存档的恢复关系应结合官方文档与实际使用环境验证。
 
 ### 存储位置
@@ -78,7 +86,8 @@ USB 可以作为备份目标；本地网络设备可用于接收备份；云端�
 5. 测试 USB 与本地网络传输，记录文件大小、哈希和耗时。
 6. 使用电脑或 NAS 将测试备份上传云端并取回，对照文件内容。
 7. 对照 YouTube 关闭、游戏启动和休眠唤醒前后的加载器及 FTP 状态，记录后台服务是否持续运行。
-8. 按实际可用的软件和数据，逐步检查游戏安装、媒体和系统设置恢复。
+8. 检查游戏安装、媒体和系统设置恢复；如主机保留外接盘或 M.2 游戏文件，对照验证重新登记及游戏启动。
+   对照 etaHEN Unified 的载荷、配置与插件恢复效果。
 9. 分别记录重启后环境重新建立、备份取回、数据写回和游戏重新读取的耗时。
 
 每项记录环境、操作、备份前状态、恢复结果和与开源资料的差异。
