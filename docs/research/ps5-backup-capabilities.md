@@ -83,6 +83,17 @@ PSCloud 是 ReSpawn 游戏存档功能的参考；游戏安装、系统设置、
 USB 可以作为备份目标；本地网络设备可用于接收备份；云端可以先通过电脑或 NAS 中转验证。
 以上路径的自动化方式、访问权限与恢复能力需要结合实际环境确定。
 
+## 整机数据的自动备份依据
+
+| 数据 | 已有实现 | 继续验证 |
+| --- | --- | --- |
+| 系统与用户设置 | [官方 USB 备份](https://www.playstation.com/en-us/support/hardware/back-up-ps5-data-USB/)包含设置；备份和恢复过程均涉及主机重启。 | ReSpawn 自动检测设置变化、保存并逐项恢复的方式。 |
+| 截图和视频 | 官方整机备份包含媒体；[媒体库](https://www.playstation.com/en-us/support/games/ps5-media-gallery-view-screenshots/)支持手动复制到 USB。 | 自动增量备份和写回后在媒体库中的显示。 |
+| 游戏、更新和 DLC | [PS5 App Dumper](https://github.com/EchoStretch/ps5-app-dumper)提供运行中游戏文件导出到 USB；[PS5 FPKG Restore](https://github.com/thanhsondev/PS5-FPKG-RESTORE)尝试重新登记保留的游戏文件。 | 12.40 上游戏导出、更新及 DLC 恢复、游戏启动和自动增量。 |
+| 插件与配置 | [OnionHEN](https://github.com/aydencharles/onionHEN)公布了配置、插件、载荷及自动启动标记的位置。 | 从初始化状态恢复后验证插件加载和配置生效。 |
+
+现有资料提供了整机备份与数据访问的基础；系统设置和媒体的自动增量及逐项恢复仍需研究与实测。
+
 ## PS5 本机界面
 
 ReSpawn 日常在 PS5 本机通过手柄查看备份、选择恢复点和发起恢复。
