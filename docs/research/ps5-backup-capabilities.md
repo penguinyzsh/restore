@@ -10,18 +10,20 @@ ReSpawn 旨在尽量恢复游戏、存档、系统设置、插件及配置，重
 
 ### 折腾入口与载荷
 
-针对固件 12.40，优先验证 **Y2JB → P2JB → ELF 加载器 → 独立 FTP → 存档挂载**。
+针对固件 12.40，对照验证 **Y2JB → P2JB** 与 **Y2JB Autoloader → Relapse** 两条候选入口，再验证 ELF 加载器、FTP 和存档挂载。
 
 | 组件 | 核对到的项目说明 | 对应验证 |
 | --- | --- | --- |
 | [Y2JB](https://github.com/Gezine/Y2JB/blob/79c1be475ef89d437ea52c6afd6dcb5e700d2875/README.md) | 通过 YouTube 应用取得用户态执行；4.03–12.40 对应 `Y2JB_backup_1.6(4.03)` 预制备份。 | 从初始化主机恢复预制备份，检查入口能否启动。 |
 | [P2JB-Y2JB-Porting](https://github.com/matem6/P2JB-Y2JB-Porting/blob/9175334589363b67932b45e2f836f7aa9ea5893b/README.md) | 作者声明支持 9.00–12.40，取得内核读写与进程提权，并启动监听 9021 的加载器；默认四核心过程约 50 分钟。 | 记录目标机器上的完成日志、耗时和加载器连接结果。 |
+| [Y2JB Autoloader](https://github.com/itsPLK/ps5-y2jb-autoloader) | 项目声明支持 4.03–13.60；[v1.1.0 发布说明](https://github.com/itsPLK/ps5-y2jb-autoloader/releases/tag/v1.1.0-ba879c8)记录使用 Relapse，并提供按 `autoload.txt` 自动加载载荷。 | 在 12.40 对照实际启动过程、耗时及载荷自动加载情况。 |
 | [elfldr](https://github.com/ps5-payload-dev/elfldr/blob/2a8da002e5292481ea964daa7342bbf4855f4c33/README.md) | 独立项目描述了新建后台进程、游戏期间运行和休眠恢复。 | 检查实际使用的加载器及载荷在这些场景中的生命周期。 |
 | [ftpsrv](https://github.com/ps5-payload-dev/ftpsrv/blob/35bae1312b14840c0f95fab93be73d6daaa93bae/README.md) | 通过 ELF 加载器运行，监听 2121，提供文件访问。 | 验证目录访问与测试文件传输。 |
 | [Save Mounter](https://github.com/n0llptr/Playstation-5-Save-Mounter/blob/1a0281ea9794afadc2e2da345ca0b66e5db45bc7/README.md) | 声明支持可越狱 PS5 固件和 PS5、PS4 等存档，使用 elfldr 与 FTP。 | 对新建测试存档执行挂载、复制、修改、恢复和游戏内读取。 |
 | [etaHEN Unified 社区移植版](https://github.com/GronedWaffel/etahen-11.00-13.60) | 基于 etaHEN 2.5B，列出 12.40 配置并记录社区启动反馈。 | 验证当前主机上的 Toolbox、插件和配置恢复。 |
 
-Y2JB 文档中的 Lapse 支持至 10.01；本轮为 12.40 选择 P2JB 作为候选。
+Y2JB 文档中的 Lapse 支持至 10.01；12.40 的候选方案包括 P2JB 和 Y2JB Autoloader 使用的 Relapse。
+P2JB 项目给出的约 50 分钟属于该路径的说明，不用于代表 Relapse 的耗时。
 上述兼容性结论来自开源项目说明，目标主机的实际测试记录将另行对照。
 
 ### 后台运行与恢复耗时
@@ -32,6 +34,7 @@ Y2JB 文档中的 Lapse 支持至 10.01；本轮为 12.40 选择 P2JB 作为候�
 
 我的初步判断是：先验证独立 FTP 和存档工具，再确认能支撑游戏期间自动备份的后台执行方式。
 恢复体验分别记录环境重新建立、备份取回、数据写回和游戏重新读取的耗时。
+[Y2JB Autoloader](https://github.com/itsPLK/ps5-y2jb-autoloader)可在入口运行后按配置启动载荷；实测要分别记录开机后的入口操作、利用链以及备份服务恢复的过程。
 
 ### 游戏存档
 
@@ -79,7 +82,7 @@ USB 可以作为备份目标；本地网络设备可用于接收备份；云端�
 ## 实机对照清单
 
 1. 以已确认的 12.40 固件为基线，记录初始化后主机的型号与账号状态。
-2. 验证 Y2JB 入口、P2JB 完成日志、9021 加载器和 2121 FTP，记录所用版本及耗时。
+2. 对照 Y2JB 与 Y2JB Autoloader 入口，分别记录 P2JB 或 Relapse、加载器和 FTP 的版本及耗时。
 3. 创建一份测试游戏存档，记录游戏内状态；备份后修改进度，再恢复并核对游戏读取结果。
    对照 PSCloud 游戏关闭后自动备份与运行中导出的恢复结果。
 4. 创建测试插件配置，备份后修改并恢复，比较配置和插件行为。
