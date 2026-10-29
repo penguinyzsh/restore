@@ -40,6 +40,17 @@ Y2JB 文档中的 Lapse 支持至 10.01；本轮为 12.40 选择 P2JB 作为候�
 其[载荷源码](https://github.com/n0llptr/Playstation-5-Save-Mounter/blob/main/mounter_payload/main.c)包含存档目录扫描、密钥材料和挂载逻辑。
 将现有存档挂载、复制并恢复是值得验证的候选方案；游戏是否接受恢复结果需要实测。
 
+### PSCloud 自动存档备份
+
+[PSCloud](https://github.com/JakeBusler/PS5-Cloud-Save/blob/b85b99c082243212e613b68790736348c75d448e/README.md) 是运行于 PS5 的 ELF 载荷，提供游戏关闭后自动备份、定时备份、USB 和 WebDAV。
+项目报告在 7.00 与 11.40 主机测试了备份、上传和游戏关闭后备份；12.40 的主机表现需要实测。
+项目文档说明当前尚不支持 PS4 游戏存档。
+
+其[关闭游戏监视逻辑](https://github.com/JakeBusler/PS5-Cloud-Save/blob/b85b99c082243212e613b68790736348c75d448e/ps5/dashboard.c#L2950-L2988)检查游戏与存档状态；[运行中导出路径](https://github.com/JakeBusler/PS5-Cloud-Save/blob/b85b99c082243212e613b68790736348c75d448e/ps5/common/sharing.c#L495-L510)复制存档镜像并挂载副本。
+实测需比较游戏关闭后和运行中取样的恢复结果。
+
+PSCloud 是 ReSpawn 游戏存档功能的参考；游戏安装、系统设置、媒体、插件与配置仍是 ReSpawn 的调查对象。
+
 ### 游戏、插件与配置
 
 [etaHEN](https://github.com/etaHEN/etaHEN) 提供游戏转储、FPKG、安装服务及插件相关功能，并使用配置文件。
@@ -62,6 +73,7 @@ USB 可以作为备份目标；本地网络设备可用于接收备份；云端�
 1. 以已确认的 12.40 固件为基线，记录初始化后主机的型号与账号状态。
 2. 验证 Y2JB 入口、P2JB 完成日志、9021 加载器和 2121 FTP，记录所用版本及耗时。
 3. 创建一份测试游戏存档，记录游戏内状态；备份后修改进度，再恢复并核对游戏读取结果。
+   对照 PSCloud 游戏关闭后自动备份与运行中导出的恢复结果。
 4. 创建测试插件配置，备份后修改并恢复，比较配置和插件行为。
 5. 测试 USB 与本地网络传输，记录文件大小、哈希和耗时。
 6. 使用电脑或 NAS 将测试备份上传云端并取回，对照文件内容。
