@@ -83,6 +83,16 @@ PSCloud 是 ReSpawn 游戏存档功能的参考；游戏安装、系统设置、
 USB 可以作为备份目标；本地网络设备可用于接收备份；云端可以先通过电脑或 NAS 中转验证。
 以上路径的自动化方式、访问权限与恢复能力需要结合实际环境确定。
 
+## PS5 本机界面
+
+ReSpawn 日常在 PS5 本机通过手柄查看备份、选择恢复点和发起恢复。
+
+[OnionHEN 插件界面接口](https://github.com/aydencharles/onionHEN/blob/main/source/libonion_plugin_ui/include/onion/plugin_ui.hpp)定义页面、列表、按钮、输入和事件绑定；[界面桥接接口](https://github.com/aydencharles/onionHEN/blob/main/source/libonion_plugin_bridge/include/onion/plugin_ui_bridge.hpp)定义界面快照和操作事件。
+这些接口可作为 PS5 工具箱界面与后台服务交互的参考。
+
+[Itemzflow](https://github.com/LightningMods/Itemzflow)提供独立手柄界面及后台通信参考。[构建文件](https://github.com/LightningMods/Itemzflow/blob/main/itemzflow/Makefile)使用 PS4 SDK；其[IPC 客户端](https://github.com/LightningMods/Itemzflow/blob/main/itemzflow/include/ipc_client.hpp)使用 Unix domain socket 与后台服务通信。
+这两条路线的 12.40 界面运行与后台协作需要实机对照。
+
 ## 初始化后的站点引导与 WebKit 入口
 
 ReSpawn 在 PS5 上提供主要的备份与恢复操作；PS5 无法直接使用时，通过独立域名站点获取引导和下载工具。
@@ -109,6 +119,7 @@ WebKit Autoloader 项目提到通过互联网上的 DNS 服务器加载 WebKit �
    对照 etaHEN Unified 的载荷、配置与插件恢复效果。
 9. 分别记录重启后进入主界面、启动入口、利用链执行、载荷加载、备份取回、数据写回和游戏重新读取的耗时，以及失败与重试次数。
 10. 对照局域网 Host 与自有公网 DNS 的用户指南入口，记录 DNS、HTTPS、页面和载荷环境的实际结果。
+11. 对照 PS5 工具箱和独立应用的手柄操作、恢复点展示及后台服务交互。
 
 每项记录环境、操作、备份前状态、恢复结果和与开源资料的差异。
 
