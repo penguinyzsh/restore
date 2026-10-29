@@ -58,6 +58,17 @@ P2JB 项目给出的约 50 分钟属于该路径的说明，不用于代表 Rela
 
 PSCloud 是 ReSpawn 游戏存档功能的参考；游戏安装、系统设置、媒体、插件与配置仍是 ReSpawn 的调查对象。
 
+### 持续检测与同步
+
+ReSpawn 的独立应用负责交互，后台载荷负责检测数据变化、创建备份并同步。
+[独立 elfldr](https://github.com/ps5-payload-dev/elfldr/blob/2a8da002e5292481ea964daa7342bbf4855f4c33/README.md)描述载荷运行在独立进程；目标主机关闭界面、运行游戏和休眠后的载荷状态需要实测。
+
+[PSCloud 的监视线程](https://github.com/JakeBusler/PS5-Cloud-Save/blob/b85b99c082243212e613b68790736348c75d448e/ps5/dashboard.c#L2950-L2988)默认约每 10 秒扫描存档变化，其关闭游戏后备份流程会等待游戏关闭及存档稳定。
+[OnionHEN 的插件目录监听器](https://github.com/aydencharles/onionHEN/blob/6148af91bdb24899d44ad386db4cc5189b97f43e/source/daemon/source/plugin_directory_watcher.cpp#L98-L160)使用 `kqueue` 文件事件监听目录变化。
+
+候选流程为：后台载荷检测变化 → 取得可恢复的数据版本 → 更新恢复点 → 同步到选定的存储位置。
+目录事件能否用于各类数据、游戏运行中能否取得一致的存档，以及各阶段的实际延迟，都需要对照验证。
+
 ### 游戏、插件与配置
 
 [etaHEN](https://github.com/etaHEN/etaHEN) 提供游戏转储、FPKG、安装服务及插件相关功能，并使用配置文件。
@@ -131,6 +142,7 @@ WebKit Autoloader 项目提到通过互联网上的 DNS 服务器加载 WebKit �
 9. 分别记录重启后进入主界面、启动入口、利用链执行、载荷加载、备份取回、数据写回和游戏重新读取的耗时，以及失败与重试次数。
 10. 对照局域网 Host 与自有公网 DNS 的用户指南入口，记录 DNS、HTTPS、页面和载荷环境的实际结果。
 11. 对照 PS5 工具箱和独立应用的手柄操作、恢复点展示及后台服务交互。
+12. 关闭独立界面后验证后台检测；分别测量数据变化、可恢复版本生成与目标位置同步完成的时间。
 
 每项记录环境、操作、备份前状态、恢复结果和与开源资料的差异。
 
