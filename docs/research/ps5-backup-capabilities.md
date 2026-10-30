@@ -2,7 +2,7 @@
 
 ## 目标与现状
 
-ReSpawn 旨在尽量恢复游戏、存档、系统设置、插件及配置，重建原有使用体验。
+ReStore 旨在尽量恢复游戏、存档、系统设置、插件及配置，重建原有使用体验。
 当前目标 PS5 已初始化，固件为 **12.40**。
 实机验证从当前机器环境和新建测试数据开始。
 
@@ -26,7 +26,7 @@ Y2JB 文档中的 Lapse 支持至 10.01；12.40 的候选方案包括 P2JB 和 Y
 P2JB 项目给出的约 50 分钟属于该路径的说明，不用于代表 Relapse 的耗时。
 
 [Relapse](https://github.com/soniciso1/relapse) 作者明确列出支持固件 12.40。
-[WebKit Autoloader](https://github.com/itsPLK/ps5-webkit-autoloader) 安装后提供主界面入口，并可自动加载配置的载荷；这条链可作为重启后恢复 ReSpawn 运行环境的优先候选。
+[WebKit Autoloader](https://github.com/itsPLK/ps5-webkit-autoloader) 安装后提供主界面入口，并可自动加载配置的载荷；这条链可作为重启后恢复 ReStore 运行环境的优先候选。
 本轮未找到作者公布的 12.40 执行耗时或成功率，需在目标主机记录。
 上述兼容性结论来自开源项目说明，目标主机的实际测试记录将另行对照。
 
@@ -56,14 +56,14 @@ P2JB 项目给出的约 50 分钟属于该路径的说明，不用于代表 Rela
 其[关闭游戏监视逻辑](https://github.com/JakeBusler/PS5-Cloud-Save/blob/b85b99c082243212e613b68790736348c75d448e/ps5/dashboard.c#L2950-L2988)检查游戏与存档状态；[运行中导出路径](https://github.com/JakeBusler/PS5-Cloud-Save/blob/b85b99c082243212e613b68790736348c75d448e/ps5/common/sharing.c#L492-L541)复制存档镜像、挂载副本，并检查导出期间源文件是否变化。
 [接口代码](https://github.com/JakeBusler/PS5-Cloud-Save/blob/b85b99c082243212e613b68790736348c75d448e/ps5/dashboard.c#L2186-L2215)将 `closed=live` 用于导出；现有自动监控在游戏运行时等待关闭。
 
-ReSpawn 的候选方向是将变化检测接入游戏运行中的副本导出，并将结果纳入恢复点及同步流程。
+ReStore 的候选方向是将变化检测接入游戏运行中的副本导出，并将结果纳入恢复点及同步流程。
 实测需要用游戏内进度对照导出和恢复结果，验证副本的一致性及 12.40 上的表现。
 
-PSCloud 是 ReSpawn 游戏存档功能的参考；游戏安装、系统设置、媒体、插件与配置仍是 ReSpawn 的调查对象。
+PSCloud 是 ReStore 游戏存档功能的参考；游戏安装、系统设置、媒体、插件与配置仍是 ReStore 的调查对象。
 
 ### 持续检测与同步
 
-ReSpawn 的独立应用负责交互，后台载荷负责检测数据变化、创建备份并同步。
+ReStore 的独立应用负责交互，后台载荷负责检测数据变化、创建备份并同步。
 [独立 elfldr](https://github.com/ps5-payload-dev/elfldr/blob/2a8da002e5292481ea964daa7342bbf4855f4c33/README.md)描述载荷运行在独立进程；目标主机关闭界面、运行游戏和休眠后的载荷状态需要实测。
 
 [PSCloud 的监视线程](https://github.com/JakeBusler/PS5-Cloud-Save/blob/b85b99c082243212e613b68790736348c75d448e/ps5/dashboard.c#L2950-L2988)默认约每 10 秒扫描存档变化，其关闭游戏后备份流程会等待游戏关闭及存档稳定。
@@ -101,7 +101,7 @@ USB 可以作为备份目标；本地网络设备可用于接收备份；云端�
 
 | 数据 | 已有实现 | 继续验证 |
 | --- | --- | --- |
-| 系统与用户设置 | [官方 USB 备份](https://www.playstation.com/en-us/support/hardware/back-up-ps5-data-USB/)包含设置；备份和恢复过程均涉及主机重启。 | ReSpawn 自动检测设置变化、保存并逐项恢复的方式。 |
+| 系统与用户设置 | [官方 USB 备份](https://www.playstation.com/en-us/support/hardware/back-up-ps5-data-USB/)包含设置；备份和恢复过程均涉及主机重启。 | ReStore 自动检测设置变化、保存并逐项恢复的方式。 |
 | 截图和视频 | 官方整机备份包含媒体；[媒体库](https://www.playstation.com/en-us/support/games/ps5-media-gallery-view-screenshots/)支持手动复制到 USB。 | 自动增量备份和写回后在媒体库中的显示。 |
 | 游戏、更新和 DLC | [PS5 App Dumper](https://github.com/EchoStretch/ps5-app-dumper)提供运行中游戏文件导出到 USB；[PS5 FPKG Restore](https://github.com/thanhsondev/PS5-FPKG-RESTORE)尝试重新登记保留的游戏文件。 | 12.40 上游戏导出、更新及 DLC 恢复、游戏启动和自动增量。 |
 | 插件与配置 | [OnionHEN](https://github.com/aydencharles/onionHEN)公布了配置、插件、载荷及自动启动标记的位置。 | 从初始化状态恢复后验证插件加载和配置生效。 |
@@ -110,7 +110,7 @@ USB 可以作为备份目标；本地网络设备可用于接收备份；云端�
 
 ## PS5 本机界面
 
-ReSpawn 日常在 PS5 本机通过手柄查看备份、选择恢复点和发起恢复。
+ReStore 日常在 PS5 本机通过手柄查看备份、选择恢复点和发起恢复。
 
 [OnionHEN 插件界面接口](https://github.com/aydencharles/onionHEN/blob/main/source/libonion_plugin_ui/include/onion/plugin_ui.hpp)定义页面、列表、按钮、输入和事件绑定；[界面桥接接口](https://github.com/aydencharles/onionHEN/blob/main/source/libonion_plugin_bridge/include/onion/plugin_ui_bridge.hpp)定义界面快照和操作事件。
 这些接口可作为 PS5 工具箱界面与后台服务交互的参考。
@@ -120,19 +120,19 @@ ReSpawn 日常在 PS5 本机通过手柄查看备份、选择恢复点和发起�
 
 [PS5Library](https://github.com/rdiol12/PS5Library) 提供 PS5 原生手柄界面与独立 agent 的参考。[构建配置](https://github.com/rdiol12/PS5Library/blob/aaea687800a882234d78ff546483b48b7a144d20/frontend/ps5/CMakeLists.txt)链接 SDL2 与 `ScePad`；[本机通信代码](https://github.com/rdiol12/PS5Library/blob/aaea687800a882234d78ff546483b48b7a144d20/frontend/ps5/common/client.cpp#L508-L558)使用本机 TCP。
 [项目构建说明](https://github.com/rdiol12/PS5Library/blob/aaea687800a882234d78ff546483b48b7a144d20/README.md)说明公开构建流程生成应用、agent 和安装器 ELF；生成原生应用包需要另外取得打包前提。
-该路线适合研究 ReSpawn 前台与后台分离；安装、手柄操作和界面关闭后的后台驻留需要在 12.40 实机验证。
+该路线适合研究 ReStore 前台与后台分离；安装、手柄操作和界面关闭后的后台驻留需要在 12.40 实机验证。
 
 ## 初始化后的站点引导与 WebKit 入口
 
-ReSpawn 在 PS5 上提供主要的备份与恢复操作；PS5 无法直接使用时，通过独立域名站点获取引导和下载工具。
+ReStore 在 PS5 上提供主要的备份与恢复操作；PS5 无法直接使用时，通过独立域名站点获取引导和下载工具。
 固件 12.40 的现有首次引导流程使用局域网 Mac Host、PS5 手动 DNS、用户指南、Relapse 和 WebKit Autoloader。
 本地 Host 对 `manuals.playstation.net` 返回 Host 地址，并将用户指南 HTTPS 路径映射到入口页面。
 
 [PS5 WebKit Autoloader](https://github.com/itsPLK/ps5-webkit-autoloader) 可作为 fork 对象，研究界面和逻辑优化；项目采用 GPL-3.0。
-独立域名用于 ReSpawn 引导站点；PS5 DNS 设置需要的是 DNS 服务器 IP，实际用户指南请求仍需由 DNS 和 HTTPS 服务共同处理。
+独立域名用于 ReStore 引导站点；PS5 DNS 设置需要的是 DNS 服务器 IP，实际用户指南请求仍需由 DNS 和 HTTPS 服务共同处理。
 WebKit Autoloader 项目提到通过互联网上的 DNS 服务器加载 WebKit 入口；自有公网 DNS 与 HTTPS 服务在目标 12.40 主机上的完整表现需要实机验证。
 
-初始化后的恢复流程候选为：站点提供引导和工具下载 → 配置 DNS → 用户指南 WebKit 入口 → Relapse → 启动 PS5 上的 ReSpawn 工具 → 选择备份和恢复内容 → 完成恢复。
+初始化后的恢复流程候选为：站点提供引导和工具下载 → 配置 DNS → 用户指南 WebKit 入口 → Relapse → 启动 PS5 上的 ReStore 工具 → 选择备份和恢复内容 → 完成恢复。
 
 ## 实机对照清单
 
