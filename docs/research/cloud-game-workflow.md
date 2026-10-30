@@ -13,6 +13,16 @@ ReStore 参考 OpenList 的网盘挂载体验，浏览国内外网盘资源，�
 [ezRemote Client](https://github.com/cy33hc/ps5-ezremote-client)提供 PS5 上的 FTP、SFTP、SMB、NFS、WebDAV 和 HTTP 文件访问，项目也列出了部分分享链接和后台下载功能。
 它是 PS5 本机浏览与下载的参考；国内网盘账户的具体接入方式需要分别研究。
 
+### PS5 本机直连
+
+ReStore 的方向是由 PS5 本机连接网盘，统一完成登录、目录浏览与文件下载。
+[OpenList 阿里云盘驱动](https://github.com/OpenListTeam/OpenList/blob/main/drivers/aliyundrive_open/driver.go)展示了获取账户信息、列目录和获取下载地址的流程；[百度网盘驱动](https://github.com/OpenListTeam/OpenList/blob/main/drivers/baidu_netdisk/driver.go)也提供账户、目录与下载处理参考。
+[Google Drive 授权文档](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)和 [Microsoft Graph 文件列表接口](https://learn.microsoft.com/en-us/graph/api/driveitem-list-children?view=graph-rest-1.0)提供国外网盘的接入依据。
+
+OpenList 驱动使用 Go 并依赖其内部组件；[PS5 Payload SDK](https://github.com/ps5-payload-dev/sdk)提供 PS5 ELF 载荷的开发环境。
+两者在 PS5 上如何配合，以及各网盘的授权和下载流程，仍需继续验证。
+可以先以 PS5 原生网盘适配器研究统一接口，再逐项验证具体网盘。
+
 ## 文件处理
 
 | 内容 | 候选处理方式 | 开源参考 |
