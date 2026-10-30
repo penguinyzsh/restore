@@ -118,6 +118,10 @@ ReSpawn 日常在 PS5 本机通过手柄查看备份、选择恢复点和发起�
 [Itemzflow](https://github.com/LightningMods/Itemzflow)提供独立手柄界面及后台通信参考。[构建文件](https://github.com/LightningMods/Itemzflow/blob/main/itemzflow/Makefile)使用 PS4 SDK；其[IPC 客户端](https://github.com/LightningMods/Itemzflow/blob/main/itemzflow/include/ipc_client.hpp)使用 Unix domain socket 与后台服务通信。
 这两条路线的 12.40 界面运行与后台协作需要实机对照。
 
+[PS5Library](https://github.com/rdiol12/PS5Library) 提供 PS5 原生手柄界面与独立 agent 的参考。[构建配置](https://github.com/rdiol12/PS5Library/blob/aaea687800a882234d78ff546483b48b7a144d20/frontend/ps5/CMakeLists.txt)链接 SDL2 与 `ScePad`；[本机通信代码](https://github.com/rdiol12/PS5Library/blob/aaea687800a882234d78ff546483b48b7a144d20/frontend/ps5/common/client.cpp#L508-L558)使用本机 TCP。
+[项目构建说明](https://github.com/rdiol12/PS5Library/blob/aaea687800a882234d78ff546483b48b7a144d20/README.md)说明公开构建流程生成应用、agent 和安装器 ELF；生成原生应用包需要另外取得打包前提。
+该路线适合研究 ReSpawn 前台与后台分离；安装、手柄操作和界面关闭后的后台驻留需要在 12.40 实机验证。
+
 ## 初始化后的站点引导与 WebKit 入口
 
 ReSpawn 在 PS5 上提供主要的备份与恢复操作；PS5 无法直接使用时，通过独立域名站点获取引导和下载工具。
