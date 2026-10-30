@@ -46,7 +46,8 @@ OpenList 驱动使用 Go 并依赖其内部组件；[PS5 Payload SDK](https://gi
 | ZIP、7z、RAR | 解压后识别得到的文件或目录，再进入对应处理流程 | [ezRemote Client](https://github.com/cy33hc/ps5-ezremote-client) |
 | 游戏目录及受支持的镜像 | 放入配置的游戏扫描位置，准备挂载和登记 | [ShadowMountPlus](https://github.com/drakmor/ShadowMountPlus) |
 
-ShadowMountPlus 列出 `.ffpkg`、`.exfat`、`.ffpfs` 和 `.ffpfsc` 等镜像格式；不同格式的处理情况见[项目说明](https://github.com/drakmor/ShadowMountPlus)。
+[ezRemote Client](https://github.com/cy33hc/ps5-ezremote-client)的文档描述了 PS5 上解压 ZIP、7z、RAR，以及安装 PKG 的功能。
+[ShadowMountPlus](https://github.com/drakmor/ShadowMountPlus)描述了扫描游戏目录及 `.ffpkg`、`.exfat`、`.ffpfs`、`.ffpfsc` 镜像并准备挂载的流程。
 安装、解压和挂载的实际结果需要在固件 12.40 的目标主机验证。
 
 ## 候选流程
