@@ -53,8 +53,11 @@ P2JB 项目给出的约 50 分钟属于该路径的说明，不用于代表 Rela
 项目报告在 7.00 与 11.40 主机测试了备份、上传和游戏关闭后备份；12.40 的主机表现需要实测。
 项目文档说明当前尚不支持 PS4 游戏存档。
 
-其[关闭游戏监视逻辑](https://github.com/JakeBusler/PS5-Cloud-Save/blob/b85b99c082243212e613b68790736348c75d448e/ps5/dashboard.c#L2950-L2988)检查游戏与存档状态；[运行中导出路径](https://github.com/JakeBusler/PS5-Cloud-Save/blob/b85b99c082243212e613b68790736348c75d448e/ps5/common/sharing.c#L495-L510)复制存档镜像并挂载副本。
-实测需比较游戏关闭后和运行中取样的恢复结果。
+其[关闭游戏监视逻辑](https://github.com/JakeBusler/PS5-Cloud-Save/blob/b85b99c082243212e613b68790736348c75d448e/ps5/dashboard.c#L2950-L2988)检查游戏与存档状态；[运行中导出路径](https://github.com/JakeBusler/PS5-Cloud-Save/blob/b85b99c082243212e613b68790736348c75d448e/ps5/common/sharing.c#L492-L541)复制存档镜像、挂载副本，并检查导出期间源文件是否变化。
+[接口代码](https://github.com/JakeBusler/PS5-Cloud-Save/blob/b85b99c082243212e613b68790736348c75d448e/ps5/dashboard.c#L2186-L2215)将 `closed=live` 用于导出；现有自动监控在游戏运行时等待关闭。
+
+ReSpawn 的候选方向是将变化检测接入游戏运行中的副本导出，并将结果纳入恢复点及同步流程。
+实测需要用游戏内进度对照导出和恢复结果，验证副本的一致性及 12.40 上的表现。
 
 PSCloud 是 ReSpawn 游戏存档功能的参考；游戏安装、系统设置、媒体、插件与配置仍是 ReSpawn 的调查对象。
 
