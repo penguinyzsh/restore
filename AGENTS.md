@@ -2,7 +2,7 @@
 
 ### Issue tracker
 
-使用 `penguinyzsh/respawn` 的 GitHub Issues 跟踪问题。
+使用 `penguinyzsh/restore` 的 GitHub Issues 跟踪问题。
 详见 `docs/agents/issue-tracker.md`。
 
 ### Triage labels
