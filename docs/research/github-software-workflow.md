@@ -26,5 +26,12 @@ ReStore 自动检查更新，由用户选择何时安装。
 
 ## PS5 安装参考
 
-[ezRemote Client](https://github.com/cy33hc/ps5-ezremote-client)提供 PS5 上的远程文件浏览和安装参考。
-不同项目的 PKG、ELF 和 ZIP 可能承担不同作用；固件 12.40 的实际安装与运行需要后续验证。
+软件、插件和载荷按用途区分；ELF 是可执行文件格式，可以承载不同用途的程序。
+
+| 用途 | 安装和启用参考 |
+| --- | --- |
+| 独立软件 | [ezRemote Client](https://github.com/cy33hc/ps5-ezremote-client)的项目资料描述了应用文件、主界面入口与启动载荷的配合。 |
+| OnionHEN 插件 | [FTP 插件](https://github.com/OnionBuddies/onionHEN-ftpsrv-plugin)和 [NTP 插件](https://github.com/OnionBuddies/onionHEN-ntp-plugin)说明了插件 ELF 的安装、自动发现和配置。 |
+| 独立载荷 | [ftpsrv](https://github.com/ps5-payload-dev/ftpsrv)提供通过 ELF 加载器运行的服务载荷。 |
+
+各项目的发行文件、宿主与安装步骤不同；固件 12.40 的实际安装与运行需要后续验证。
