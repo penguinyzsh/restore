@@ -23,6 +23,18 @@ OpenList 驱动使用 Go 并依赖其内部组件；[PS5 Payload SDK](https://gi
 两者在 PS5 上如何配合，以及各网盘的授权和下载流程，仍需继续验证。
 可以先以 PS5 原生网盘适配器研究统一接口，再逐项验证具体网盘。
 
+### 百度网盘与夸克网盘
+
+当前先研究百度网盘和夸克网盘。
+
+[百度网盘开放平台](https://pan.baidu.com/union/doc/)列出文件管理、上传和下载能力。
+[OpenList 百度驱动](https://github.com/OpenListTeam/OpenList/blob/main/drivers/baidu_netdisk/util.go)提供账户凭据刷新、分页列目录和获取下载地址的实现参考；其本地刷新方式使用客户端标识、客户端密钥和 refresh token。
+
+[OpenList 夸克开放接口驱动](https://github.com/OpenListTeam/OpenList/blob/main/drivers/quark_open/util.go)提供请求签名和分页列目录的实现参考；[驱动配置](https://github.com/OpenListTeam/OpenList/blob/main/drivers/quark_open/meta.go)包含应用标识、签名密钥和令牌。
+该驱动当前使用在线服务刷新令牌；夸克官方开放平台的首次授权和应用接入方式仍需核实。
+
+两家的首次授权、分享链接处理及 PS5 本机运行情况需要继续调查和验证。
+
 ## 文件处理
 
 | 内容 | 候选处理方式 | 开源参考 |
