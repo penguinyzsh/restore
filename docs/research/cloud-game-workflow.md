@@ -29,11 +29,14 @@ OpenList 驱动使用 Go 并依赖其内部组件；[PS5 Payload SDK](https://gi
 
 [百度网盘开放平台](https://pan.baidu.com/union/doc/)列出文件管理、上传和下载能力。
 [OpenList 百度驱动](https://github.com/OpenListTeam/OpenList/blob/main/drivers/baidu_netdisk/util.go)提供账户凭据刷新、分页列目录和获取下载地址的实现参考；其本地刷新方式使用客户端标识、客户端密钥和 refresh token。
+[OpenList 百度网盘接入说明](https://github.com/OpenListTeam/OpenList-Docs/blob/main/pages/guide/drivers/baidu.md)描述了通过网页登录授权获取令牌，以及开发者应用的接入方式。
 
 [OpenList 夸克开放接口驱动](https://github.com/OpenListTeam/OpenList/blob/main/drivers/quark_open/util.go)提供请求签名和分页列目录的实现参考；[驱动配置](https://github.com/OpenListTeam/OpenList/blob/main/drivers/quark_open/meta.go)包含应用标识、签名密钥和令牌。
-该驱动当前使用在线服务刷新令牌；夸克官方开放平台的首次授权和应用接入方式仍需核实。
+该驱动当前使用在线服务刷新令牌；夸克服务商的应用接入方式仍需核实。
 
-两家的首次授权、分享链接处理及 PS5 本机运行情况需要继续调查和验证。
+[OpenList 夸克 TV 接入说明](https://github.com/OpenListTeam/OpenList-Docs/blob/main/pages/guide/drivers/quark.md)描述手机扫码授权、目录浏览与下载。
+其[驱动源码](https://github.com/OpenListTeam/OpenList/blob/main/drivers/quark_uc_tv/util.go)包含二维码、令牌、列表和下载流程；[配置](https://github.com/OpenListTeam/OpenList/blob/main/drivers/quark_uc_tv/meta.go)将令牌交换指向第三方服务。
+该实现是 ReStore 登录与接入方式的参考，实际账户授权及 PS5 本机运行需要验证。
 
 ## 文件处理
 
