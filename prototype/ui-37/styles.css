@@ -1,5 +1,6 @@
 /* ReStore PS5 原生应用高保真 UI 原型样式 (#37)
-   1920px 基准视口下 1rem = 1px，深色流光毛玻璃质感，无侧栏，模块化分块布局 */
+   包含三套截然不同的视觉与分块结构变体 (Variant A / B / C)
+   所有开发者/原型状态切换完全独立为悬浮调试窗，绝不混入真实产品 UI */
 :root {
   font-size: calc(100vw / 1920);
   font-family: 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
@@ -72,7 +73,6 @@ img {
   max-width: 100%;
 }
 
-/* 手柄与键盘焦点高亮外框 */
 button:focus-visible,
 input:focus-visible,
 [data-pad-focus='true'] {
@@ -87,7 +87,7 @@ input:focus-visible,
   position: relative;
   isolation: isolate;
   min-height: max(1080rem, 100vh);
-  padding-bottom: 84rem;
+  padding-bottom: 80rem;
   overflow: hidden;
 }
 
@@ -115,12 +115,12 @@ input:focus-visible,
   object-fit: cover;
   object-position: center top;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.48;
 }
 
-/* ==================== 顶部 PS5 系统导航栏（无左上角冗余框、无侧栏） ==================== */
+/* ==================== 顶部 PS5 系统导航栏 ==================== */
 .system-header {
-  height: 104rem;
+  height: 100rem;
   position: relative;
   z-index: 20;
   display: grid;
@@ -137,14 +137,14 @@ input:focus-visible,
 }
 
 .header-logo-minimal img {
-  width: 42rem;
-  height: 42rem;
+  width: 40rem;
+  height: 40rem;
   border-radius: 10rem;
   box-shadow: 0 4rem 16rem rgba(0, 67, 156, 0.55);
 }
 
 .header-logo-minimal span {
-  font-size: 23rem;
+  font-size: 22rem;
   font-weight: 500;
   letter-spacing: 0.4rem;
   color: #f2f5f9;
@@ -178,10 +178,6 @@ input:focus-visible,
   flex-shrink: 0;
 }
 
-.shoulder-key:hover {
-  background: #343b47;
-}
-
 .top-nav-pill {
   display: inline-flex;
   align-items: center;
@@ -212,17 +208,17 @@ input:focus-visible,
   box-shadow: 0 6rem 18rem rgba(0, 0, 0, 0.32);
 }
 
-/* 置灰表达未开放功能，不写“只看/预览”文字标签 */
+/* 置灰代表未开放，不写“只看/预览”文字 */
 .top-nav-pill.is-disabled-preview {
-  color: #6c7482;
+  color: #636b78;
 }
 
 .top-nav-pill.is-disabled-preview svg {
-  opacity: 0.65;
+  opacity: 0.6;
 }
 
 .top-nav-pill.is-disabled-preview.current {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.14);
   color: #cfd6e0;
 }
 
@@ -284,12 +280,11 @@ input:focus-visible,
   font-size: 23rem;
   font-weight: 300;
   color: #e9edf2;
-  letter-spacing: 0.5rem;
 }
 
-/* ==================== 通用页面容器与按钮/徽章（强制单行不折行） ==================== */
+/* ==================== 通用组件（强制不换行、不竖排挤压） ==================== */
 .page-container {
-  padding: 12rem var(--page-x) 48rem;
+  padding: 10rem var(--page-x) 40rem;
   max-width: 1920rem;
   margin: 0 auto;
 }
@@ -344,14 +339,14 @@ input:focus-visible,
   justify-content: center;
   gap: 10rem;
   padding: 0 26rem;
-  height: 50rem;
+  height: 48rem;
   border-radius: var(--radius-pill);
-  font-size: 18rem;
+  font-size: 17.5rem;
 }
 
 .pill svg {
-  width: 20rem;
-  height: 20rem;
+  width: 19rem;
+  height: 19rem;
 }
 
 .pill.primary {
@@ -373,25 +368,25 @@ input:focus-visible,
 }
 
 .pill.sm {
-  height: 40rem;
-  padding: 0 18rem;
-  font-size: 15rem;
+  height: 38rem;
+  padding: 0 16rem;
+  font-size: 14.5rem;
 }
 
-/* ==================== 1. 概览页（实用仪表盘：主操作横幅 + 左位置状态 + 右保护内容） ==================== */
+/* ==================== Variant A：经典分块工作台（刚才改好的版本） ==================== */
 .home-hero-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 32rem;
-  padding: 28rem 34rem;
+  padding: 26rem 32rem;
   border-radius: var(--radius-card);
   background:
     radial-gradient(circle at 16% 50%, rgba(0, 67, 156, 0.45), transparent 55%),
     rgba(21, 25, 32, 0.92);
   border: 1rem solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(18rem);
-  margin-bottom: 26rem;
+  margin-bottom: 24rem;
 }
 
 .home-hero-left {
@@ -402,16 +397,16 @@ input:focus-visible,
 }
 
 .home-hero-left img {
-  width: 84rem;
-  height: 84rem;
-  border-radius: 20rem;
+  width: 80rem;
+  height: 80rem;
+  border-radius: 18rem;
   box-shadow: 0 12rem 28rem rgba(0, 67, 156, 0.55);
   flex-shrink: 0;
 }
 
 .home-hero-copy h1 {
   margin: 0 0 8rem;
-  font-size: 32rem;
+  font-size: 30rem;
   font-weight: 400;
   color: #f5f7fb;
   display: flex;
@@ -421,7 +416,7 @@ input:focus-visible,
 
 .home-hero-copy p {
   margin: 0;
-  font-size: 17rem;
+  font-size: 16.5rem;
   color: #a9b4c4;
 }
 
@@ -434,13 +429,13 @@ input:focus-visible,
 
 .home-dashboard-grid {
   display: grid;
-  grid-template-columns: 760rem minmax(0, 1fr);
-  gap: 26rem;
+  grid-template-columns: 740rem minmax(0, 1fr);
+  gap: 24rem;
   align-items: stretch;
 }
 
 .section-block {
-  padding: 26rem 30rem;
+  padding: 24rem 28rem;
   border-radius: var(--radius-card);
   background: rgba(20, 24, 30, 0.9);
   border: 1rem solid rgba(255, 255, 255, 0.08);
@@ -454,18 +449,18 @@ input:focus-visible,
   align-items: center;
   justify-content: space-between;
   gap: 16rem;
-  margin-bottom: 20rem;
+  margin-bottom: 18rem;
 }
 
 .section-block-header h2 {
   margin: 0;
-  font-size: 22rem;
+  font-size: 21rem;
   font-weight: 400;
   color: #eef2f7;
 }
 
 .section-block-header span {
-  font-size: 14.5rem;
+  font-size: 14rem;
   color: #8f9ba8;
 }
 
@@ -477,18 +472,18 @@ input:focus-visible,
 }
 
 .location-status-row {
-  padding: 20rem 22rem;
+  padding: 18rem 22rem;
   border-radius: 13rem;
   background: #181c23;
-  border: 1rem solid rgba(255, 255, 255, 0.07);
+  border: 1.5rem solid rgba(255, 255, 255, 0.07);
   display: flex;
   flex-direction: column;
-  gap: 12rem;
+  gap: 11rem;
 }
 
-.location-status-row:hover {
-  background: #1e232c;
-  border-color: rgba(255, 255, 255, 0.16);
+.location-status-row.selected {
+  border-color: #63a6ff;
+  background: linear-gradient(180deg, rgba(0, 67, 156, 0.22), #181c23);
 }
 
 .loc-row-top {
@@ -502,7 +497,7 @@ input:focus-visible,
   display: flex;
   align-items: center;
   gap: 11rem;
-  font-size: 18.5rem;
+  font-size: 18rem;
   font-weight: 500;
   color: #f0f3f8;
 }
@@ -529,7 +524,7 @@ input:focus-visible,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 14rem;
+  font-size: 13.5rem;
   color: #95a0b0;
 }
 
@@ -541,19 +536,19 @@ input:focus-visible,
 }
 
 .content-summary-tile {
-  padding: 20rem 22rem;
+  padding: 18rem 22rem;
   border-radius: 13rem;
   background: #181c23;
-  border: 1rem solid rgba(255, 255, 255, 0.07);
+  border: 1.5rem solid rgba(255, 255, 255, 0.07);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 12rem;
+  gap: 10rem;
 }
 
-.content-summary-tile:hover {
-  background: #1e232c;
-  border-color: rgba(255, 255, 255, 0.16);
+.content-summary-tile.selected {
+  border-color: #63a6ff;
+  background: linear-gradient(180deg, rgba(0, 67, 156, 0.22), #181c23);
 }
 
 .content-summary-tile.span-2 {
@@ -570,8 +565,8 @@ input:focus-visible,
 }
 
 .tile-icon {
-  width: 40rem;
-  height: 40rem;
+  width: 38rem;
+  height: 38rem;
   border-radius: 10rem;
   background: rgba(0, 67, 156, 0.28);
   border: 1rem solid rgba(112, 183, 255, 0.22);
@@ -582,7 +577,7 @@ input:focus-visible,
 
 .content-summary-tile strong {
   display: block;
-  font-size: 19rem;
+  font-size: 18.5rem;
   font-weight: 500;
   color: #eff3f8;
   margin-bottom: 4rem;
@@ -590,22 +585,22 @@ input:focus-visible,
 
 .content-summary-tile small {
   display: block;
-  font-size: 14rem;
+  font-size: 13.5rem;
   color: #95a0b0;
 }
 
-/* ==================== 2. 数据恢复页（清晰三步分块：来源栏 → 5 列内容卡片 → 底部执行栏） ==================== */
+/* Variant A 恢复页 */
 .restore-step-stack {
   display: flex;
   flex-direction: column;
-  gap: 20rem;
+  gap: 18rem;
 }
 
 .restore-source-block {
   display: grid;
-  grid-template-columns: 360rem minmax(0, 1fr);
+  grid-template-columns: 350rem minmax(0, 1fr);
   gap: 24rem;
-  padding: 22rem 28rem;
+  padding: 20rem 26rem;
   border-radius: var(--radius-card);
   background: rgba(20, 24, 30, 0.92);
   border: 1rem solid rgba(255, 255, 255, 0.08);
@@ -620,7 +615,7 @@ input:focus-visible,
 }
 
 .block-step-label {
-  font-size: 15rem;
+  font-size: 14.5rem;
   color: #93a0b2;
   margin-bottom: 4rem;
   display: flex;
@@ -629,7 +624,7 @@ input:focus-visible,
 }
 
 .source-loc-btn {
-  padding: 13rem 16rem;
+  padding: 12rem 16rem;
   border-radius: 11rem;
   background: #171b22;
   border: 1.5rem solid transparent;
@@ -637,7 +632,7 @@ input:focus-visible,
   align-items: center;
   justify-content: space-between;
   gap: 10rem;
-  font-size: 16.5rem;
+  font-size: 16rem;
   color: #c5cdd8;
 }
 
@@ -662,7 +657,7 @@ input:focus-visible,
 }
 
 .rp-card {
-  padding: 16rem 18rem;
+  padding: 15rem 18rem;
   border-radius: 12rem;
   background: #171b22;
   border: 1.5rem solid rgba(255, 255, 255, 0.07);
@@ -685,7 +680,7 @@ input:focus-visible,
 }
 
 .rp-card-top strong {
-  font-size: 17.5rem;
+  font-size: 17rem;
   font-weight: 500;
   color: #f1f4f9;
   white-space: nowrap;
@@ -694,7 +689,7 @@ input:focus-visible,
 }
 
 .rp-card-desc {
-  font-size: 14rem;
+  font-size: 13.5rem;
   color: #9ba6b6;
   line-height: 1.45;
 }
@@ -706,13 +701,12 @@ input:focus-visible,
   gap: 8rem;
   padding-top: 8rem;
   border-top: 1rem solid rgba(255, 255, 255, 0.06);
-  font-size: 13.5rem;
+  font-size: 13rem;
   color: #8b96a6;
 }
 
-/* 第二块：五类恢复对象 5 列独立卡片 */
 .restore-objects-block {
-  padding: 22rem 28rem;
+  padding: 20rem 26rem;
   border-radius: var(--radius-card);
   background: rgba(20, 24, 30, 0.92);
   border: 1rem solid rgba(255, 255, 255, 0.08);
@@ -721,20 +715,20 @@ input:focus-visible,
 .five-columns-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16rem;
-  margin-top: 14rem;
+  gap: 15rem;
+  margin-top: 12rem;
 }
 
 .object-tile-card {
-  padding: 20rem;
+  padding: 18rem;
   border-radius: 14rem;
   background: #171b22;
   border: 1.5rem solid rgba(255, 255, 255, 0.07);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 14rem;
-  min-height: 230rem;
+  gap: 12rem;
+  min-height: 220rem;
 }
 
 .object-tile-card.selected {
@@ -749,8 +743,8 @@ input:focus-visible,
 }
 
 .check-indicator {
-  width: 26rem;
-  height: 26rem;
+  width: 25rem;
+  height: 25rem;
   border-radius: 50%;
   border: 2rem solid #5f697a;
   display: grid;
@@ -765,30 +759,30 @@ input:focus-visible,
 }
 
 .check-indicator svg {
-  width: 15rem;
-  height: 15rem;
+  width: 14rem;
+  height: 14rem;
 }
 
 .object-tile-body strong {
   display: block;
-  font-size: 19rem;
+  font-size: 18rem;
   font-weight: 500;
   color: #f2f5f9;
-  margin-bottom: 6rem;
+  margin-bottom: 5rem;
 }
 
 .object-tile-body span {
   display: block;
-  font-size: 14rem;
+  font-size: 13.5rem;
   color: #7eb8ff;
   margin-bottom: 8rem;
 }
 
 .object-tile-body p {
   margin: 0;
-  font-size: 13.5rem;
+  font-size: 13rem;
   color: #99a3b2;
-  line-height: 1.5;
+  line-height: 1.48;
 }
 
 .object-tile-note {
@@ -797,17 +791,16 @@ input:focus-visible,
   background: rgba(242, 201, 125, 0.12);
   border: 1rem solid rgba(242, 201, 125, 0.28);
   color: #f3d493;
-  font-size: 12.5rem;
+  font-size: 12rem;
   line-height: 1.35;
 }
 
-/* 第三块：底部恢复顺序与开始按钮栏 */
 .restore-action-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24rem;
-  padding: 18rem 28rem;
+  padding: 16rem 26rem;
   border-radius: var(--radius-card);
   background: rgba(20, 24, 30, 0.94);
   border: 1rem solid rgba(255, 255, 255, 0.09);
@@ -821,7 +814,7 @@ input:focus-visible,
 }
 
 .order-flow-label {
-  font-size: 15rem;
+  font-size: 14.5rem;
   color: #93a0b2;
   margin-right: 4rem;
   white-space: nowrap;
@@ -831,11 +824,11 @@ input:focus-visible,
   display: inline-flex;
   align-items: center;
   gap: 8rem;
-  padding: 8rem 14rem;
+  padding: 7rem 13rem;
   border-radius: 9rem;
   background: #1a1f28;
   border: 1rem solid rgba(255, 255, 255, 0.08);
-  font-size: 14.5rem;
+  font-size: 14rem;
   color: #dde3ec;
   white-space: nowrap;
 }
@@ -852,10 +845,172 @@ input:focus-visible,
 
 .order-arrow {
   color: #636e80;
-  font-size: 15rem;
+  font-size: 14rem;
 }
 
-/* ==================== 3. 系统设置页（PS5 左分类菜单 + 右详情分块面板） ==================== */
+/* ==================== Variant B：PS5 沉浸主从焦点画布（左大焦点舞台 + 右联动检查器） ==================== */
+.vb-stage-layout {
+  display: grid;
+  grid-template-columns: 640rem minmax(0, 1fr);
+  gap: 28rem;
+  min-height: 760rem;
+  align-items: stretch;
+}
+
+.vb-hero-spotlight {
+  padding: 36rem;
+  border-radius: 22rem;
+  background:
+    radial-gradient(circle at 26% 22%, rgba(0, 67, 156, 0.58), transparent 62%),
+    linear-gradient(180deg, rgba(20, 25, 34, 0.96), rgba(14, 17, 23, 0.98));
+  border: 1rem solid rgba(112, 183, 255, 0.22);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 24rem 60rem rgba(0, 0, 0, 0.45);
+}
+
+.vb-spotlight-art {
+  width: 112rem;
+  height: 112rem;
+  border-radius: 26rem;
+  box-shadow: 0 16rem 36rem rgba(0, 67, 156, 0.65);
+  margin-bottom: 24rem;
+}
+
+.vb-hero-spotlight h1 {
+  font-size: 44rem;
+  font-weight: 300;
+  line-height: 1.18;
+  margin: 12rem 0 14rem;
+  color: #f6f8fc;
+}
+
+.vb-hero-spotlight p {
+  font-size: 17rem;
+  line-height: 1.6;
+  color: #aeb9c9;
+  margin: 0;
+}
+
+.vb-metric-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12rem;
+  margin: 28rem 0;
+}
+
+.vb-metric-box {
+  padding: 16rem;
+  border-radius: 14rem;
+  background: rgba(12, 15, 21, 0.72);
+  border: 1rem solid rgba(255, 255, 255, 0.08);
+}
+
+.vb-metric-box strong {
+  display: block;
+  font-size: 24rem;
+  font-weight: 400;
+  color: #f2f6fb;
+}
+
+.vb-metric-box small {
+  display: block;
+  font-size: 13rem;
+  color: #93a0b2;
+  margin-top: 4rem;
+}
+
+.vb-right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20rem;
+}
+
+.vb-horizontal-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16rem;
+}
+
+.vb-loc-card {
+  padding: 22rem;
+  border-radius: 16rem;
+  background: rgba(21, 25, 32, 0.92);
+  border: 1.5rem solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16rem;
+}
+
+.vb-loc-card.selected {
+  border-color: #6bb0ff;
+  background: linear-gradient(180deg, rgba(0, 67, 156, 0.3), rgba(21, 25, 32, 0.95));
+}
+
+/* ==================== Variant C：PS5 控制中心极简横向带（Ribbon 大磁贴阵列） ==================== */
+.vc-ribbon-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 24rem;
+  padding-top: 12rem;
+}
+
+.vc-top-summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rem 28rem;
+  border-radius: var(--radius-pill);
+  background: rgba(19, 23, 30, 0.92);
+  border: 1rem solid rgba(255, 255, 255, 0.1);
+}
+
+.vc-ribbon-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20rem;
+}
+
+.vc-tall-card {
+  min-height: 420rem;
+  padding: 28rem;
+  border-radius: 22rem;
+  background:
+    linear-gradient(180deg, rgba(28, 33, 43, 0.94), rgba(17, 20, 26, 0.96));
+  border: 1.5rem solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.vc-tall-card.primary-card {
+  background:
+    radial-gradient(circle at 50% 15%, rgba(0, 67, 156, 0.58), transparent 65%),
+    linear-gradient(180deg, rgba(22, 28, 38, 0.96), rgba(15, 18, 24, 0.98));
+  border-color: rgba(112, 183, 255, 0.35);
+}
+
+.vc-tall-card.selected {
+  border-color: #70b7ff;
+}
+
+.vc-tall-card h2 {
+  font-size: 28rem;
+  font-weight: 400;
+  margin: 14rem 0 8rem;
+  color: #f4f7fb;
+}
+
+.vc-tall-card p {
+  font-size: 15rem;
+  color: #9facbe;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ==================== 设置页布局（A 为左菜单+右面板；B/C 支持顶部胶囊或双栏卡片） ==================== */
 .settings-split-layout {
   display: grid;
   grid-template-columns: 360rem minmax(0, 1fr);
@@ -903,14 +1058,14 @@ input:focus-visible,
 }
 
 .settings-detail-panel {
-  padding: 30rem 34rem;
+  padding: 28rem 32rem;
   border-radius: var(--radius-card);
   background: rgba(20, 24, 30, 0.92);
   border: 1rem solid rgba(255, 255, 255, 0.08);
-  min-height: 620rem;
+  min-height: 600rem;
   display: flex;
   flex-direction: column;
-  gap: 20rem;
+  gap: 18rem;
 }
 
 .settings-panel-head {
@@ -918,19 +1073,19 @@ input:focus-visible,
   align-items: center;
   justify-content: space-between;
   gap: 16rem;
-  padding-bottom: 18rem;
+  padding-bottom: 16rem;
   border-bottom: 1rem solid rgba(255, 255, 255, 0.08);
 }
 
 .settings-panel-head h2 {
   margin: 0 0 6rem;
-  font-size: 26rem;
+  font-size: 25rem;
   font-weight: 400;
 }
 
 .settings-panel-head p {
   margin: 0;
-  font-size: 15.5rem;
+  font-size: 15rem;
   color: #98a3b3;
 }
 
@@ -941,7 +1096,7 @@ input:focus-visible,
 }
 
 .settings-row-card {
-  padding: 20rem 24rem;
+  padding: 18rem 22rem;
   border-radius: 13rem;
   background: #171b22;
   border: 1rem solid rgba(255, 255, 255, 0.07);
@@ -959,7 +1114,7 @@ input:focus-visible,
   display: flex;
   align-items: center;
   gap: 12rem;
-  font-size: 18.5rem;
+  font-size: 18rem;
   font-weight: 500;
   color: #f0f3f8;
   margin-bottom: 5rem;
@@ -967,7 +1122,7 @@ input:focus-visible,
 
 .settings-row-info p {
   margin: 0;
-  font-size: 14.5rem;
+  font-size: 14rem;
   color: #96a1b2;
 }
 
@@ -979,19 +1134,19 @@ input:focus-visible,
   white-space: nowrap;
 }
 
-/* ==================== 4. 首次引导全屏覆盖层（Onboarding Fullscreen Overlay） ==================== */
+/* ==================== 首次引导全屏覆盖层 ==================== */
 .fullscreen-overlay {
   position: fixed;
   inset: 0;
   z-index: 75;
   background:
     radial-gradient(circle at 50% 14%, rgba(0, 67, 156, 0.42), transparent 55%),
-    rgba(11, 14, 19, 0.96);
+    rgba(11, 14, 19, 0.97);
   backdrop-filter: blur(24rem);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 52rem 140rem 108rem;
+  padding: 48rem 140rem 96rem;
   overflow-y: auto;
 }
 
@@ -1009,34 +1164,34 @@ input:focus-visible,
 }
 
 .wizard-brand img {
-  width: 78rem;
-  height: 78rem;
+  width: 74rem;
+  height: 74rem;
   border-radius: 18rem;
   box-shadow: 0 12rem 32rem rgba(0, 67, 156, 0.6);
 }
 
 .wizard-brand h1 {
   margin: 0 0 6rem;
-  font-size: 36rem;
+  font-size: 34rem;
   font-weight: 400;
 }
 
 .wizard-brand p {
   margin: 0;
-  font-size: 17rem;
+  font-size: 16.5rem;
   color: #a3afc0;
 }
 
 .wizard-step-card {
-  padding: 26rem 30rem;
+  padding: 24rem 28rem;
   border-radius: var(--radius-card);
   background: rgba(22, 26, 34, 0.92);
   border: 1rem solid rgba(255, 255, 255, 0.09);
 }
 
 .wizard-step-card h2 {
-  margin: 0 0 18rem;
-  font-size: 21rem;
+  margin: 0 0 16rem;
+  font-size: 20rem;
   font-weight: 400;
   color: #e9eef6;
   display: flex;
@@ -1051,14 +1206,14 @@ input:focus-visible,
 }
 
 .wizard-loc-card {
-  padding: 22rem;
+  padding: 20rem;
   border-radius: 14rem;
   background: #171b23;
   border: 1.5rem solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 16rem;
+  gap: 14rem;
 }
 
 .wizard-loc-card.selected {
@@ -1071,18 +1226,18 @@ input:focus-visible,
   align-items: center;
   justify-content: space-between;
   gap: 24rem;
-  padding: 22rem 30rem;
+  padding: 20rem 28rem;
   border-radius: var(--radius-card);
   background: rgba(22, 26, 34, 0.95);
   border: 1rem solid rgba(112, 183, 255, 0.25);
 }
 
-/* ==================== 5. 全屏专注恢复进度视图 ==================== */
+/* ==================== 全屏专注恢复进度视图 ==================== */
 .restore-lock-scene {
   margin: 8rem var(--page-x) 36rem;
-  min-height: 790rem;
+  min-height: 780rem;
   border-radius: 20rem;
-  padding: 36rem 44rem;
+  padding: 34rem 42rem;
   background:
     radial-gradient(circle at 80% 18%, rgba(0, 67, 156, 0.38), transparent 52%),
     linear-gradient(180deg, rgba(18, 22, 29, 0.96), rgba(13, 16, 21, 0.98));
@@ -1111,8 +1266,8 @@ input:focus-visible,
 }
 
 .gentle-warning-icon {
-  width: 46rem;
-  height: 46rem;
+  width: 44rem;
+  height: 44rem;
   border-radius: 12rem;
   background: rgba(242, 201, 125, 0.2);
   color: var(--warn-gold);
@@ -1122,14 +1277,14 @@ input:focus-visible,
 
 .gentle-warning-left strong {
   display: block;
-  font-size: 21rem;
+  font-size: 20rem;
   font-weight: 500;
   color: #fff3d6;
 }
 
 .gentle-warning-left p {
   margin: 4rem 0 0;
-  font-size: 15rem;
+  font-size: 14.5rem;
   color: #d5deeb;
 }
 
@@ -1141,7 +1296,7 @@ input:focus-visible,
 }
 
 .progress-big-number {
-  font-size: 74rem;
+  font-size: 72rem;
   font-weight: 300;
   line-height: 1;
   color: #f3f7fc;
@@ -1179,17 +1334,17 @@ input:focus-visible,
   border-color: rgba(241, 153, 150, 0.4);
 }
 
-/* ==================== 6. 软件商店 & 网盘游戏（底层卡片 + 置灰锁定遮罩） ==================== */
+/* ==================== 软件商店 & 网盘游戏（底层卡片 + 纯锁定遮罩，不跳页面） ==================== */
 .store-stage-wrap {
   position: relative;
-  min-height: 620rem;
+  min-height: 640rem;
   padding: 16rem;
   border-radius: 18rem;
   overflow: hidden;
 }
 
 .store-stage-wrap.is-locked .store-underlying-canvas {
-  filter: grayscale(0.45) brightness(0.72);
+  filter: grayscale(0.45) brightness(0.7);
   pointer-events: none;
 }
 
@@ -1222,27 +1377,27 @@ input:focus-visible,
 }
 
 .store-app-top img {
-  width: 60rem;
-  height: 60rem;
+  width: 58rem;
+  height: 58rem;
   border-radius: 14rem;
   object-fit: cover;
 }
 
 .store-app-top strong {
   display: block;
-  font-size: 20rem;
+  font-size: 19.5rem;
   font-weight: 500;
 }
 
 .store-app-top small {
   display: block;
-  font-size: 13.5rem;
+  font-size: 13rem;
   color: #939eae;
   margin-top: 3rem;
 }
 
 .store-app-desc {
-  font-size: 14.5rem;
+  font-size: 14rem;
   color: #aeb7c4;
   line-height: 1.5;
   margin: 0;
@@ -1255,7 +1410,7 @@ input:focus-visible,
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 13.5rem;
+  font-size: 13rem;
   color: #909ba9;
 }
 
@@ -1280,7 +1435,7 @@ input:focus-visible,
 }
 
 .game-tile h3 {
-  font-size: 18rem;
+  font-size: 17.5rem;
   font-weight: 400;
   margin: 10rem 0 3rem;
   white-space: nowrap;
@@ -1290,7 +1445,7 @@ input:focus-visible,
 
 .game-tile p {
   margin: 0;
-  font-size: 13.5rem;
+  font-size: 13rem;
   color: #949eae;
 }
 
@@ -1298,7 +1453,7 @@ input:focus-visible,
   position: absolute;
   inset: 0;
   z-index: 12;
-  background: radial-gradient(circle at 50% 45%, rgba(14, 18, 25, 0.55), rgba(10, 13, 18, 0.35));
+  background: radial-gradient(circle at 50% 45%, rgba(14, 18, 25, 0.52), rgba(10, 13, 18, 0.34));
   backdrop-filter: blur(5rem);
   display: flex;
   align-items: center;
@@ -1307,25 +1462,25 @@ input:focus-visible,
 }
 
 .store-lock-glass-card {
-  max-width: 580rem;
+  max-width: 520rem;
   width: 100%;
-  padding: 32rem 38rem;
+  padding: 30rem 36rem;
   border-radius: 20rem;
-  background: linear-gradient(165deg, rgba(0, 67, 156, 0.34), rgba(22, 26, 34, 0.95) 60%);
-  border: 1.5rem solid rgba(130, 190, 255, 0.34);
+  background: linear-gradient(165deg, rgba(0, 67, 156, 0.32), rgba(22, 26, 34, 0.94) 60%);
+  border: 1.5rem solid rgba(130, 190, 255, 0.32);
   box-shadow: 0 24rem 64rem rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(20rem);
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14rem;
+  gap: 12rem;
 }
 
 .store-lock-icon-badge {
-  width: 58rem;
-  height: 58rem;
-  border-radius: 16rem;
+  width: 54rem;
+  height: 54rem;
+  border-radius: 15rem;
   background: rgba(255, 255, 255, 0.09);
   border: 1rem solid rgba(255, 255, 255, 0.2);
   display: grid;
@@ -1334,25 +1489,25 @@ input:focus-visible,
 }
 
 .store-lock-icon-badge svg {
-  width: 28rem;
-  height: 28rem;
+  width: 26rem;
+  height: 26rem;
 }
 
 .store-lock-glass-card h2 {
   margin: 4rem 0 0;
-  font-size: 28rem;
+  font-size: 26rem;
   font-weight: 400;
   color: #f5f8fc;
 }
 
 .store-lock-glass-card p {
   margin: 0;
-  font-size: 16rem;
+  font-size: 15rem;
   line-height: 1.55;
   color: #b7c3d4;
 }
 
-/* ==================== 7. 弹窗（WebDAV 手柄输入 & 恢复结果汇总） ==================== */
+/* ==================== 弹窗（WebDAV 手柄输入 & 恢复结果汇总） ==================== */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1381,15 +1536,15 @@ input:focus-visible,
 }
 
 .modal h2 {
-  font-size: 28rem;
+  font-size: 26rem;
   font-weight: 400;
   margin: 0 0 8rem;
 }
 
 .modal p {
   color: #a7b1c0;
-  font-size: 15.5rem;
-  margin: 0 0 20rem;
+  font-size: 15rem;
+  margin: 0 0 18rem;
 }
 
 .osk-field-grid {
@@ -1400,7 +1555,7 @@ input:focus-visible,
 
 .osk-field label {
   display: block;
-  font-size: 14rem;
+  font-size: 13.5rem;
   color: #9aa6b8;
   margin-bottom: 6rem;
 }
@@ -1408,12 +1563,12 @@ input:focus-visible,
 .modal-input {
   display: block;
   width: 100%;
-  padding: 14rem 16rem;
+  padding: 13rem 16rem;
   background: #15181e;
   border: 1.5rem solid #454e5e;
   border-radius: 11rem;
   color: #f0f3f8;
-  font-size: 17rem;
+  font-size: 16.5rem;
 }
 
 .osk-keypad {
@@ -1434,12 +1589,12 @@ input:focus-visible,
 
 .osk-key {
   min-width: 56rem;
-  height: 40rem;
+  height: 38rem;
   padding: 0 12rem;
   border-radius: 8rem;
   background: #272c36;
   color: #e4e8f0;
-  font-size: 14.5rem;
+  font-size: 14rem;
   display: inline-grid;
   place-items: center;
 }
@@ -1448,74 +1603,47 @@ input:focus-visible,
   background: #353c49;
 }
 
-/* ==================== 8. 底部常驻栏（左侧融合原型状态快捷切换，右侧手柄按键提示） ==================== */
+/* ==================== 底部常驻纯手柄按键提示栏（100% 纯净产品栏） ==================== */
 .dualsense-bar {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 72rem;
-  z-index: 85;
+  height: 68rem;
+  z-index: 80;
   padding: 0 var(--page-x);
-  background: linear-gradient(180deg, rgba(16, 18, 21, 0.55), rgba(12, 14, 18, 0.95) 45%);
+  background: linear-gradient(180deg, rgba(16, 18, 21, 0.45), rgba(12, 14, 18, 0.94) 45%);
   backdrop-filter: blur(18rem);
   border-top: 1rem solid rgba(255, 255, 255, 0.07);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-}
-
-.proto-bottom-demos {
-  display: flex;
-  align-items: center;
-  gap: 8rem;
-}
-
-.proto-demo-chip {
-  height: 32rem;
-  padding: 0 12rem;
-  border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.07);
-  border: 1rem solid rgba(255, 255, 255, 0.1);
-  color: #b5c0d0;
-  font-size: 13rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 6rem;
-  white-space: nowrap;
-}
-
-.proto-demo-chip.active {
-  background: rgba(0, 67, 156, 0.55);
-  border-color: rgba(112, 183, 255, 0.45);
-  color: #fff;
+  justify-content: flex-end;
 }
 
 .dualsense-prompts {
   display: flex;
   align-items: center;
-  gap: 24rem;
-  margin-left: auto;
+  gap: 26rem;
 }
 
 .ds-prompt {
   display: inline-flex;
   align-items: center;
   gap: 9rem;
-  font-size: 16.5rem;
+  font-size: 16rem;
   color: #e1e6ef;
   white-space: nowrap;
 }
 
 .ds-glyph {
-  width: 27rem;
-  height: 27rem;
+  width: 26rem;
+  height: 26rem;
   border-radius: 50%;
   background: #2b303a;
   border: 1.5rem solid rgba(255, 255, 255, 0.25);
   display: inline-grid;
   place-items: center;
-  font-size: 14rem;
+  font-size: 13.5rem;
   font-weight: 600;
   color: #f4f7fb;
 }
@@ -1525,12 +1653,69 @@ input:focus-visible,
   border-color: #7ab8ff;
 }
 
+/* ==================== 独立悬浮的开发者/原型调试面板（与真实产品界面彻底解耦） ==================== */
+.proto-floating-dock {
+  position: fixed;
+  left: 24rem;
+  bottom: 18rem;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  gap: 8rem;
+  padding: 10rem 14rem;
+  border-radius: 14rem;
+  background: rgba(14, 11, 24, 0.94);
+  border: 1.5rem dashed rgba(168, 130, 255, 0.65);
+  box-shadow: 0 16rem 42rem rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(18rem);
+}
+
+.proto-dock-row {
+  display: flex;
+  align-items: center;
+  gap: 6rem;
+  flex-wrap: wrap;
+}
+
+.proto-dev-tag {
+  padding: 3rem 8rem;
+  border-radius: 6rem;
+  background: #6d28d9;
+  color: #f5f3ff;
+  font-size: 11.5rem;
+  font-weight: 600;
+  letter-spacing: 0.5rem;
+  white-space: nowrap;
+}
+
+.proto-dock-btn {
+  height: 28rem;
+  padding: 0 10rem;
+  border-radius: 7rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rem solid rgba(255, 255, 255, 0.12);
+  color: #d4d8e2;
+  font-size: 12.5rem;
+  white-space: nowrap;
+}
+
+.proto-dock-btn:hover {
+  background: rgba(109, 40, 217, 0.45);
+}
+
+.proto-dock-btn.active {
+  background: #7c3aed;
+  border-color: #c4b5fd;
+  color: #fff;
+  font-weight: 500;
+}
+
 /* Toast 通知 */
 #toast {
   position: fixed;
   right: var(--page-x);
-  top: 112rem;
-  z-index: 100;
+  top: 108rem;
+  z-index: 110;
   display: flex;
   align-items: center;
   gap: 12rem;

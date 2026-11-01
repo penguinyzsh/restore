@@ -1,5 +1,9 @@
 /* ReStore PS5 原生应用高保真可交互原型 (#37)
-   无侧栏、无 Emoji、无底层技术代码，采用清晰分块的玩家级主机界面 */
+   支持三套结构变体 (?variant=A|B|C)：
+   - Variant A：当前已按反馈打磨的分块工作台
+   - Variant B：PS5 沉浸主从焦点舞台（左巨幅焦点卡 + 右联动检查器）
+   - Variant C：PS5 控制中心极简横向带（Ribbon 等高大磁贴阵列）
+   严格保证：页面内点击绝不跳转其他页面；所有原型/开发者开关完全悬浮独立。 */
 ;(() => {
   'use strict'
 
@@ -21,7 +25,6 @@
     shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3 4 6.5v5.8c0 5 3.4 9.3 8 10.7 4.6-1.4 8-5.7 8-10.7V6.5L12 3Z"/></svg>',
   }
 
-  // 顶栏 5 个日常页面（首次引导为全屏覆盖层，不占用日常顶栏 Tab）
   const NAV_TABS = [
     { id: 'home', label: '概览', icon: 'home' },
     { id: 'restore', label: '恢复', icon: 'restore' },
@@ -29,6 +32,12 @@
     { id: 'store-games', label: '网盘游戏', icon: 'cloud', disabledPreview: true },
     { id: 'settings', label: '设置', icon: 'settings' },
   ]
+
+  const VARIANTS = {
+    A: 'A · 经典双栏分块工作台',
+    B: 'B · 沉浸主从焦点舞台',
+    C: 'C · 控制中心极简横向带',
+  }
 
   const FIVE_OBJECTS = [
     {
@@ -145,6 +154,7 @@
   ]
 
   const urlParams = new URLSearchParams(window.location.search)
+  const initialVariant = ['A', 'B', 'C'].includes(urlParams.get('variant')) ? urlParams.get('variant') : 'A'
   const rawView = urlParams.get('view')
   const initialOnboardingOpen = rawView === 'onboarding' || urlParams.get('onboarding') === '1'
   const initialView = NAV_TABS.some((t) => t.id === rawView) ? rawView : 'home'
@@ -152,10 +162,14 @@
   const initialModal = urlParams.get('modal')
 
   const state = {
+    variant: initialVariant,
     view: initialView,
+    devDockCollapsed: false,
     onboardingOpen: initialOnboardingOpen,
     onboardingHasRp: urlParams.get('branch') !== 'empty-rp',
-    settingsCategory: 'locations', // 'locations' | 'scope' | 'retention' | 'system'
+    settingsCategory: 'locations',
+    homeFocusedLocationId: 'usb',
+    homeFocusedObjectId: 'saves',
     selectedLocationId: 'usb',
     selectedRestorePointId: 'rp-18',
     selectedObjects: ['elf', 'desktop', 'saves', 'settings', 'media'],
@@ -249,12 +263,12 @@
     el.innerHTML = `${ICONS.check}<span>${msg}</span>`
     el.classList.add('show')
     clearTimeout(toastTimer)
-    toastTimer = setTimeout(() => el.classList.remove('show'), 2800)
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2600)
   }
 
   function syncUrl() {
     const u = new URL(window.location.href)
-    u.searchParams.delete('variant')
+    u.searchParams.set('variant', state.variant)
     u.searchParams.set('view', state.onboardingOpen ? 'onboarding' : state.view)
     if (state.lockScene.active) {
       u.searchParams.set('lock', state.lockScene.mode)
@@ -305,7 +319,8 @@
     `
   }
 
-  function renderHomePage() {
+  /* ==================== 概览页（Variant A / B / C，页内操作绝不跳页面） ==================== */
+  function renderHomeVariantA() {
     return `
       <main class="page-container">
         <section class="home-hero-banner">
@@ -323,9 +338,6 @@
             <button type="button" class="pill primary" data-action="manual-backup">
               ${ICONS.bolt}<span>立即备份</span>
             </button>
-            <button type="button" class="pill secondary" data-action="switch-view" data-view="restore">
-              ${ICONS.restore}<span>恢复数据</span>
-            </button>
           </div>
         </section>
 
@@ -333,7 +345,7 @@
           <section class="section-block">
             <div class="section-block-header">
               <h2>备份位置状态</h2>
-              <button type="button" class="pill sm secondary" data-action="switch-view" data-view="settings">管理位置</button>
+              <span>点击位置可同步或配置连接</span>
             </div>
             <div class="location-status-stack">
               ${state.locations
@@ -341,10 +353,9 @@
                   (loc) => `
                 <button
                   type="button"
-                  class="location-status-row"
-                  data-action="${loc.type === 'webdav' ? 'open-webdav-osk' : 'switch-view'}"
+                  class="location-status-row ${state.homeFocusedLocationId === loc.id ? 'selected' : ''}"
+                  data-action="focus-home-location"
                   data-loc="${loc.id}"
-                  data-view="restore"
                 >
                   <div class="loc-row-top">
                     <div class="loc-row-title">
@@ -377,12 +388,12 @@
                 (obj, idx) => `
                 <button
                   type="button"
-                  class="content-summary-tile ${idx === 4 ? 'span-2' : ''}"
-                  data-action="switch-view"
-                  data-view="restore"
+                  class="content-summary-tile ${idx === 4 ? 'span-2' : ''} ${state.homeFocusedObjectId === obj.id ? 'selected' : ''}"
+                  data-action="focus-home-object"
+                  data-obj="${obj.id}"
                 >
                   <div>
-                    <div class="tile-head" style="margin-bottom:12rem;">
+                    <div class="tile-head" style="margin-bottom:10rem;">
                       <div class="tile-icon">${ICONS[obj.icon]}</div>
                       <span class="badge muted">${obj.size}</span>
                     </div>
@@ -400,7 +411,175 @@
     `
   }
 
-  function renderRestorePage() {
+  function renderHomeVariantB() {
+    const focusedObj = FIVE_OBJECTS.find((o) => o.id === state.homeFocusedObjectId) || FIVE_OBJECTS[2]
+    return `
+      <main class="page-container">
+        <div class="vb-stage-layout">
+          <section class="vb-hero-spotlight">
+            <div>
+              <img class="vb-spotlight-art" src="./assets/restore-logo-full.png" alt="ReStore" />
+              <span class="badge green">${ICONS.check}<span>后台保护运行中 · 最新完整备份 今天 19:10</span></span>
+              <h1>主机环境与游戏存档已完整备份</h1>
+              <p>当前焦点：${focusedObj.title}（${focusedObj.countText}）— ${focusedObj.desc}</p>
+            </div>
+
+            <div class="vb-metric-strip">
+              <div class="vb-metric-box">
+                <strong>3 个位置</strong>
+                <small>独立同步互不阻塞</small>
+              </div>
+              <div class="vb-metric-box">
+                <strong>19 款存档</strong>
+                <small>含未启动游戏建槽</small>
+              </div>
+              <div class="vb-metric-box">
+                <strong>5.4 GB</strong>
+                <small>未变化数据自动复用</small>
+              </div>
+            </div>
+
+            <div class="home-hero-actions">
+              <button type="button" class="pill primary" data-action="manual-backup">
+                ${ICONS.bolt}<span>立即执行增量备份</span>
+              </button>
+              <button type="button" class="pill secondary" data-action="open-webdav-osk" data-loc="lan">
+                <span>配置网络存储</span>
+              </button>
+            </div>
+          </section>
+
+          <div class="vb-right-stack">
+            <section class="section-block">
+              <div class="section-block-header">
+                <h2>备份位置实时状态</h2>
+                <span>全部在线</span>
+              </div>
+              <div class="vb-horizontal-cards">
+                ${state.locations
+                  .map(
+                    (loc) => `
+                  <button
+                    type="button"
+                    class="vb-loc-card ${state.homeFocusedLocationId === loc.id ? 'selected' : ''}"
+                    data-action="focus-home-location"
+                    data-loc="${loc.id}"
+                  >
+                    <div class="loc-row-top">
+                      <div class="tile-icon">${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}</div>
+                      <span class="badge ${loc.status === 'connected' ? 'green' : 'blue'}">${loc.progress}%</span>
+                    </div>
+                    <div>
+                      <strong style="display:block; font-size:18rem; margin-bottom:5rem;">${loc.name}</strong>
+                      <small style="display:block; font-size:13.5rem; color:#95a0b0;">${loc.statusText} · ${loc.lastSync}</small>
+                    </div>
+                    <div class="loc-progress-line"><i style="width:${loc.progress}%"></i></div>
+                  </button>
+                `,
+                  )
+                  .join('')}
+              </div>
+            </section>
+
+            <section class="section-block" style="flex:1;">
+              <div class="section-block-header">
+                <h2>已纳入保护的五类内容</h2>
+                <span>点击卡片在左侧查看详情</span>
+              </div>
+              <div class="five-columns-grid" style="margin-top:0;">
+                ${FIVE_OBJECTS.map(
+                  (obj) => `
+                  <button
+                    type="button"
+                    class="object-tile-card ${state.homeFocusedObjectId === obj.id ? 'selected' : ''}"
+                    style="min-height:190rem;"
+                    data-action="focus-home-object"
+                    data-obj="${obj.id}"
+                  >
+                    <div class="object-tile-top">
+                      <div class="tile-icon">${ICONS[obj.icon]}</div>
+                      <span class="badge muted">${obj.size}</span>
+                    </div>
+                    <div class="object-tile-body">
+                      <strong>${obj.title}</strong>
+                      <span style="margin-bottom:0;">${obj.countText}</span>
+                    </div>
+                  </button>
+                `,
+                ).join('')}
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    `
+  }
+
+  function renderHomeVariantC() {
+    return `
+      <main class="page-container">
+        <div class="vc-ribbon-shell">
+          <div class="vc-top-summary-bar">
+            <div style="display:flex; align-items:center; gap:16rem;">
+              <span class="badge green">${ICONS.check}<span>最近完整恢复点：今天 19:10</span></span>
+              <span style="font-size:16.5rem; color:#c5cfde;">已保护 12 项插件、19 款存档、14 款桌面图标、系统设置与 86 项媒体</span>
+            </div>
+            <button type="button" class="pill sm primary" data-action="manual-backup">
+              ${ICONS.bolt}<span>立即备份</span>
+            </button>
+          </div>
+
+          <div class="vc-ribbon-grid">
+            <button type="button" class="vc-tall-card primary-card" data-action="manual-backup">
+              <div>
+                <img src="./assets/restore-logo-full.png" alt="ReStore" style="width:76rem; height:76rem; border-radius:18rem; margin-bottom:20rem;" />
+                <span class="badge blue">自动增量保护</span>
+                <h2>立即创建恢复点</h2>
+                <p>检测自上次备份以来的存档与插件变更，未变化数据自动复用已有块。</p>
+              </div>
+              <div style="padding-top:16rem; border-top:1rem solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; font-size:14rem; color:#bfd6f6;">
+                <span>共 5 类保护对象</span>
+                <span>5.4 GB</span>
+              </div>
+            </button>
+
+            ${state.locations
+              .map(
+                (loc) => `
+              <button
+                type="button"
+                class="vc-tall-card ${state.homeFocusedLocationId === loc.id ? 'selected' : ''}"
+                data-action="focus-home-location"
+                data-loc="${loc.id}"
+              >
+                <div>
+                  <div class="loc-row-top" style="margin-bottom:20rem;">
+                    <div class="tile-icon" style="width:52rem; height:52rem;">${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}</div>
+                    <span class="badge ${loc.status === 'connected' ? 'green' : 'blue'}">${loc.progress}%</span>
+                  </div>
+                  <span class="badge muted">${loc.type === 'usb' ? '本地高速存储' : '网络存储'}</span>
+                  <h2>${loc.name}</h2>
+                  <p>${loc.statusText}，最近完成于 ${loc.lastSync}。</p>
+                </div>
+                <div>
+                  <div class="loc-progress-line" style="margin-bottom:12rem;"><i style="width:${loc.progress}%"></i></div>
+                  <div style="display:flex; justify-content:space-between; font-size:13.5rem; color:#94a0b2;">
+                    <span>${loc.freeSpace}</span>
+                    <span>${loc.type === 'webdav' ? '按 ✕ 配置连接' : '按 ✕ 校验'}</span>
+                  </div>
+                </div>
+              </button>
+            `,
+              )
+              .join('')}
+          </div>
+        </div>
+      </main>
+    `
+  }
+
+  /* ==================== 恢复页（Variant A / B / C，页内操作绝不跳页面） ==================== */
+  function renderRestoreVariantA() {
     const allSelected = state.selectedObjects.length === FIVE_OBJECTS.length
     const stages = [
       { step: '1', label: '插件与载荷', active: state.selectedObjects.includes('elf') },
@@ -412,7 +591,6 @@
     return `
       <main class="page-container">
         <div class="restore-step-stack">
-          <!-- 第一块：备份位置与恢复点选择 -->
           <section class="restore-source-block">
             <div class="source-locations-col">
               <div class="block-step-label">
@@ -472,12 +650,9 @@
             </div>
           </section>
 
-          <!-- 第二块：五类恢复对象选择（5 列独立卡片） -->
           <section class="restore-objects-block">
             <div class="section-block-header" style="margin-bottom:6rem;">
-              <div>
-                <h2>3. 选择要恢复的内容（已选 ${state.selectedObjects.length} / 5 项）</h2>
-              </div>
+              <h2>3. 选择要恢复的内容（已选 ${state.selectedObjects.length} / 5 项）</h2>
               <button
                 type="button"
                 class="pill sm ${allSelected ? 'brand' : 'secondary'}"
@@ -499,7 +674,7 @@
                     data-obj="${obj.id}"
                   >
                     <div>
-                      <div class="object-tile-top" style="margin-bottom:16rem;">
+                      <div class="object-tile-top" style="margin-bottom:14rem;">
                         <div class="tile-icon">${ICONS[obj.icon]}</div>
                         <div class="check-indicator">${ICONS.check}</div>
                       </div>
@@ -516,7 +691,6 @@
             </div>
           </section>
 
-          <!-- 第三块：底部恢复顺序与开始恢复 -->
           <section class="restore-action-bar">
             <div class="order-flow-steps">
               <span class="order-flow-label">恢复执行顺序：</span>
@@ -541,6 +715,178 @@
     `
   }
 
+  function renderRestoreVariantB() {
+    const currentRp = state.restorePoints.find((r) => r.id === state.selectedRestorePointId) || state.restorePoints[0]
+    return `
+      <main class="page-container">
+        <div class="vb-stage-layout">
+          <section class="vb-hero-spotlight">
+            <div>
+              <div style="display:flex; gap:8rem; margin-bottom:18rem;">
+                ${state.locations
+                  .map(
+                    (loc) => `
+                  <button
+                    type="button"
+                    class="pill sm ${state.selectedLocationId === loc.id ? 'brand' : 'secondary'}"
+                    data-action="select-location"
+                    data-loc="${loc.id}"
+                  >
+                    <span>${loc.name}</span>
+                  </button>
+                `,
+                  )
+                  .join('')}
+              </div>
+              <span class="badge blue">当前选中恢复点 · ${currentRp.size}</span>
+              <h1>${currentRp.title}</h1>
+              <p>${currentRp.note}。${currentRp.summary}。</p>
+
+              <div class="settings-row-list" style="margin-top:22rem;">
+                ${state.restorePoints
+                  .map(
+                    (rp) => `
+                  <button
+                    type="button"
+                    class="source-loc-btn ${state.selectedRestorePointId === rp.id ? 'active' : ''}"
+                    data-action="select-rp"
+                    data-rp="${rp.id}"
+                  >
+                    <span>${rp.title}</span>
+                    <span class="badge ${rp.protected ? 'gold' : 'muted'}">${rp.protected ? '已保护' : '未锁定'}</span>
+                  </button>
+                `,
+                  )
+                  .join('')}
+              </div>
+            </div>
+
+            <div class="home-hero-actions" style="margin-top:24rem;">
+              <button type="button" class="pill primary" data-action="start-lock-demo" data-mode="normal">
+                ${ICONS.restore}<span>开始恢复所选内容 (${state.selectedObjects.length}/5)</span>
+              </button>
+              <button type="button" class="pill secondary" data-action="select-all-objects">
+                <span>全选整机恢复</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="section-block">
+            <div class="section-block-header">
+              <h2>勾选要恢复的内容（自动按依赖顺序执行）</h2>
+              <span>已选 ${state.selectedObjects.length} / 5 项</span>
+            </div>
+            <div class="settings-row-list">
+              ${FIVE_OBJECTS.map((obj) => {
+                const selected = state.selectedObjects.includes(obj.id)
+                return `
+                  <button
+                    type="button"
+                    class="settings-row-card"
+                    style="border-color:${selected ? '#66a8ff' : 'rgba(255,255,255,0.07)'}; background:${selected ? 'rgba(0,67,156,0.22)' : '#171b22'};"
+                    data-action="toggle-object"
+                    data-obj="${obj.id}"
+                  >
+                    <div class="settings-row-info">
+                      <strong>
+                        <span>第 ${obj.order} 步 · ${obj.title}</span>
+                        <span class="badge muted">${obj.countText} · ${obj.size}</span>
+                        ${obj.note ? `<span class="badge gold">${obj.note}</span>` : ''}
+                      </strong>
+                      <p>${obj.desc}</p>
+                    </div>
+                    <div class="check-indicator" style="${selected ? 'background:#eef2f7;border-color:#eef2f7;color:#11151b;' : ''}">
+                      ${ICONS.check}
+                    </div>
+                  </button>
+                `
+              }).join('')}
+            </div>
+          </section>
+        </div>
+      </main>
+    `
+  }
+
+  function renderRestoreVariantC() {
+    return `
+      <main class="page-container">
+        <div class="vc-ribbon-shell">
+          <div class="vc-top-summary-bar">
+            <div style="display:flex; align-items:center; gap:12rem;">
+              <span style="font-size:15rem; color:#95a2b4;">备份位置：</span>
+              ${state.locations
+                .map(
+                  (loc) => `
+                <button
+                  type="button"
+                  class="pill sm ${state.selectedLocationId === loc.id ? 'brand' : 'secondary'}"
+                  data-action="select-location"
+                  data-loc="${loc.id}"
+                >
+                  <span>${loc.name}</span>
+                </button>
+              `,
+                )
+                .join('')}
+              <span style="font-size:15rem; color:#95a2b4; margin-left:12rem;">恢复点：</span>
+              ${state.restorePoints
+                .map(
+                  (rp) => `
+                <button
+                  type="button"
+                  class="pill sm ${state.selectedRestorePointId === rp.id ? 'primary' : 'secondary'}"
+                  data-action="select-rp"
+                  data-rp="${rp.id}"
+                >
+                  <span>${rp.title}</span>
+                </button>
+              `,
+                )
+                .join('')}
+            </div>
+            <button type="button" class="pill sm primary" data-action="start-lock-demo" data-mode="normal">
+              ${ICONS.restore}<span>开始恢复 (${state.selectedObjects.length}/5)</span>
+            </button>
+          </div>
+
+          <div class="five-columns-grid" style="margin-top:0;">
+            ${FIVE_OBJECTS.map((obj) => {
+              const selected = state.selectedObjects.includes(obj.id)
+              return `
+                <button
+                  type="button"
+                  class="vc-tall-card ${selected ? 'primary-card selected' : ''}"
+                  style="min-height:480rem;"
+                  data-action="toggle-object"
+                  data-obj="${obj.id}"
+                >
+                  <div>
+                    <div class="object-tile-top" style="margin-bottom:22rem;">
+                      <div class="tile-icon" style="width:50rem; height:50rem;">${ICONS[obj.icon]}</div>
+                      <div class="check-indicator">${ICONS.check}</div>
+                    </div>
+                    <span class="badge blue">执行顺序：第 ${obj.order} 步</span>
+                    <h2>${obj.title}</h2>
+                    <p style="margin-top:10rem;">${obj.desc}</p>
+                  </div>
+                  <div>
+                    ${obj.note ? `<div class="object-tile-note" style="margin-bottom:12rem;">${obj.note}</div>` : ''}
+                    <div style="padding-top:14rem; border-top:1rem solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; font-size:14rem; color:#b5c2d4;">
+                      <span>${obj.countText}</span>
+                      <span>${obj.size}</span>
+                    </div>
+                  </div>
+                </button>
+              `
+            }).join('')}
+          </div>
+        </div>
+      </main>
+    `
+  }
+
+  /* ==================== 设置页（纯净产品设置，不含开发者模拟按钮） ==================== */
   function renderSettingsPage() {
     const categories = [
       { id: 'locations', label: '备份位置与网络', icon: 'cloud', badge: '3 个位置' },
@@ -625,9 +971,7 @@
             <h2>恢复点保护与存储空间清理</h2>
             <p>存储空间不足时，系统自动从旧到新清理未锁定的恢复点，并始终保留每个位置的最后一个完整恢复点。</p>
           </div>
-          <button type="button" class="pill sm secondary" data-action="toggle-space-alert">
-            ${state.spaceLowSimulated ? '隐藏空间不足提示' : '预览空间不足提示'}
-          </button>
+          <span class="badge blue">自动保留最新完整点</span>
         </div>
         ${
           state.spaceLowSimulated
@@ -700,6 +1044,37 @@
       `
     }
 
+    if (state.variant === 'C') {
+      return `
+        <main class="page-container">
+          <div class="vc-ribbon-shell">
+            <div class="vc-top-summary-bar">
+              <div style="display:flex; gap:10rem;">
+                ${categories
+                  .map(
+                    (c) => `
+                  <button
+                    type="button"
+                    class="pill sm ${state.settingsCategory === c.id ? 'primary' : 'secondary'}"
+                    data-action="set-settings-cat"
+                    data-cat="${c.id}"
+                  >
+                    ${ICONS[c.icon]}<span>${c.label}</span>
+                  </button>
+                `,
+                  )
+                  .join('')}
+              </div>
+              <span class="badge green">自动保存生效</span>
+            </div>
+            <section class="settings-detail-panel" style="min-height:520rem;">
+              ${detailHtml}
+            </section>
+          </div>
+        </main>
+      `
+    }
+
     return `
       <main class="page-container">
         <div class="settings-split-layout">
@@ -741,7 +1116,7 @@
               <p>选择一个或多个备份存储位置，自动发现已有备份或创建首份完整恢复点。</p>
             </div>
           </div>
-          <button type="button" class="pill sm secondary" data-action="close-onboarding">跳过引导，进入主页</button>
+          <button type="button" class="pill sm secondary" data-action="close-onboarding">完成并关闭向导</button>
         </div>
 
         <section class="wizard-step-card">
@@ -827,13 +1202,12 @@
 
           <div class="wizard-footer-bar">
             <div>
-              <strong style="font-size:19rem; display:block; margin-bottom:4rem;">准备从「${state.restorePoints.find((r) => r.id === state.selectedRestorePointId)?.title}」恢复整机数据</strong>
-              <span style="font-size:14.5rem; color:#9aa6b6;">也可进入恢复页面自由勾选单项或多项内容。</span>
+              <strong style="font-size:19rem; display:block; margin-bottom:4rem;">已选中「${state.restorePoints.find((r) => r.id === state.selectedRestorePointId)?.title}」</strong>
+              <span style="font-size:14.5rem; color:#9aa6b6;">确认后将立即按依赖顺序恢复整机数据。</span>
             </div>
             <div class="home-hero-actions">
-              <button type="button" class="pill secondary" data-action="go-restore-from-onboarding">自选恢复项</button>
               <button type="button" class="pill primary" data-action="start-lock-demo" data-mode="normal">
-                ${ICONS.restore}<span>立即开始整机恢复</span>
+                ${ICONS.restore}<span>开始整机恢复</span>
               </button>
             </div>
           </div>
@@ -851,7 +1225,7 @@
                   <button
                     type="button"
                     class="object-tile-card ${selected ? 'selected' : ''}"
-                    style="min-height:170rem;"
+                    style="min-height:165rem;"
                     data-action="toggle-object"
                     data-obj="${obj.id}"
                   >
@@ -929,7 +1303,7 @@
                 ? `
               <div class="inline-notice-box warn">
                 <div>
-                  <strong style="display:block; font-size:17.5rem; color:#ffd4d2; margin-bottom:4rem;">请先保存并关闭正在运行的《最后生还者 Part I》</strong>
+                  <strong style="display:block; font-size:17rem; color:#ffd4d2; margin-bottom:4rem;">请先保存并关闭正在运行的《最后生还者 Part I》</strong>
                   <span style="font-size:14rem; color:#e6c3c1;">为避免覆盖正在游玩的进度，系统已暂停该游戏存档写入，其余无冲突项目正继续恢复。</span>
                 </div>
                 <button type="button" class="pill sm primary" data-action="resolve-conflict-continue">已关闭游戏，继续恢复</button>
@@ -943,7 +1317,7 @@
                 ? `
               <div class="inline-notice-box">
                 <div>
-                  <strong style="display:block; font-size:17.5rem; color:#cfe6ff; margin-bottom:4rem;">已自动核验中断前进度并继续执行</strong>
+                  <strong style="display:block; font-size:17rem; color:#cfe6ff; margin-bottom:4rem;">已自动核验中断前进度并继续执行</strong>
                   <span style="font-size:14rem; color:#b8cde6;">重启前已完成的系统插件与桌面图标无需重复恢复，当前直接从第 15 款游戏存档继续。</span>
                 </div>
                 <span class="badge green">断点续做</span>
@@ -970,7 +1344,6 @@
         <div style="display:flex; justify-content:space-between; align-items:center; padding-top:18rem; border-top:1rem solid rgba(255,255,255,0.09);">
           <span style="font-size:14.5rem; color:#94a0b2;">若中途断电或重启，重新打开 ReStore 后将自动从断点处继续恢复。</span>
           <div class="home-hero-actions">
-            <button type="button" class="pill secondary sm" data-action="exit-lock-scene">返回恢复页</button>
             <button type="button" class="pill primary sm" data-action="open-restore-result-modal">查看恢复完成汇总</button>
           </div>
         </div>
@@ -978,13 +1351,12 @@
     `
   }
 
+  /* ==================== 软件商店 & 网盘游戏（纯锁定遮罩，无任何跨页跳转按钮） ==================== */
   function renderStoreAppsPage() {
     return `
       <main class="page-container">
         <div class="section-block-header" style="margin-bottom:16rem;">
-          <div>
-            <h1 style="margin:0; font-size:32rem; font-weight:400;">软件商店</h1>
-          </div>
+          <h1 style="margin:0; font-size:30rem; font-weight:400;">软件商店</h1>
           <div class="home-hero-actions">
             <span class="badge muted">全部</span>
             <span class="badge muted">独立应用</span>
@@ -1020,12 +1392,8 @@
           <div class="store-preview-lock-overlay">
             <div class="store-lock-glass-card">
               <div class="store-lock-icon-badge">${ICONS.lock}</div>
-              <h2>软件商店将在后续版本开放</h2>
-              <p>自制应用与插件在线浏览下载功能正在筹备中。</p>
-              <div class="home-hero-actions" style="margin-top:8rem;">
-                <button type="button" class="pill primary sm" data-action="switch-view" data-view="home">返回概览</button>
-                <button type="button" class="pill secondary sm" data-action="switch-view" data-view="store-games">查看网盘游戏</button>
-              </div>
+              <h2>软件商店暂未开放</h2>
+              <p>自制应用与插件在线下载功能将在后续版本推出。</p>
             </div>
           </div>
         </div>
@@ -1037,9 +1405,7 @@
     return `
       <main class="page-container">
         <div class="section-block-header" style="margin-bottom:16rem;">
-          <div>
-            <h1 style="margin:0; font-size:32rem; font-weight:400;">网盘游戏</h1>
-          </div>
+          <h1 style="margin:0; font-size:30rem; font-weight:400;">网盘游戏</h1>
           <div class="home-hero-actions">
             <span class="badge muted">全部来源</span>
             <span class="badge muted">百度网盘</span>
@@ -1067,12 +1433,8 @@
           <div class="store-preview-lock-overlay">
             <div class="store-lock-glass-card">
               <div class="store-lock-icon-badge">${ICONS.lock}</div>
-              <h2>网盘游戏将在后续版本开放</h2>
-              <p>网盘扫码连接、目录浏览与自动解压安装功能正在筹备中。</p>
-              <div class="home-hero-actions" style="margin-top:8rem;">
-                <button type="button" class="pill primary sm" data-action="switch-view" data-view="home">返回概览</button>
-                <button type="button" class="pill secondary sm" data-action="switch-view" data-view="store-apps">查看软件商店</button>
-              </div>
+              <h2>网盘游戏暂未开放</h2>
+              <p>网盘扫码连接与游戏下载功能将在后续版本推出。</p>
             </div>
           </div>
         </div>
@@ -1185,7 +1547,7 @@
                   ? `<button type="button" class="pill brand sm" data-action="retry-unfinished-items">一键重试未完成项</button>`
                   : ''
               }
-              <button type="button" class="pill primary sm" data-action="finish-restore-and-close">完成</button>
+              <button type="button" class="pill primary sm" data-action="finish-restore-and-close">关闭汇总</button>
             </div>
           </div>
         </div>
@@ -1194,50 +1556,10 @@
     return ''
   }
 
+  /* ==================== 100% 纯净的底部手柄按键提示栏 ==================== */
   function renderDualSenseBar() {
     return `
-      <footer class="dualsense-bar" aria-label="底部操作与演示栏">
-        <div class="proto-bottom-demos" aria-label="原型状态快捷演示">
-          <button
-            type="button"
-            class="proto-demo-chip ${state.onboardingOpen && state.onboardingHasRp ? 'active' : ''}"
-            data-action="demo-onboarding-has-rp"
-          >
-            引导：已有恢复点
-          </button>
-          <button
-            type="button"
-            class="proto-demo-chip ${state.onboardingOpen && !state.onboardingHasRp ? 'active' : ''}"
-            data-action="demo-onboarding-empty"
-          >
-            引导：全新首备
-          </button>
-          <button
-            type="button"
-            class="proto-demo-chip ${state.lockScene.active && state.lockScene.mode === 'normal' ? 'active' : ''}"
-            data-action="start-lock-demo"
-            data-mode="normal"
-          >
-            恢复锁：正常推进
-          </button>
-          <button
-            type="button"
-            class="proto-demo-chip ${state.lockScene.active && state.lockScene.mode === 'conflict' ? 'active' : ''}"
-            data-action="start-lock-demo"
-            data-mode="conflict"
-          >
-            恢复锁：运行冲突
-          </button>
-          <button
-            type="button"
-            class="proto-demo-chip ${state.lockScene.active && state.lockScene.mode === 'resumed' ? 'active' : ''}"
-            data-action="start-lock-demo"
-            data-mode="resumed"
-          >
-            恢复锁：断点续做
-          </button>
-        </div>
-
+      <footer class="dualsense-bar" aria-label="手柄按键提示栏">
         <div class="dualsense-prompts">
           <button type="button" class="ds-prompt" data-action="ds-cross">
             <span class="ds-glyph cross">✕</span><span>确认</span>
@@ -1256,13 +1578,101 @@
     `
   }
 
+  /* ==================== 独立悬浮的开发者/原型调试浮层（不混入产品 UI） ==================== */
+  function renderFloatingDevDock() {
+    if (state.devDockCollapsed) {
+      return `
+        <aside class="proto-floating-dock" aria-label="开发者原型调试浮窗">
+          <div class="proto-dock-row">
+            <button type="button" class="proto-dev-tag" data-action="toggle-dev-dock">展开 DEV 调试面板 (${state.variant})</button>
+          </div>
+        </aside>
+      `
+    }
+    return `
+      <aside class="proto-floating-dock" aria-label="开发者原型调试浮窗">
+        <div class="proto-dock-row">
+          <span class="proto-dev-tag">PROTOTYPE DEV（仅原型调试悬浮窗）</span>
+          ${['A', 'B', 'C']
+            .map(
+              (k) => `
+            <button
+              type="button"
+              class="proto-dock-btn ${state.variant === k ? 'active' : ''}"
+              data-action="set-variant"
+              data-variant="${k}"
+            >
+              ${VARIANTS[k]}
+            </button>
+          `,
+            )
+            .join('')}
+          <button type="button" class="proto-dock-btn" data-action="toggle-dev-dock">收起</button>
+        </div>
+        <div class="proto-dock-row">
+          <button
+            type="button"
+            class="proto-dock-btn ${state.onboardingOpen && state.onboardingHasRp ? 'active' : ''}"
+            data-action="demo-onboarding-has-rp"
+          >
+            引导浮层：已有恢复点
+          </button>
+          <button
+            type="button"
+            class="proto-dock-btn ${state.onboardingOpen && !state.onboardingHasRp ? 'active' : ''}"
+            data-action="demo-onboarding-empty"
+          >
+            引导浮层：无恢复点
+          </button>
+          <button
+            type="button"
+            class="proto-dock-btn ${state.lockScene.active && state.lockScene.mode === 'normal' ? 'active' : ''}"
+            data-action="start-lock-demo"
+            data-mode="normal"
+          >
+            恢复锁：正常
+          </button>
+          <button
+            type="button"
+            class="proto-dock-btn ${state.lockScene.active && state.lockScene.mode === 'conflict' ? 'active' : ''}"
+            data-action="start-lock-demo"
+            data-mode="conflict"
+          >
+            恢复锁：冲突
+          </button>
+          <button
+            type="button"
+            class="proto-dock-btn ${state.lockScene.active && state.lockScene.mode === 'resumed' ? 'active' : ''}"
+            data-action="start-lock-demo"
+            data-mode="resumed"
+          >
+            恢复锁：断点续做
+          </button>
+          <button
+            type="button"
+            class="proto-dock-btn ${state.spaceLowSimulated ? 'active' : ''}"
+            data-action="toggle-space-alert"
+          >
+            设置：空间不足提示
+          </button>
+        </div>
+      </aside>
+    `
+  }
+
   function renderMainScene() {
     if (state.lockScene.active) return renderRestoreLockScene()
-    if (state.view === 'restore') return renderRestorePage()
+    if (state.view === 'restore') {
+      if (state.variant === 'B') return renderRestoreVariantB()
+      if (state.variant === 'C') return renderRestoreVariantC()
+      return renderRestoreVariantA()
+    }
     if (state.view === 'store-apps') return renderStoreAppsPage()
     if (state.view === 'store-games') return renderStoreGamesPage()
     if (state.view === 'settings') return renderSettingsPage()
-    return renderHomePage()
+    if (state.variant === 'B') return renderHomeVariantB()
+    if (state.variant === 'C') return renderHomeVariantC()
+    return renderHomeVariantA()
   }
 
   function render(reason = 'update') {
@@ -1271,7 +1681,11 @@
     const previous = window.PS5Motion ? window.PS5Motion.capture() : {}
 
     app.innerHTML = `
-      <div class="app-shell" data-view="${state.lockScene.active ? 'restore-lock' : state.view}">
+      <div
+        class="app-shell"
+        data-variant="${state.variant}"
+        data-view="${state.lockScene.active ? 'restore-lock' : state.view}"
+      >
         <div class="console-wallpaper" aria-hidden="true">
           <video src="./assets/ps5-showcase-excerpt.mp4" autoplay muted loop playsinline></video>
         </div>
@@ -1279,6 +1693,7 @@
         ${renderMainScene()}
         ${renderOnboardingOverlay()}
         ${renderDualSenseBar()}
+        ${renderFloatingDevDock()}
         ${renderModal()}
       </div>
     `
@@ -1322,6 +1737,33 @@
       case 'next-tab':
         cycleTab(1)
         break
+      case 'set-variant':
+        state.variant = btn.dataset.variant
+        render('route')
+        break
+      case 'toggle-dev-dock':
+        state.devDockCollapsed = !state.devDockCollapsed
+        render('update')
+        break
+      case 'focus-home-location': {
+        state.homeFocusedLocationId = btn.dataset.loc
+        const loc = state.locations.find((l) => l.id === btn.dataset.loc)
+        if (loc && loc.type === 'webdav') {
+          state.editingLocationId = loc.id
+          state.modal = 'webdav-osk'
+        } else if (loc) {
+          showToast(`${loc.name}：${loc.statusText}`)
+        }
+        render('update')
+        break
+      }
+      case 'focus-home-object': {
+        state.homeFocusedObjectId = btn.dataset.obj
+        const obj = FIVE_OBJECTS.find((o) => o.id === btn.dataset.obj)
+        if (obj) showToast(`已选中查看：${obj.title}（${obj.countText}）`)
+        render('update')
+        break
+      }
       case 'open-onboarding':
         state.onboardingOpen = true
         render('route')
@@ -1331,16 +1773,24 @@
         render('route')
         break
       case 'demo-onboarding-has-rp':
-        state.lockScene.active = false
-        state.onboardingOpen = true
-        state.onboardingHasRp = true
+        if (state.onboardingOpen && state.onboardingHasRp) {
+          state.onboardingOpen = false
+        } else {
+          state.lockScene.active = false
+          state.onboardingOpen = true
+          state.onboardingHasRp = true
+        }
         render('update')
         break
       case 'demo-onboarding-empty':
-        state.lockScene.active = false
-        state.onboardingOpen = true
-        state.onboardingHasRp = false
-        state.selectedObjects = FIVE_OBJECTS.map((o) => o.id)
+        if (state.onboardingOpen && !state.onboardingHasRp) {
+          state.onboardingOpen = false
+        } else {
+          state.lockScene.active = false
+          state.onboardingOpen = true
+          state.onboardingHasRp = false
+          state.selectedObjects = FIVE_OBJECTS.map((o) => o.id)
+        }
         render('update')
         break
       case 'set-settings-cat':
@@ -1383,37 +1833,33 @@
         showToast('已全选全部 5 项恢复内容')
         render('update')
         break
-      case 'go-restore-from-onboarding':
-        state.onboardingOpen = false
-        state.view = 'restore'
-        render('route')
-        break
       case 'trigger-initial-backup':
         state.onboardingOpen = false
-        state.view = 'home'
         showToast('已开始创建首份完整恢复点')
         render('route')
         break
       case 'manual-backup':
         showToast('已启动后台增量备份')
         break
-      case 'start-lock-demo':
-        state.onboardingOpen = false
-        state.lockScene.active = true
-        state.lockScene.mode = btn.dataset.mode || 'normal'
-        state.lockScene.progress = state.lockScene.mode === 'resumed' ? 76 : 68
+      case 'start-lock-demo': {
+        const targetMode = btn.dataset.mode || 'normal'
+        if (state.lockScene.active && state.lockScene.mode === targetMode) {
+          state.lockScene.active = false
+        } else {
+          state.onboardingOpen = false
+          state.lockScene.active = true
+          state.lockScene.mode = targetMode
+          state.lockScene.progress = targetMode === 'resumed' ? 76 : 68
+        }
         render('route')
         break
+      }
       case 'resolve-conflict-continue':
         state.lockScene.mode = 'normal'
         state.lockScene.progress = 92
         state.lockScene.currentDetail = '《最后生还者 Part I》已关闭，正在完成存档恢复'
         showToast('已继续恢复《最后生还者 Part I》存档')
         render('update')
-        break
-      case 'exit-lock-scene':
-        state.lockScene.active = false
-        render('route')
         break
       case 'open-restore-result-modal':
         state.restoreResultRetried = false
@@ -1429,7 +1875,6 @@
       case 'finish-restore-and-close':
         state.modal = null
         state.lockScene.active = false
-        state.view = 'home'
         render('route')
         break
       case 'open-webdav-osk':
@@ -1478,6 +1923,7 @@
       }
       case 'toggle-space-alert':
         state.spaceLowSimulated = !state.spaceLowSimulated
+        showToast(state.spaceLowSimulated ? '已在设置页开启空间不足告警预览' : '已关闭空间不足告警预览')
         render('update')
         break
       case 'toggle-auto-scope': {
@@ -1505,9 +1951,6 @@
         } else if (state.lockScene.active) {
           state.lockScene.active = false
           render('route')
-        } else if (state.view !== 'home') {
-          state.view = 'home'
-          render('route')
         }
         break
       case 'ds-triangle':
@@ -1533,7 +1976,9 @@
         : document.getElementById('app')
 
     const candidates = [
-      ...(scopeRoot || document).querySelectorAll('button:not([disabled]), input:not([disabled])'),
+      ...(scopeRoot || document).querySelectorAll(
+        'button:not([disabled]):not(.proto-dock-btn):not(.proto-dev-tag), input:not([disabled])',
+      ),
     ].filter((el) => {
       const r = el.getBoundingClientRect()
       return r.width > 0 && r.height > 0
@@ -1613,6 +2058,16 @@
     } else if (e.key === 'e' || e.key === 'E') {
       e.preventDefault()
       cycleTab(1)
+    } else if (e.key === '[') {
+      e.preventDefault()
+      const keys = ['A', 'B', 'C']
+      state.variant = keys[(keys.indexOf(state.variant) + 2) % 3]
+      render('route')
+    } else if (e.key === ']') {
+      e.preventDefault()
+      const keys = ['A', 'B', 'C']
+      state.variant = keys[(keys.indexOf(state.variant) + 1) % 3]
+      render('route')
     } else if (e.key === 'Escape' || e.key === 'Backspace') {
       e.preventDefault()
       document.querySelector('[data-action="ds-circle"]')?.click()
