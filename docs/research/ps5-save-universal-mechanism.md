@@ -7,7 +7,7 @@ ReStore 需要支持任意 PS5 游戏存档的自动变化备份与恢复，并�
 2. **初始化后无存档槽直接恢复**：当主机刚初始化或重装游戏后从未启动过（尚无任何存档槽容器）时，无需用户先打开游戏手动建档，ReStore 可直接在后台创建槽位并恢复数据。
 3. **跨账号/重建账号自动绑定**：恢复时自动绑定当前主机登录用户的身份信息，避免出现“存档已损坏”或“属于其他玩家”报错。
 
-本文件汇总 [Save Mounter](https://github.com/n0llptr/Playstation-5-Save-Mounter)、[PS5Save](https://github.com/heni0xyz/PS5Save)、[PSCloud](https://github.com/bc160201983/ps5-cloud-save) 的源码机制对比，以及在 PS5 12.40 主机上针对《最后生还者 Part I》（`PPSA03396`，用户 `17dfdf4e`）的实机验证结论。
+本文件汇总 [Save Mounter](https://github.com/n0llptr/Playstation-5-Save-Mounter/blob/1a0281ea9794afadc2e2da345ca0b66e5db45bc7/mounter_payload/main.c)、[PS5Save](https://github.com/heni0xyz/PS5Save/blob/aab1574ec1bad253eda8e7629ec8c897d4033b16/main.c)、[PSCloud](https://github.com/JakeBusler/PS5-Cloud-Save/tree/b85b99c082243212e613b68790736348c75d448e) 的源码机制对比，以及在 PS5 12.40 主机上针对《最后生还者 Part I》（`PPSA03396`，用户 `17dfdf4e`）的实机验证结论。
 
 ---
 
