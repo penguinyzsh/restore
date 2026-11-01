@@ -565,14 +565,19 @@ input:focus-visible,
 }
 
 .tile-icon {
-  width: 38rem;
-  height: 38rem;
-  border-radius: 10rem;
-  background: rgba(0, 67, 156, 0.28);
-  border: 1rem solid rgba(112, 183, 255, 0.22);
-  display: grid;
-  place-items: center;
-  color: #95c5ff;
+  width: 34rem;
+  height: 34rem;
+  background: transparent;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #8fc4ff;
+}
+
+.tile-icon svg {
+  width: 28rem;
+  height: 28rem;
 }
 
 .content-summary-tile strong {
@@ -949,22 +954,21 @@ input:focus-visible,
   background: linear-gradient(180deg, rgba(0, 67, 156, 0.3), rgba(21, 25, 32, 0.95));
 }
 
-/* ==================== Variant C：PS5 控制中心极简横向带（Ribbon 大磁贴阵列） ==================== */
+/* ==================== 主界面极简横向带（Ribbon 大磁贴阵列 & 开放式顶栏） ==================== */
 .vc-ribbon-shell {
   display: flex;
   flex-direction: column;
-  gap: 24rem;
-  padding-top: 12rem;
+  gap: 18rem;
+  padding-top: 2rem;
 }
 
 .vc-top-summary-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rem 28rem;
-  border-radius: var(--radius-pill);
-  background: rgba(19, 23, 30, 0.92);
-  border: 1rem solid rgba(255, 255, 255, 0.1);
+  padding: 2rem 4rem 4rem;
+  background: transparent;
+  border: none;
 }
 
 .vc-ribbon-grid {
@@ -974,7 +978,7 @@ input:focus-visible,
 }
 
 .vc-tall-card {
-  min-height: 420rem;
+  min-height: 440rem;
   padding: 28rem;
   border-radius: 22rem;
   background:
@@ -997,9 +1001,9 @@ input:focus-visible,
 }
 
 .vc-tall-card h2 {
-  font-size: 28rem;
+  font-size: 27rem;
   font-weight: 400;
-  margin: 14rem 0 8rem;
+  margin: 0 0 10rem;
   color: #f4f7fb;
 }
 
@@ -1008,6 +1012,129 @@ input:focus-visible,
   color: #9facbe;
   line-height: 1.55;
   margin: 0;
+}
+
+.card-below-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8rem;
+  margin-top: 16rem;
+}
+
+/* ==================== 高密度设置页（同屏双栏四模块工作台） ==================== */
+.settings-dense-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rem;
+  align-items: stretch;
+}
+
+.settings-dense-card {
+  padding: 13rem 18rem;
+  border-radius: 16rem;
+  background: linear-gradient(180deg, rgba(24, 29, 38, 0.94), rgba(16, 19, 25, 0.96));
+  border: 1rem solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8rem;
+}
+
+.settings-dense-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14rem;
+  padding-bottom: 7rem;
+  border-bottom: 1rem solid rgba(255, 255, 255, 0.07);
+}
+
+.settings-dense-title {
+  display: flex;
+  align-items: center;
+  gap: 10rem;
+}
+
+.settings-dense-title h2 {
+  margin: 0;
+  font-size: 18rem;
+  font-weight: 400;
+  color: #f2f6fb;
+}
+
+.settings-dense-sub {
+  margin: 2rem 0 0;
+  font-size: 12rem;
+  color: #8f9cad;
+}
+
+.settings-compact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+.settings-compact-row {
+  padding: 8rem 12rem;
+  border-radius: 10rem;
+  background: #151921;
+  border: 1rem solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rem;
+}
+
+.settings-compact-main {
+  min-width: 0;
+}
+
+.settings-compact-main strong {
+  display: block;
+  font-size: 15rem;
+  font-weight: 500;
+  color: #eef2f7;
+  margin-bottom: 2rem;
+}
+
+.settings-compact-main p {
+  margin: 0;
+  font-size: 12rem;
+  color: #939fb0;
+  line-height: 1.3;
+}
+
+.settings-compact-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5rem;
+  margin-top: 4rem;
+}
+
+.settings-scope-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6rem;
+}
+
+.settings-scope-item {
+  padding: 8rem 12rem;
+  border-radius: 10rem;
+  background: #151921;
+  border: 1.5rem solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10rem;
+}
+
+.settings-scope-item.selected {
+  background: linear-gradient(180deg, rgba(0, 67, 156, 0.24), #161b24);
+  border-color: rgba(112, 183, 255, 0.48);
+}
+
+.settings-scope-item.span-2 {
+  grid-column: span 2;
 }
 
 /* ==================== 设置页布局（A 为左菜单+右面板；B/C 支持顶部胶囊或双栏卡片） ==================== */

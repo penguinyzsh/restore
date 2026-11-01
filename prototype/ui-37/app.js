@@ -154,7 +154,6 @@
   ]
 
   const urlParams = new URLSearchParams(window.location.search)
-  const initialVariant = ['A', 'B', 'C'].includes(urlParams.get('variant')) ? urlParams.get('variant') : 'A'
   const rawView = urlParams.get('view')
   const initialOnboardingOpen = rawView === 'onboarding' || urlParams.get('onboarding') === '1'
   const initialView = NAV_TABS.some((t) => t.id === rawView) ? rawView : 'home'
@@ -162,12 +161,11 @@
   const initialModal = urlParams.get('modal')
 
   const state = {
-    variant: initialVariant,
+    variant: 'C',
     view: initialView,
     devDockCollapsed: false,
     onboardingOpen: initialOnboardingOpen,
     onboardingHasRp: urlParams.get('branch') !== 'empty-rp',
-    settingsCategory: 'locations',
     homeFocusedLocationId: 'usb',
     homeFocusedObjectId: 'saves',
     selectedLocationId: 'usb',
@@ -268,7 +266,7 @@
 
   function syncUrl() {
     const u = new URL(window.location.href)
-    u.searchParams.set('variant', state.variant)
+    u.searchParams.delete('variant')
     u.searchParams.set('view', state.onboardingOpen ? 'onboarding' : state.view)
     if (state.lockScene.active) {
       u.searchParams.set('lock', state.lockScene.mode)
@@ -319,203 +317,8 @@
     `
   }
 
-  /* ==================== 概览页（Variant A / B / C，页内操作绝不跳页面） ==================== */
-  function renderHomeVariantA() {
-    return `
-      <main class="page-container">
-        <section class="home-hero-banner">
-          <div class="home-hero-left">
-            <img src="./assets/restore-logo-full.png" alt="ReStore" />
-            <div class="home-hero-copy">
-              <h1>
-                <span>主机数据受保护中</span>
-                <span class="badge green">${ICONS.check}<span>最新备份：今天 19:10</span></span>
-              </h1>
-              <p>游戏退出或插件配置变化后自动增量备份，三个存储位置独立同步。</p>
-            </div>
-          </div>
-          <div class="home-hero-actions">
-            <button type="button" class="pill primary" data-action="manual-backup">
-              ${ICONS.bolt}<span>立即备份</span>
-            </button>
-          </div>
-        </section>
-
-        <div class="home-dashboard-grid">
-          <section class="section-block">
-            <div class="section-block-header">
-              <h2>备份位置状态</h2>
-              <span>点击位置可同步或配置连接</span>
-            </div>
-            <div class="location-status-stack">
-              ${state.locations
-                .map(
-                  (loc) => `
-                <button
-                  type="button"
-                  class="location-status-row ${state.homeFocusedLocationId === loc.id ? 'selected' : ''}"
-                  data-action="focus-home-location"
-                  data-loc="${loc.id}"
-                >
-                  <div class="loc-row-top">
-                    <div class="loc-row-title">
-                      ${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}
-                      <span>${loc.name}</span>
-                    </div>
-                    <span class="badge ${loc.status === 'connected' ? 'green' : 'blue'}">${loc.statusText}</span>
-                  </div>
-                  <div class="loc-progress-line">
-                    <i style="width:${loc.progress}%"></i>
-                  </div>
-                  <div class="loc-row-bottom">
-                    <span>最近完成：${loc.lastSync}</span>
-                    <span>${loc.freeSpace}</span>
-                  </div>
-                </button>
-              `,
-                )
-                .join('')}
-            </div>
-          </section>
-
-          <section class="section-block">
-            <div class="section-block-header">
-              <h2>当前保护内容（最新完整恢复点）</h2>
-              <span>共 5 类 · 5.4 GB</span>
-            </div>
-            <div class="protected-content-grid">
-              ${FIVE_OBJECTS.map(
-                (obj, idx) => `
-                <button
-                  type="button"
-                  class="content-summary-tile ${idx === 4 ? 'span-2' : ''} ${state.homeFocusedObjectId === obj.id ? 'selected' : ''}"
-                  data-action="focus-home-object"
-                  data-obj="${obj.id}"
-                >
-                  <div>
-                    <div class="tile-head" style="margin-bottom:10rem;">
-                      <div class="tile-icon">${ICONS[obj.icon]}</div>
-                      <span class="badge muted">${obj.size}</span>
-                    </div>
-                    <strong>${obj.title}</strong>
-                    <small>${obj.countText}</small>
-                  </div>
-                  ${idx === 4 ? `<span class="badge green">${ICONS.check}<span>已纳入自动备份</span></span>` : ''}
-                </button>
-              `,
-              ).join('')}
-            </div>
-          </section>
-        </div>
-      </main>
-    `
-  }
-
-  function renderHomeVariantB() {
-    const focusedObj = FIVE_OBJECTS.find((o) => o.id === state.homeFocusedObjectId) || FIVE_OBJECTS[2]
-    return `
-      <main class="page-container">
-        <div class="vb-stage-layout">
-          <section class="vb-hero-spotlight">
-            <div>
-              <img class="vb-spotlight-art" src="./assets/restore-logo-full.png" alt="ReStore" />
-              <span class="badge green">${ICONS.check}<span>后台保护运行中 · 最新完整备份 今天 19:10</span></span>
-              <h1>主机环境与游戏存档已完整备份</h1>
-              <p>当前焦点：${focusedObj.title}（${focusedObj.countText}）— ${focusedObj.desc}</p>
-            </div>
-
-            <div class="vb-metric-strip">
-              <div class="vb-metric-box">
-                <strong>3 个位置</strong>
-                <small>独立同步互不阻塞</small>
-              </div>
-              <div class="vb-metric-box">
-                <strong>19 款存档</strong>
-                <small>含未启动游戏建槽</small>
-              </div>
-              <div class="vb-metric-box">
-                <strong>5.4 GB</strong>
-                <small>未变化数据自动复用</small>
-              </div>
-            </div>
-
-            <div class="home-hero-actions">
-              <button type="button" class="pill primary" data-action="manual-backup">
-                ${ICONS.bolt}<span>立即执行增量备份</span>
-              </button>
-              <button type="button" class="pill secondary" data-action="open-webdav-osk" data-loc="lan">
-                <span>配置网络存储</span>
-              </button>
-            </div>
-          </section>
-
-          <div class="vb-right-stack">
-            <section class="section-block">
-              <div class="section-block-header">
-                <h2>备份位置实时状态</h2>
-                <span>全部在线</span>
-              </div>
-              <div class="vb-horizontal-cards">
-                ${state.locations
-                  .map(
-                    (loc) => `
-                  <button
-                    type="button"
-                    class="vb-loc-card ${state.homeFocusedLocationId === loc.id ? 'selected' : ''}"
-                    data-action="focus-home-location"
-                    data-loc="${loc.id}"
-                  >
-                    <div class="loc-row-top">
-                      <div class="tile-icon">${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}</div>
-                      <span class="badge ${loc.status === 'connected' ? 'green' : 'blue'}">${loc.progress}%</span>
-                    </div>
-                    <div>
-                      <strong style="display:block; font-size:18rem; margin-bottom:5rem;">${loc.name}</strong>
-                      <small style="display:block; font-size:13.5rem; color:#95a0b0;">${loc.statusText} · ${loc.lastSync}</small>
-                    </div>
-                    <div class="loc-progress-line"><i style="width:${loc.progress}%"></i></div>
-                  </button>
-                `,
-                  )
-                  .join('')}
-              </div>
-            </section>
-
-            <section class="section-block" style="flex:1;">
-              <div class="section-block-header">
-                <h2>已纳入保护的五类内容</h2>
-                <span>点击卡片在左侧查看详情</span>
-              </div>
-              <div class="five-columns-grid" style="margin-top:0;">
-                ${FIVE_OBJECTS.map(
-                  (obj) => `
-                  <button
-                    type="button"
-                    class="object-tile-card ${state.homeFocusedObjectId === obj.id ? 'selected' : ''}"
-                    style="min-height:190rem;"
-                    data-action="focus-home-object"
-                    data-obj="${obj.id}"
-                  >
-                    <div class="object-tile-top">
-                      <div class="tile-icon">${ICONS[obj.icon]}</div>
-                      <span class="badge muted">${obj.size}</span>
-                    </div>
-                    <div class="object-tile-body">
-                      <strong>${obj.title}</strong>
-                      <span style="margin-bottom:0;">${obj.countText}</span>
-                    </div>
-                  </button>
-                `,
-                ).join('')}
-              </div>
-            </section>
-          </div>
-        </div>
-      </main>
-    `
-  }
-
-  function renderHomeVariantC() {
+  /* ==================== 概览页（控制中心极简横向带，页内操作绝不跳页面） ==================== */
+  function renderHomePage() {
     return `
       <main class="page-container">
         <div class="vc-ribbon-shell">
@@ -532,10 +335,12 @@
           <div class="vc-ribbon-grid">
             <button type="button" class="vc-tall-card primary-card" data-action="manual-backup">
               <div>
-                <img src="./assets/restore-logo-full.png" alt="ReStore" style="width:76rem; height:76rem; border-radius:18rem; margin-bottom:20rem;" />
-                <span class="badge blue">自动增量保护</span>
+                <img src="./assets/restore-logo-full.png" alt="ReStore" style="width:74rem; height:74rem; border-radius:18rem; margin-bottom:22rem;" />
                 <h2>立即创建恢复点</h2>
                 <p>检测自上次备份以来的存档与插件变更，未变化数据自动复用已有块。</p>
+                <div class="card-below-tags">
+                  <span class="badge blue">自动增量保护</span>
+                </div>
               </div>
               <div style="padding-top:16rem; border-top:1rem solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; font-size:14rem; color:#bfd6f6;">
                 <span>共 5 类保护对象</span>
@@ -553,13 +358,15 @@
                 data-loc="${loc.id}"
               >
                 <div>
-                  <div class="loc-row-top" style="margin-bottom:20rem;">
-                    <div class="tile-icon" style="width:52rem; height:52rem;">${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}</div>
+                  <div class="loc-row-top" style="margin-bottom:22rem;">
+                    <div class="tile-icon">${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}</div>
                     <span class="badge ${loc.status === 'connected' ? 'green' : 'blue'}">${loc.progress}%</span>
                   </div>
-                  <span class="badge muted">${loc.type === 'usb' ? '本地高速存储' : '网络存储'}</span>
                   <h2>${loc.name}</h2>
                   <p>${loc.statusText}，最近完成于 ${loc.lastSync}。</p>
+                  <div class="card-below-tags">
+                    <span class="badge muted">${loc.type === 'usb' ? '本地高速存储' : '网络存储'}</span>
+                  </div>
                 </div>
                 <div>
                   <div class="loc-progress-line" style="margin-bottom:12rem;"><i style="width:${loc.progress}%"></i></div>
@@ -578,237 +385,8 @@
     `
   }
 
-  /* ==================== 恢复页（Variant A / B / C，页内操作绝不跳页面） ==================== */
-  function renderRestoreVariantA() {
-    const allSelected = state.selectedObjects.length === FIVE_OBJECTS.length
-    const stages = [
-      { step: '1', label: '插件与载荷', active: state.selectedObjects.includes('elf') },
-      { step: '2', label: '桌面图标', active: state.selectedObjects.includes('desktop') },
-      { step: '3', label: '游戏存档', active: state.selectedObjects.includes('saves') },
-      { step: '4', label: '系统设置与媒体', active: state.selectedObjects.includes('settings') || state.selectedObjects.includes('media') },
-    ]
-
-    return `
-      <main class="page-container">
-        <div class="restore-step-stack">
-          <section class="restore-source-block">
-            <div class="source-locations-col">
-              <div class="block-step-label">
-                <span>1. 选择备份位置</span>
-              </div>
-              ${state.locations
-                .map(
-                  (loc) => `
-                <button
-                  type="button"
-                  class="source-loc-btn ${state.selectedLocationId === loc.id ? 'active' : ''}"
-                  data-action="select-location"
-                  data-loc="${loc.id}"
-                >
-                  <span>${loc.name}</span>
-                  <span class="badge ${loc.status === 'connected' ? 'green' : 'gold'}">${loc.progress}%</span>
-                </button>
-              `,
-                )
-                .join('')}
-            </div>
-
-            <div class="source-rp-col">
-              <div class="block-step-label">
-                <span>2. 选择恢复点</span>
-                <span>按 □ 键可锁定或解锁恢复点保护</span>
-              </div>
-              <div class="rp-cards-row">
-                ${state.restorePoints
-                  .map(
-                    (rp) => `
-                  <button
-                    type="button"
-                    class="rp-card ${state.selectedRestorePointId === rp.id ? 'selected' : ''}"
-                    data-action="select-rp"
-                    data-rp="${rp.id}"
-                  >
-                    <div>
-                      <div class="rp-card-top">
-                        <strong>${rp.title}</strong>
-                        ${rp.isLatestComplete ? '<span class="badge blue">最新完整</span>' : ''}
-                      </div>
-                      <div class="rp-card-desc" style="margin-top:6rem;">${rp.note}</div>
-                    </div>
-                    <div class="rp-card-foot">
-                      <span>${rp.size}</span>
-                      <span class="badge ${rp.protected ? 'gold' : 'muted'}">
-                        ${rp.protected ? ICONS.lock : ICONS.unlock}
-                        <span>${rp.protected ? '已保护' : '未锁定'}</span>
-                      </span>
-                    </div>
-                  </button>
-                `,
-                  )
-                  .join('')}
-              </div>
-            </div>
-          </section>
-
-          <section class="restore-objects-block">
-            <div class="section-block-header" style="margin-bottom:6rem;">
-              <h2>3. 选择要恢复的内容（已选 ${state.selectedObjects.length} / 5 项）</h2>
-              <button
-                type="button"
-                class="pill sm ${allSelected ? 'brand' : 'secondary'}"
-                data-action="select-all-objects"
-              >
-                ${ICONS.check}
-                <span>${allSelected ? '已选整机恢复（全部 5 项）' : '全选整机恢复'}</span>
-              </button>
-            </div>
-
-            <div class="five-columns-grid">
-              ${FIVE_OBJECTS.map((obj) => {
-                const selected = state.selectedObjects.includes(obj.id)
-                return `
-                  <button
-                    type="button"
-                    class="object-tile-card ${selected ? 'selected' : ''}"
-                    data-action="toggle-object"
-                    data-obj="${obj.id}"
-                  >
-                    <div>
-                      <div class="object-tile-top" style="margin-bottom:14rem;">
-                        <div class="tile-icon">${ICONS[obj.icon]}</div>
-                        <div class="check-indicator">${ICONS.check}</div>
-                      </div>
-                      <div class="object-tile-body">
-                        <strong>${obj.title}</strong>
-                        <span>${obj.countText} · ${obj.size}</span>
-                        <p>${obj.desc}</p>
-                      </div>
-                    </div>
-                    ${obj.note ? `<div class="object-tile-note">${obj.note}</div>` : `<div style="font-size:13rem; color:#7f8b9c;">执行顺序：第 ${obj.order} 步</div>`}
-                  </button>
-                `
-              }).join('')}
-            </div>
-          </section>
-
-          <section class="restore-action-bar">
-            <div class="order-flow-steps">
-              <span class="order-flow-label">恢复执行顺序：</span>
-              ${stages
-                .map(
-                  (s, i) => `
-                <span class="order-step-pill ${s.active ? '' : 'dimmed'}">
-                  <em>${s.step}</em>
-                  <span>${s.label}</span>
-                </span>
-                ${i < stages.length - 1 ? '<span class="order-arrow">→</span>' : ''}
-              `,
-                )
-                .join('')}
-            </div>
-            <button type="button" class="pill primary" data-action="start-lock-demo" data-mode="normal">
-              ${ICONS.restore}<span>开始恢复</span>
-            </button>
-          </section>
-        </div>
-      </main>
-    `
-  }
-
-  function renderRestoreVariantB() {
-    const currentRp = state.restorePoints.find((r) => r.id === state.selectedRestorePointId) || state.restorePoints[0]
-    return `
-      <main class="page-container">
-        <div class="vb-stage-layout">
-          <section class="vb-hero-spotlight">
-            <div>
-              <div style="display:flex; gap:8rem; margin-bottom:18rem;">
-                ${state.locations
-                  .map(
-                    (loc) => `
-                  <button
-                    type="button"
-                    class="pill sm ${state.selectedLocationId === loc.id ? 'brand' : 'secondary'}"
-                    data-action="select-location"
-                    data-loc="${loc.id}"
-                  >
-                    <span>${loc.name}</span>
-                  </button>
-                `,
-                  )
-                  .join('')}
-              </div>
-              <span class="badge blue">当前选中恢复点 · ${currentRp.size}</span>
-              <h1>${currentRp.title}</h1>
-              <p>${currentRp.note}。${currentRp.summary}。</p>
-
-              <div class="settings-row-list" style="margin-top:22rem;">
-                ${state.restorePoints
-                  .map(
-                    (rp) => `
-                  <button
-                    type="button"
-                    class="source-loc-btn ${state.selectedRestorePointId === rp.id ? 'active' : ''}"
-                    data-action="select-rp"
-                    data-rp="${rp.id}"
-                  >
-                    <span>${rp.title}</span>
-                    <span class="badge ${rp.protected ? 'gold' : 'muted'}">${rp.protected ? '已保护' : '未锁定'}</span>
-                  </button>
-                `,
-                  )
-                  .join('')}
-              </div>
-            </div>
-
-            <div class="home-hero-actions" style="margin-top:24rem;">
-              <button type="button" class="pill primary" data-action="start-lock-demo" data-mode="normal">
-                ${ICONS.restore}<span>开始恢复所选内容 (${state.selectedObjects.length}/5)</span>
-              </button>
-              <button type="button" class="pill secondary" data-action="select-all-objects">
-                <span>全选整机恢复</span>
-              </button>
-            </div>
-          </section>
-
-          <section class="section-block">
-            <div class="section-block-header">
-              <h2>勾选要恢复的内容（自动按依赖顺序执行）</h2>
-              <span>已选 ${state.selectedObjects.length} / 5 项</span>
-            </div>
-            <div class="settings-row-list">
-              ${FIVE_OBJECTS.map((obj) => {
-                const selected = state.selectedObjects.includes(obj.id)
-                return `
-                  <button
-                    type="button"
-                    class="settings-row-card"
-                    style="border-color:${selected ? '#66a8ff' : 'rgba(255,255,255,0.07)'}; background:${selected ? 'rgba(0,67,156,0.22)' : '#171b22'};"
-                    data-action="toggle-object"
-                    data-obj="${obj.id}"
-                  >
-                    <div class="settings-row-info">
-                      <strong>
-                        <span>第 ${obj.order} 步 · ${obj.title}</span>
-                        <span class="badge muted">${obj.countText} · ${obj.size}</span>
-                        ${obj.note ? `<span class="badge gold">${obj.note}</span>` : ''}
-                      </strong>
-                      <p>${obj.desc}</p>
-                    </div>
-                    <div class="check-indicator" style="${selected ? 'background:#eef2f7;border-color:#eef2f7;color:#11151b;' : ''}">
-                      ${ICONS.check}
-                    </div>
-                  </button>
-                `
-              }).join('')}
-            </div>
-          </section>
-        </div>
-      </main>
-    `
-  }
-
-  function renderRestoreVariantC() {
+  /* ==================== 恢复页（开放式顶栏胶囊 + 5 张纵向等高步骤卡片） ==================== */
+  function renderRestorePage() {
     return `
       <main class="page-container">
         <div class="vc-ribbon-shell">
@@ -863,15 +441,17 @@
                 >
                   <div>
                     <div class="object-tile-top" style="margin-bottom:22rem;">
-                      <div class="tile-icon" style="width:50rem; height:50rem;">${ICONS[obj.icon]}</div>
+                      <div class="tile-icon">${ICONS[obj.icon]}</div>
                       <div class="check-indicator">${ICONS.check}</div>
                     </div>
-                    <span class="badge blue">执行顺序：第 ${obj.order} 步</span>
                     <h2>${obj.title}</h2>
-                    <p style="margin-top:10rem;">${obj.desc}</p>
+                    <p>${obj.desc}</p>
+                    <div class="card-below-tags">
+                      <span class="badge blue">执行顺序：第 ${obj.order} 步</span>
+                      ${obj.note ? `<span class="badge gold">${obj.note}</span>` : ''}
+                    </div>
                   </div>
                   <div>
-                    ${obj.note ? `<div class="object-tile-note" style="margin-bottom:12rem;">${obj.note}</div>` : ''}
                     <div style="padding-top:14rem; border-top:1rem solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; font-size:14rem; color:#b5c2d4;">
                       <span>${obj.countText}</span>
                       <span>${obj.size}</span>
@@ -886,218 +466,198 @@
     `
   }
 
-  /* ==================== 设置页（纯净产品设置，不含开发者模拟按钮） ==================== */
+  /* ==================== 设置页（高密度双栏四模块工作台，全屏一眼看全） ==================== */
   function renderSettingsPage() {
-    const categories = [
-      { id: 'locations', label: '备份位置与网络', icon: 'cloud', badge: '3 个位置' },
-      { id: 'scope', label: '自动备份内容范围', icon: 'save', badge: `${state.autoBackupScope.length}/5 项` },
-      { id: 'retention', label: '恢复点保护与空间清理', icon: 'shield', badge: '自动保留' },
-      { id: 'system', label: '首次引导与系统服务', icon: 'settings', badge: '运行中' },
-    ]
+    return `
+      <main class="page-container">
+        <div class="vc-ribbon-shell">
+          <div class="vc-top-summary-bar">
+            <div style="display:flex; align-items:center; gap:14rem;">
+              <span class="badge green">${ICONS.check}<span>设置实时生效</span></span>
+              <span style="font-size:16rem; color:#bcc7d7;">多位置独立同步 · 自动备份范围 · 恢复点保护与空间清理 · 系统守护服务</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10rem;">
+              <button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="lan">
+                <span>配置 WebDAV 凭据</span>
+              </button>
+              <button type="button" class="pill sm brand" data-action="open-onboarding">
+                <span>重新打开首次引导</span>
+              </button>
+            </div>
+          </div>
 
-    let detailHtml = ''
-    if (state.settingsCategory === 'locations') {
-      detailHtml = `
-        <div class="settings-panel-head">
-          <div>
-            <h2>备份位置与网络配置</h2>
-            <p>支持同时启用多个备份位置，各位置独立同步互不影响；网络存储可通过手柄调用系统输入法填写。</p>
-          </div>
-          <button type="button" class="pill sm brand" data-action="open-webdav-osk" data-loc="lan">配置 WebDAV 凭据</button>
-        </div>
-        <div class="settings-row-list">
-          ${state.locations
-            .map(
-              (loc) => `
-            <div class="settings-row-card">
-              <div class="settings-row-info">
-                <strong>
-                  <span>${loc.name}</span>
-                  <span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已启用' : '已暂停'}</span>
-                </strong>
-                <p>${loc.statusText} · 最近完成：${loc.lastSync} · ${loc.freeSpace}</p>
-              </div>
-              <div class="settings-row-actions">
-                ${
-                  loc.type === 'webdav'
-                    ? `<button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="${loc.id}">输入连接凭据</button>`
-                    : ''
-                }
-                <button type="button" class="pill sm ${loc.enabled ? 'secondary' : 'brand'}" data-action="toggle-location" data-loc="${loc.id}">
-                  ${loc.enabled ? '暂停同步' : '启用同步'}
-                </button>
-              </div>
-            </div>
-          `,
-            )
-            .join('')}
-        </div>
-      `
-    } else if (state.settingsCategory === 'scope') {
-      detailHtml = `
-        <div class="settings-panel-head">
-          <div>
-            <h2>自动备份内容范围</h2>
-            <p>当关闭游戏或修改插件配置后，后台服务自动检测变化并备份所选内容；未变化的数据自动复用已有版本。</p>
-          </div>
-          <span class="badge green">已启用 ${state.autoBackupScope.length} / 5 项</span>
-        </div>
-        <div class="settings-row-list">
-          ${FIVE_OBJECTS.map((obj) => {
-            const on = state.autoBackupScope.includes(obj.id)
-            return `
-              <div class="settings-row-card">
-                <div class="settings-row-info">
-                  <strong>
-                    <span>${obj.title}</span>
-                    <span class="badge muted">${obj.countText}</span>
-                  </strong>
-                  <p>${obj.desc}</p>
+          <div class="settings-dense-grid">
+            <!-- 模块 1：备份位置与网络配置 -->
+            <section class="settings-dense-card">
+              <div class="settings-dense-head">
+                <div>
+                  <div class="settings-dense-title">
+                    <div class="tile-icon">${ICONS.cloud}</div>
+                    <h2>备份位置与网络配置</h2>
+                  </div>
+                  <p class="settings-dense-sub">各位置独立同步互不阻塞，可通过手柄调用系统输入法填写凭据</p>
                 </div>
-                <div class="settings-row-actions">
-                  <button type="button" class="pill sm ${on ? 'brand' : 'secondary'}" data-action="toggle-auto-scope" data-obj="${obj.id}">
-                    ${on ? '已开启自动备份' : '已关闭'}
-                  </button>
-                </div>
+                <span class="badge blue">已启用 ${state.locations.filter((l) => l.enabled).length} / 3 个位置</span>
               </div>
-            `
-          }).join('')}
-        </div>
-      `
-    } else if (state.settingsCategory === 'retention') {
-      detailHtml = `
-        <div class="settings-panel-head">
-          <div>
-            <h2>恢复点保护与存储空间清理</h2>
-            <p>存储空间不足时，系统自动从旧到新清理未锁定的恢复点，并始终保留每个位置的最后一个完整恢复点。</p>
-          </div>
-          <span class="badge blue">自动保留最新完整点</span>
-        </div>
-        ${
-          state.spaceLowSimulated
-            ? `
-          <div class="inline-notice-box warn" style="margin-top:0;">
-            <div>
-              <strong style="display:block; font-size:17rem; color:#ffd4d2; margin-bottom:4rem;">USB 存储设备可用空间不足</strong>
-              <span style="font-size:14rem; color:#e6c3c1;">已自动清理未保护的旧恢复点，但剩余空间仍不足写入新备份；已为您保留最新完整恢复点，局域网与云端同步正常进行。</span>
-            </div>
-            <span class="badge gold">保留最新完整点</span>
-          </div>
-        `
-            : ''
-        }
-        <div class="settings-row-list">
-          ${state.restorePoints
-            .map(
-              (rp) => `
-            <div class="settings-row-card">
-              <div class="settings-row-info">
-                <strong>
-                  <span>${rp.title}</span>
-                  ${rp.isLatestComplete ? '<span class="badge blue">最新完整恢复点</span>' : ''}
-                  <span class="badge ${rp.protected ? 'gold' : 'muted'}">${rp.protected ? '已手动锁定保护' : '未锁定（可自动清理）'}</span>
-                </strong>
-                <p>${rp.note} · ${rp.size}</p>
-              </div>
-              <div class="settings-row-actions">
-                <button type="button" class="pill sm ${rp.protected ? 'secondary' : 'brand'}" data-action="toggle-rp-protect" data-rp="${rp.id}">
-                  ${rp.protected ? '解除保护' : '锁定保护'}
-                </button>
-              </div>
-            </div>
-          `,
-            )
-            .join('')}
-        </div>
-      `
-    } else {
-      detailHtml = `
-        <div class="settings-panel-head">
-          <div>
-            <h2>首次引导与系统服务</h2>
-            <p>查看后台守护服务运行状态，或在更换主要存储设备后重新进入全屏引导向导。</p>
-          </div>
-        </div>
-        <div class="settings-row-list">
-          <div class="settings-row-card">
-            <div class="settings-row-info">
-              <strong>
-                <span>后台自动备份服务</span>
-                <span class="badge green">运行稳定</span>
-              </strong>
-              <p>关闭 ReStore 界面或退出入口应用后，后台服务依然保持运行并在游戏退出后自动同步。</p>
-            </div>
-            <div class="settings-row-actions">
-              <button type="button" class="pill sm secondary" data-action="manual-backup">立即执行一次备份</button>
-            </div>
-          </div>
-          <div class="settings-row-card">
-            <div class="settings-row-info">
-              <strong><span>重新打开首次引导向导</span></strong>
-              <p>重新选择默认备份存储位置，并检查恢复点或执行首次全量备份。</p>
-            </div>
-            <div class="settings-row-actions">
-              <button type="button" class="pill sm brand" data-action="open-onboarding">打开首次引导向导</button>
-            </div>
-          </div>
-        </div>
-      `
-    }
-
-    if (state.variant === 'C') {
-      return `
-        <main class="page-container">
-          <div class="vc-ribbon-shell">
-            <div class="vc-top-summary-bar">
-              <div style="display:flex; gap:10rem;">
-                ${categories
+              <div class="settings-compact-list">
+                ${state.locations
                   .map(
-                    (c) => `
-                  <button
-                    type="button"
-                    class="pill sm ${state.settingsCategory === c.id ? 'primary' : 'secondary'}"
-                    data-action="set-settings-cat"
-                    data-cat="${c.id}"
-                  >
-                    ${ICONS[c.icon]}<span>${c.label}</span>
-                  </button>
+                    (loc) => `
+                  <div class="settings-compact-row">
+                    <div class="settings-compact-main">
+                      <strong>${loc.name}</strong>
+                      <p>${loc.statusText} · 最近完成：${loc.lastSync} · ${loc.freeSpace}</p>
+                      <div class="settings-compact-tags">
+                        <span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已启用' : '已暂停'}</span>
+                        <span class="badge muted">${loc.type === 'usb' ? '本地存储' : 'WebDAV 网络存储'}</span>
+                      </div>
+                    </div>
+                    <div class="settings-row-actions">
+                      ${
+                        loc.type === 'webdav'
+                          ? `<button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="${loc.id}">凭据</button>`
+                          : ''
+                      }
+                      <button type="button" class="pill sm ${loc.enabled ? 'secondary' : 'brand'}" data-action="toggle-location" data-loc="${loc.id}">
+                        ${loc.enabled ? '暂停' : '启用'}
+                      </button>
+                    </div>
+                  </div>
                 `,
                   )
                   .join('')}
               </div>
-              <span class="badge green">自动保存生效</span>
-            </div>
-            <section class="settings-detail-panel" style="min-height:520rem;">
-              ${detailHtml}
+            </section>
+
+            <!-- 模块 2：自动备份内容范围 -->
+            <section class="settings-dense-card">
+              <div class="settings-dense-head">
+                <div>
+                  <div class="settings-dense-title">
+                    <div class="tile-icon">${ICONS.save}</div>
+                    <h2>自动备份内容范围</h2>
+                  </div>
+                  <p class="settings-dense-sub">关闭游戏或变更配置后自动增量同步所选项目，未变数据自动复用</p>
+                </div>
+                <span class="badge green">已开启 ${state.autoBackupScope.length} / 5 项</span>
+              </div>
+              <div class="settings-scope-grid">
+                ${FIVE_OBJECTS.map((obj, idx) => {
+                  const on = state.autoBackupScope.includes(obj.id)
+                  return `
+                    <button
+                      type="button"
+                      class="settings-scope-item ${on ? 'selected' : ''} ${idx === 4 ? 'span-2' : ''}"
+                      data-action="toggle-auto-scope"
+                      data-obj="${obj.id}"
+                    >
+                      <div class="settings-compact-main">
+                        <strong>${obj.title}</strong>
+                        <p>${obj.desc}</p>
+                        <div class="settings-compact-tags">
+                          <span class="badge ${on ? 'blue' : 'muted'}">${on ? '自动备份中' : '已关闭'}</span>
+                          <span class="badge muted">${obj.countText} · ${obj.size}</span>
+                        </div>
+                      </div>
+                      <div class="check-indicator">${ICONS.check}</div>
+                    </button>
+                  `
+                }).join('')}
+              </div>
+            </section>
+
+            <!-- 模块 3：恢复点保护与空间清理 -->
+            <section class="settings-dense-card">
+              <div class="settings-dense-head">
+                <div>
+                  <div class="settings-dense-title">
+                    <div class="tile-icon">${ICONS.shield}</div>
+                    <h2>恢复点保护与空间清理</h2>
+                  </div>
+                  <p class="settings-dense-sub">空间不足时自动从旧到新清理未锁定恢复点，始终保留最新完整恢复点</p>
+                </div>
+                <span class="badge blue">保底保留最新完整点</span>
+              </div>
+              ${
+                state.spaceLowSimulated
+                  ? `
+                <div class="inline-notice-box warn" style="margin-top:0; padding:12rem 16rem;">
+                  <div>
+                    <strong style="display:block; font-size:15.5rem; color:#ffd4d2; margin-bottom:2rem;">USB 存储设备可用空间不足</strong>
+                    <span style="font-size:13rem; color:#e6c3c1;">已清理未锁定旧恢复点并保留最新完整点，局域网与云端同步正常。</span>
+                  </div>
+                  <span class="badge gold">已保底</span>
+                </div>
+              `
+                  : ''
+              }
+              <div class="settings-compact-list">
+                ${state.restorePoints
+                  .map(
+                    (rp) => `
+                  <div class="settings-compact-row">
+                    <div class="settings-compact-main">
+                      <strong>${rp.title}</strong>
+                      <p>${rp.note} · ${rp.size}</p>
+                      <div class="settings-compact-tags">
+                        <span class="badge ${rp.protected ? 'gold' : 'muted'}">${rp.protected ? '已锁定保护' : '未锁定（可自动清理）'}</span>
+                        ${rp.isLatestComplete ? '<span class="badge blue">最新完整点</span>' : ''}
+                      </div>
+                    </div>
+                    <div class="settings-row-actions">
+                      <button type="button" class="pill sm ${rp.protected ? 'secondary' : 'brand'}" data-action="toggle-rp-protect" data-rp="${rp.id}">
+                        ${rp.protected ? '解除保护' : '锁定保护'}
+                      </button>
+                    </div>
+                  </div>
+                `,
+                  )
+                  .join('')}
+              </div>
+            </section>
+
+            <!-- 模块 4：后台守护服务与系统触发策略 -->
+            <section class="settings-dense-card">
+              <div class="settings-dense-head">
+                <div>
+                  <div class="settings-dense-title">
+                    <div class="tile-icon">${ICONS.settings}</div>
+                    <h2>后台守护服务与触发策略</h2>
+                  </div>
+                  <p class="settings-dense-sub">关闭入口应用后依然常驻后台，在游戏退出且存档写入稳定后自动同步</p>
+                </div>
+                <span class="badge green">常驻运行中</span>
+              </div>
+              <div class="settings-compact-list">
+                <div class="settings-compact-row">
+                  <div class="settings-compact-main">
+                    <strong>游戏退出后存档稳定监听</strong>
+                    <p>游戏运行期间绝不抢占读写，待游戏关闭且存档落盘稳定后自动创建增量恢复点。</p>
+                    <div class="settings-compact-tags">
+                      <span class="badge green">已开启</span>
+                      <span class="badge muted">零抢占保护</span>
+                    </div>
+                  </div>
+                  <div class="settings-row-actions">
+                    <button type="button" class="pill sm secondary" data-action="manual-backup">立即备份</button>
+                  </div>
+                </div>
+                <div class="settings-compact-row">
+                  <div class="settings-compact-main">
+                    <strong>插件与宿主配置即时同步</strong>
+                    <p>当系统插件、自启列表或外置盘扫描路径发生变化时，立即增量同步至所有已启用位置。</p>
+                    <div class="settings-compact-tags">
+                      <span class="badge green">实时监听</span>
+                      <span class="badge muted">块级去重复用</span>
+                    </div>
+                  </div>
+                  <div class="settings-row-actions">
+                    <button type="button" class="pill sm secondary" data-action="open-onboarding">引导向导</button>
+                  </div>
+                </div>
+              </div>
             </section>
           </div>
-        </main>
-      `
-    }
-
-    return `
-      <main class="page-container">
-        <div class="settings-split-layout">
-          <aside class="settings-category-nav" aria-label="设置分类">
-            ${categories
-              .map(
-                (c) => `
-              <button
-                type="button"
-                class="settings-cat-btn ${state.settingsCategory === c.id ? 'active' : ''}"
-                data-action="set-settings-cat"
-                data-cat="${c.id}"
-              >
-                <span>${ICONS[c.icon]}<span>${c.label}</span></span>
-                <small style="opacity:0.75; font-size:13.5rem;">${c.badge}</small>
-              </button>
-            `,
-              )
-              .join('')}
-          </aside>
-          <section class="settings-detail-panel">
-            ${detailHtml}
-          </section>
         </div>
       </main>
     `
@@ -1584,7 +1144,7 @@
       return `
         <aside class="proto-floating-dock" aria-label="开发者原型调试浮窗">
           <div class="proto-dock-row">
-            <button type="button" class="proto-dev-tag" data-action="toggle-dev-dock">展开 DEV 调试面板 (${state.variant})</button>
+            <button type="button" class="proto-dev-tag" data-action="toggle-dev-dock">展开 DEV 调试面板</button>
           </div>
         </aside>
       `
@@ -1593,23 +1153,6 @@
       <aside class="proto-floating-dock" aria-label="开发者原型调试浮窗">
         <div class="proto-dock-row">
           <span class="proto-dev-tag">PROTOTYPE DEV（仅原型调试悬浮窗）</span>
-          ${['A', 'B', 'C']
-            .map(
-              (k) => `
-            <button
-              type="button"
-              class="proto-dock-btn ${state.variant === k ? 'active' : ''}"
-              data-action="set-variant"
-              data-variant="${k}"
-            >
-              ${VARIANTS[k]}
-            </button>
-          `,
-            )
-            .join('')}
-          <button type="button" class="proto-dock-btn" data-action="toggle-dev-dock">收起</button>
-        </div>
-        <div class="proto-dock-row">
           <button
             type="button"
             class="proto-dock-btn ${state.onboardingOpen && state.onboardingHasRp ? 'active' : ''}"
@@ -1655,6 +1198,7 @@
           >
             设置：空间不足提示
           </button>
+          <button type="button" class="proto-dock-btn" data-action="toggle-dev-dock">收起</button>
         </div>
       </aside>
     `
@@ -1662,17 +1206,11 @@
 
   function renderMainScene() {
     if (state.lockScene.active) return renderRestoreLockScene()
-    if (state.view === 'restore') {
-      if (state.variant === 'B') return renderRestoreVariantB()
-      if (state.variant === 'C') return renderRestoreVariantC()
-      return renderRestoreVariantA()
-    }
+    if (state.view === 'restore') return renderRestorePage()
     if (state.view === 'store-apps') return renderStoreAppsPage()
     if (state.view === 'store-games') return renderStoreGamesPage()
     if (state.view === 'settings') return renderSettingsPage()
-    if (state.variant === 'B') return renderHomeVariantB()
-    if (state.variant === 'C') return renderHomeVariantC()
-    return renderHomeVariantA()
+    return renderHomePage()
   }
 
   function render(reason = 'update') {
@@ -2058,16 +1596,6 @@
     } else if (e.key === 'e' || e.key === 'E') {
       e.preventDefault()
       cycleTab(1)
-    } else if (e.key === '[') {
-      e.preventDefault()
-      const keys = ['A', 'B', 'C']
-      state.variant = keys[(keys.indexOf(state.variant) + 2) % 3]
-      render('route')
-    } else if (e.key === ']') {
-      e.preventDefault()
-      const keys = ['A', 'B', 'C']
-      state.variant = keys[(keys.indexOf(state.variant) + 1) % 3]
-      render('route')
     } else if (e.key === 'Escape' || e.key === 'Backspace') {
       e.preventDefault()
       document.querySelector('[data-action="ds-circle"]')?.click()
