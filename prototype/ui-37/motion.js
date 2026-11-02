@@ -1,31 +1,17 @@
-/* 沿用 public/web 的 PS5 动效序列实现（FLIP 磁贴、场景交叠、弹窗淡入淡出） */
+/* Apple tvOS Liquid Glass × PS5 空间过场与 FLIP 磁贴动效 */
 window.PS5Motion = (() => {
   'use strict'
 
   const media = window.matchMedia('(prefers-reduced-motion: reduce)')
   const owned = new Map()
   let serial = 0
-  let lastReport = null
   const PREFIX = 'ps5-motion:'
   const timing = Object.freeze({
-    tile: 300,
-    exit: 180,
-    sceneDelay: 140,
-    scene: 280,
-    backgroundDelay: 180,
-    background: 320,
-    artworkDelay: 140,
-    artwork: 300,
-    copyDelay: 220,
-    copy: 220,
-    actionsDelay: 280,
-    cardsDelay: 340,
-    cards: 260,
-    welcomeDelay: 220,
-    welcome: 320,
-    dialog: 200,
-    dialogExit: 140,
-    ease: 'cubic-bezier(0.22, 0.61, 0.36, 1)',
+    tile: 340,
+    scene: 300,
+    cards: 320,
+    lock: 240,
+    ease: 'cubic-bezier(0.22, 1, 0.36, 1)',
     fade: 'linear',
   })
 
@@ -42,32 +28,23 @@ window.PS5Motion = (() => {
   function describe() {
     const shell = q('#app .app-shell')
     if (!shell) return { key: 'empty', kind: 'empty', shell: null }
-    const scene = q('.welcome-scene,.project-scene,.browse-page,.restore-lock-scene', shell)
-    const kind = scene?.matches('.welcome-scene')
-      ? 'welcome'
-      : scene?.matches('.project-scene')
-        ? 'project'
-        : scene?.matches('.restore-lock-scene')
-          ? 'lock'
-          : 'browse'
-    const active = q('.launch-tile.active', shell)?.dataset.select || ''
-    const navKey = shell.dataset.view || ''
+    const navKey = shell.dataset.view || 'home'
     const variantKey = shell.dataset.variant || 'A'
+    const kind = navKey === 'restore-lock' ? 'lock' : navKey === 'home' ? 'home' : 'subpage'
     return {
-      key: `${variantKey}/${kind}/${navKey}/${active}`,
+      key: `${variantKey}/${navKey}`,
       kind,
       shell,
-      scene,
-      active,
       navKey,
+      variantKey,
     }
   }
 
   function capture() {
     const previous = describe()
     const tiles = new Map(
-      qa('.launch-tile', previous.shell).map((node) => [
-        node.dataset.select,
+      qa('.dock-icon-card[data-dock-id]', previous.shell).map((node) => [
+        node.dataset.dockId,
         {
           box: rect(node),
           radius: getComputedStyle(node).borderRadius,
@@ -113,8 +90,8 @@ window.PS5Motion = (() => {
     if (!node) return null
     const frames = offset
       ? [
-          { opacity: 0, transform: `translateY(${offset}px)` },
-          { opacity: 1, transform: 'translateY(0)' },
+          { opacity: 0, transform: `translateY(${offset}px) scale(0.988)` },
+          { opacity: 1, transform: 'translateY(0) scale(1)' },
         ]
       : [{ opacity: 0 }, { opacity: 1 }]
     return play(
@@ -125,19 +102,19 @@ window.PS5Motion = (() => {
     )
   }
 
-  function flipTiles(previous, next) {
+  function flipDockTiles(previous, next) {
     let count = 0
-    for (const node of qa('.launch-tile', next.shell)) {
-      const old = previous.tiles?.get(node.dataset.select)
+    for (const node of qa('.dock-icon-card[data-dock-id]', next.shell)) {
+      const old = previous.tiles?.get(node.dataset.dockId)
       if (!old) continue
       const to = rect(node)
       const from = old.box
-      if (!to.width || !to.height) continue
+      if (!to.width || !to.height || !from.width || !from.height) continue
       const dx = from.left - to.left
       const dy = from.top - to.top
       const sx = from.width / to.width
       const sy = from.height / to.height
-      if (Math.abs(dx) + Math.abs(dy) + Math.abs(sx - 1) + Math.abs(sy - 1) < 0.01) continue
+      if (Math.abs(dx) + Math.abs(dy) + Math.abs(sx - 1) + Math.abs(sy - 1) < 0.5) continue
       node.style.transformOrigin = '0 0'
       play(
         node,
@@ -149,7 +126,7 @@ window.PS5Motion = (() => {
           },
         ],
         { duration: timing.tile },
-        `.launch-tile[data-select="${CSS.escape(node.dataset.select)}"]`,
+        `.dock-icon-card[data-dock-id="${CSS.escape(node.dataset.dockId)}"]`,
       )
       count++
     }
@@ -161,20 +138,17 @@ window.PS5Motion = (() => {
     if (!available() || !next.shell) return
     if (previous.key === next.key && reason === 'update') return
     cancel('scene')
-    flipTiles(previous, next)
-    if (next.kind === 'project') {
-      fade('.project-main-art', 60, timing.artwork)
-      fade('.project-copy', 80, timing.copy, px(18))
-      fade('.project-highlights', 150, timing.cards, px(24))
-    } else if (next.kind === 'welcome') {
-      fade('.welcome-prompt', 40, timing.copy)
-      fade('.welcome-grid', 90, timing.welcome, px(34))
-    } else if (next.kind === 'lock') {
-      fade('.restore-lock-scene', 0, 220, px(16))
+    flipDockTiles(previous, next)
+    if (next.kind === 'lock') {
+      fade('.restore-lock-scene', 0, timing.lock, px(16))
+    } else if (next.kind === 'home') {
+      fade('.overview-showcase', 20, timing.scene, px(14))
+      if (!previous.tiles?.size || previous.variantKey !== next.variantKey) {
+        fade('.bottom-dock-zone', 55, timing.cards, px(18))
+      }
     } else {
-      fade('.browse-page', 40, timing.scene, px(18))
+      fade('.subpage-stage', 15, timing.scene, px(16))
     }
-    lastReport = { reason, scene: next.kind }
   }
 
   return Object.freeze({ capture, animate, cancel, timing })

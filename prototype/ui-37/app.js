@@ -1,49 +1,136 @@
-/* ReStore PS5 原生应用高保真可交互原型 (#37)
-   支持三套结构变体 (?variant=A|B|C)：
-   - Variant A：当前已按反馈打磨的分块工作台
-   - Variant B：PS5 沉浸主从焦点舞台（左巨幅焦点卡 + 右联动检查器）
-   - Variant C：PS5 控制中心极简横向带（Ribbon 等高大磁贴阵列）
-   严格保证：页面内点击绝不跳转其他页面；所有原型/开发者开关完全悬浮独立。 */
+/* Plan: Three structurally distinct Apple tvOS × PS5 variants of ReStore (#37), switchable via `?variant=A|B|C` and a floating bottom switcher.
+   - VariantA：tvOS 液态玻璃画境（Apple TV 开放展台 + 右侧三层液态设备条 + 底部全宽毛玻璃托盘四纯图标卡）
+   - VariantB：Bento 空间控制坞（visionOS 对称环形容量矩阵 + 底部居中常驻四纯图标控制坞）
+   - VariantC：PS5 极简全画幅光域（全景四联横置仪器舱 + 无外框独立水晶大磁贴 + 焦点联动氛围光） */
 ;(() => {
   'use strict'
 
   const ICONS = {
-    home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5.5v-6h-5v6H4a1 1 0 0 1-1-1v-9.5Z"/></svg>',
-    restore: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3.5 2"/></svg>',
-    store: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 7h16l-1.5 12.5a1 1 0 0 1-1 .9H6.5a1 1 0 0 1-1-.9L4 7Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>',
-    cloud: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M7.5 18.5h9.8a4.2 4.2 0 0 0 .4-8.4A5.8 5.8 0 0 0 6.3 8.9 4.6 4.6 0 0 0 7.5 18.5Z"/></svg>',
-    settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.4 1Z"/></svg>',
-    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
-    unlock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 7.4-2"/></svg>',
-    usb: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3v14"/><path d="m9 6 3-3 3 3"/><path d="M7 10v3l5 3"/><path d="M17 9v3l-5 3"/><circle cx="12" cy="19" r="2.2"/></svg>',
-    bolt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M13 2 4.5 13H12l-1 9 8.5-11H12l1-9Z"/></svg>',
-    save: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"/><path d="M8 4v6h8V4"/><path d="M8 21v-6h8v6"/></svg>',
-    grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.8"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.8"/></svg>',
-    media: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.6"/><path d="m21 16-5.2-5.2L7 19"/></svg>',
-    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9.5v5"/><circle cx="12" cy="17.2" r="1"/></svg>',
-    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
-    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3 4 6.5v5.8c0 5 3.4 9.3 8 10.7 4.6-1.4 8-5.7 8-10.7V6.5L12 3Z"/></svg>',
+    restore:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3.5 2"/></svg>',
+    apps: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16.5 9 5 9-5"/></svg>',
+    store:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.3 11.4a2 2 0 0 1-2 1.8H8.3a2 2 0 0 1-2-1.8L5 8Z"/><path d="M9 8V5.8a3 3 0 0 1 6 0V8"/></svg>',
+    other:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="9" cy="7" r="2.6" fill="currentColor"/><circle cx="15" cy="17" r="2.6" fill="currentColor"/></svg>',
+    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+    usb: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v14"/><path d="m9 6 3-3 3 3"/><path d="M7 10v3l5 3"/><path d="M17 9v3l-5 3"/><circle cx="12" cy="19" r="2.2"/></svg>',
+    cloud:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 18.5h9.8a4.2 4.2 0 0 0 .4-8.4A5.8 5.8 0 0 0 6.3 8.9 4.6 4.6 0 0 0 7.5 18.5Z"/></svg>',
+    ssd: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="M7 14h4"/><circle cx="16.5" cy="14" r="1.2" fill="currentColor"/></svg>',
+    bolt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13H12l-1 9 8.5-11H12l1-9Z"/></svg>',
+    save: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 20V5.5A1.5 1.5 0 0 1 5.5 4Z"/><path d="M8 4v6h8V4"/><path d="M8 21v-6h8v6"/></svg>',
+    grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="2.2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2.2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2.2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2.2"/></svg>',
+    media:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="8.5" cy="10" r="1.6"/><path d="m21 16-5.2-5.2L7 19"/></svg>',
+    settings:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.4 1Z"/></svg>',
+    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9.5v5"/><circle cx="12" cy="17.2" r="1"/></svg>',
+    check:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
+    shield:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6.5v5.8c0 5 3.4 9.3 8 10.7 4.6-1.4 8-5.7 8-10.7V6.5L12 3Z"/></svg>',
   }
 
-  const NAV_TABS = [
-    { id: 'home', label: '概览', icon: 'home' },
-    { id: 'restore', label: '恢复', icon: 'restore' },
-    { id: 'store-apps', label: '软件商店', icon: 'store', disabledPreview: true },
-    { id: 'store-games', label: '网盘游戏', icon: 'cloud', disabledPreview: true },
-    { id: 'settings', label: '设置', icon: 'settings' },
+  /* 四个最下方卡片专属立体纯图形徽标（Apple TV 多层质感 × PS5 几何语言，卡片内零文字） */
+  const DOCK_EMBLEMS = {
+    restore: `
+      <svg class="dock-emblem" viewBox="0 0 88 88" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="emb-res-ring" x1="14" y1="12" x2="74" y2="76" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#FFFFFF"/>
+            <stop offset="100%" stop-color="#93C5FD"/>
+          </linearGradient>
+          <linearGradient id="emb-res-core" x1="28" y1="26" x2="60" y2="62" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#E0F2FE" stop-opacity="0.95"/>
+            <stop offset="100%" stop-color="#60A5FA" stop-opacity="0.45"/>
+          </linearGradient>
+        </defs>
+        <circle cx="44" cy="44" r="30" fill="url(#emb-res-core)" fill-opacity="0.22"/>
+        <path d="M18.5 44C18.5 29.9 29.9 18.5 44 18.5C58.1 18.5 69.5 29.9 69.5 44C69.5 58.1 58.1 69.5 44 69.5C34.2 69.5 25.7 64 21.4 55.8" stroke="url(#emb-res-ring)" stroke-width="6.2" stroke-linecap="round"/>
+        <path d="M16 21V36.5H31.5" stroke="#FFFFFF" stroke-width="6.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M44 30.5V45L54.5 51" stroke="#FFFFFF" stroke-width="6.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `,
+    apps: `
+      <svg class="dock-emblem" viewBox="0 0 88 88" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="emb-app-top" x1="20" y1="16" x2="68" y2="48" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#67E8F9"/>
+            <stop offset="100%" stop-color="#38BDF8"/>
+          </linearGradient>
+          <linearGradient id="emb-app-mid" x1="18" y1="36" x2="70" y2="62" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#34D399"/>
+            <stop offset="100%" stop-color="#0EA5E9"/>
+          </linearGradient>
+        </defs>
+        <path d="M44 50L72 35.5L44 21L16 35.5L44 50Z" fill="url(#emb-app-top)"/>
+        <path d="M16 46.5L44 61L72 46.5" stroke="url(#emb-app-mid)" stroke-width="6.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16 58L44 72.5L72 58" stroke="#E2E8F0" stroke-opacity="0.78" stroke-width="6.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `,
+    store: `
+      <svg class="dock-emblem" viewBox="0 0 88 88" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="emb-bag-body" x1="22" y1="28" x2="66" y2="74" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.96"/>
+            <stop offset="100%" stop-color="#C7D2FE" stop-opacity="0.82"/>
+          </linearGradient>
+        </defs>
+        <path d="M32.5 31V26.5C32.5 20.1 37.6 15 44 15C50.4 15 55.5 20.1 55.5 26.5V31" stroke="#FFFFFF" stroke-width="5.8" stroke-linecap="round"/>
+        <rect x="20" y="29" width="48" height="43" rx="13" fill="url(#emb-bag-body)"/>
+        <path d="M44 41L47.1 47.6L54.4 48.5L49 53.6L50.4 60.8L44 57.3L37.6 60.8L39 53.6L33.6 48.5L40.9 47.6L44 41Z" fill="#2563EB"/>
+      </svg>
+    `,
+    other: `
+      <svg class="dock-emblem" viewBox="0 0 88 88" fill="none" aria-hidden="true">
+        <rect x="16" y="25" width="56" height="12" rx="6" fill="#FFFFFF" fill-opacity="0.22"/>
+        <rect x="16" y="51" width="56" height="12" rx="6" fill="#FFFFFF" fill-opacity="0.22"/>
+        <rect x="16" y="25" width="26" height="12" rx="6" fill="#60A5FA"/>
+        <rect x="44" y="51" width="28" height="12" rx="6" fill="#93C5FD"/>
+        <circle cx="38" cy="31" r="10.5" fill="#FFFFFF"/>
+        <circle cx="50" cy="57" r="10.5" fill="#FFFFFF"/>
+      </svg>
+    `,
+  }
+
+  /* 右上角类 Apple TV Memoji 质感头像 SVG */
+  const AVATAR_SVG = `
+    <svg viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <circle cx="20" cy="20" r="20" fill="url(#av-bg)"/>
+      <defs>
+        <linearGradient id="av-bg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#FFE0CC"/>
+          <stop offset="100%" stop-color="#D7B4F8"/>
+        </linearGradient>
+      </defs>
+      <path d="M9 38C9.8 31.5 14.3 28 20 28C25.7 28 30.2 31.5 31 38" fill="#1E293B"/>
+      <circle cx="20" cy="18.5" r="8.2" fill="#FCD5B8"/>
+      <path d="M11.6 17.5C11.6 11.8 15.2 8.8 20 8.8C24.8 8.8 28.4 11.8 28.4 17.5C26.7 15.1 23.7 14 20 14C16.3 14 13.3 15.1 11.6 17.5Z" fill="#1E2430"/>
+      <circle cx="17.1" cy="18.8" r="1.15" fill="#1E2430"/>
+      <circle cx="22.9" cy="18.8" r="1.15" fill="#1E2430"/>
+      <path d="M17.6 22.3C18.9 23.4 21.1 23.4 22.4 22.3" stroke="#9A5B4A" stroke-width="1.4" stroke-linecap="round"/>
+    </svg>
+  `
+
+  /* 四个最下方纯图标卡片（顺序：恢复、软件、商店、其他） */
+  const DOCK_ITEMS = [
+    { id: 'restore', label: '恢复' },
+    { id: 'apps', label: '软件', lockedPreview: true },
+    { id: 'store', label: '商店', lockedPreview: true },
+    { id: 'other', label: '其他' },
   ]
 
-  const VARIANTS = {
-    A: 'A · 经典双栏分块工作台',
-    B: 'B · 沉浸主从焦点舞台',
-    C: 'C · 控制中心极简横向带',
-  }
+  const VARIANTS = [
+    { key: 'A', name: 'tvOS 液态玻璃画境' },
+    { key: 'B', name: 'Bento 空间控制坞' },
+    { key: 'C', name: 'PS5 极简全画幅光域' },
+  ]
 
   const FIVE_OBJECTS = [
     {
       id: 'elf',
       order: 1,
-      stepName: '插件与载荷',
       title: '系统插件与载荷',
       countText: '12 项插件与自启服务',
       icon: 'bolt',
@@ -53,28 +140,25 @@
     {
       id: 'desktop',
       order: 2,
-      stepName: '桌面图标',
       title: '游戏桌面展示',
       countText: '14 款桌面游戏图标',
       icon: 'grid',
       size: '64 MB',
       desc: '在主界面与游戏库还原原有游戏图标和列表记录。',
-      note: '仅恢复桌面图标，不含游戏本体与补丁文件',
+      note: '仅恢复桌面图标，不含游戏本体',
     },
     {
       id: 'saves',
       order: 3,
-      stepName: '游戏存档',
       title: '全游戏通用存档',
       countText: '19 款游戏 · 46 个存档',
       icon: 'save',
       size: '1.4 GB',
-      desc: '自动绑定当前主机账号，支持尚未启动过的游戏直接恢复存档并对齐列表进度。',
+      desc: '自动绑定当前主机账号，支持尚未启动过的游戏直接恢复存档并对齐进度。',
     },
     {
       id: 'settings',
       order: 4,
-      stepName: '系统设置',
       title: '系统与账号设置',
       countText: '离线激活与系统偏好',
       icon: 'settings',
@@ -84,7 +168,6 @@
     {
       id: 'media',
       order: 5,
-      stepName: '媒体图库',
       title: '媒体图库',
       countText: '86 项截图与视频',
       icon: 'media',
@@ -153,26 +236,51 @@
     { id: 'spiderman2', title: '漫威蜘蛛侠 2', meta: '动作冒险 · 68.0 GB', cover: './assets/games/marvels-spider-man-2/cover.png' },
   ]
 
+  function normalizeView(v) {
+    if (!v || v === 'home') return 'home'
+    if (v === 'restore') return 'restore'
+    if (v === 'apps' || v === 'store-apps') return 'apps'
+    if (v === 'store' || v === 'store-games') return 'store'
+    if (v === 'other' || v === 'settings') return 'other'
+    return 'home'
+  }
+
+  function formatAppleClock() {
+    const now = new Date()
+    let hours = now.getHours()
+    const minutes = String(now.getMinutes()).padStart(2, '0')
+    const period = hours >= 12 ? 'PM' : 'AM'
+    hours = hours % 12 || 12
+    return `${hours}:${minutes} ${period}`
+  }
+
   const urlParams = new URLSearchParams(window.location.search)
+  const rawVariant = (urlParams.get('variant') || 'A').toUpperCase()
+  const initialVariant = VARIANTS.some((v) => v.key === rawVariant) ? rawVariant : 'A'
   const rawView = urlParams.get('view')
   const initialOnboardingOpen = rawView === 'onboarding' || urlParams.get('onboarding') === '1'
-  const initialView = NAV_TABS.some((t) => t.id === rawView) ? rawView : 'home'
   const initialLockMode = urlParams.get('lock')
   const initialModal = urlParams.get('modal')
 
   const state = {
-    variant: 'C',
-    view: initialView,
-    devDockCollapsed: false,
+    variant: initialVariant,
+    view: normalizeView(rawView),
+    focusedDockId: 'restore',
+    devDockCollapsed: true,
     onboardingOpen: initialOnboardingOpen,
     onboardingHasRp: urlParams.get('branch') !== 'empty-rp',
-    homeFocusedLocationId: 'usb',
-    homeFocusedObjectId: 'saves',
     selectedLocationId: 'usb',
     selectedRestorePointId: 'rp-18',
     selectedObjects: ['elf', 'desktop', 'saves', 'settings', 'media'],
     autoBackupScope: ['elf', 'desktop', 'saves', 'settings', 'media'],
     spaceLowSimulated: false,
+    hostStorage: {
+      name: 'PS5 主机内置存储',
+      free: '218 GB',
+      total: '825 GB',
+      usedPercent: 74,
+      daemonText: '守护服务常驻运行中',
+    },
     lockScene: {
       active: ['normal', 'conflict', 'resumed'].includes(initialLockMode),
       mode: ['normal', 'conflict', 'resumed'].includes(initialLockMode) ? initialLockMode : 'normal',
@@ -192,35 +300,50 @@
       {
         id: 'usb',
         name: 'USB 存储设备',
+        endpoint: '前置高速接口 · exFAT',
         type: 'usb',
         enabled: true,
         status: 'connected',
-        statusText: '已同步最新备份',
+        statusText: '已接入 · 已同步最新备份',
         progress: 100,
         lastSync: '今天 19:10',
+        freeOnly: '184 GB',
+        totalOnly: '256 GB',
         freeSpace: '184 GB 可用 / 256 GB',
+        usedPercent: 28,
+        freePercent: 72,
       },
       {
         id: 'lan',
         name: '局域网 WebDAV',
+        endpoint: '192.168.50.10 · NAS',
         type: 'webdav',
         enabled: true,
         status: 'connected',
-        statusText: '已同步最新备份',
+        statusText: '在线 · 已同步最新备份',
         progress: 100,
         lastSync: '今天 19:11',
+        freeOnly: '1.8 TB',
+        totalOnly: '4.0 TB',
         freeSpace: '1.8 TB 可用 / 4.0 TB',
+        usedPercent: 55,
+        freePercent: 45,
       },
       {
         id: 'cloud',
         name: '云端 WebDAV',
+        endpoint: '加密远端存储池',
         type: 'webdav',
         enabled: true,
         status: 'syncing',
-        statusText: '正在后台同步 74%',
+        statusText: '在线 · 后台同步中 74%',
         progress: 74,
         lastSync: '今天 16:40',
+        freeOnly: '412 GB',
+        totalOnly: '1.0 TB',
         freeSpace: '412 GB 可用 / 1.0 TB',
+        usedPercent: 59,
+        freePercent: 41,
       },
     ],
     restorePoints: [
@@ -266,7 +389,7 @@
 
   function syncUrl() {
     const u = new URL(window.location.href)
-    u.searchParams.delete('variant')
+    u.searchParams.set('variant', state.variant)
     u.searchParams.set('view', state.onboardingOpen ? 'onboarding' : state.view)
     if (state.lockScene.active) {
       u.searchParams.set('lock', state.lockScene.mode)
@@ -276,126 +399,319 @@
     window.history.replaceState({}, '', u)
   }
 
+  /* ==================== 顶栏：右上角严格只有「时间 + 头像」 ==================== */
   function renderHeader() {
+    const currentDock = DOCK_ITEMS.find((d) => d.id === state.view)
+    let leftSlot = '<div></div>'
+
+    if (state.lockScene.active) {
+      leftSlot = `
+        <div class="header-subview-title">
+          <h1>正在恢复数据</h1>
+        </div>
+      `
+    } else if (state.view === 'home') {
+      if (state.variant === 'A') {
+        leftSlot = `
+          <div class="header-stage-brand">
+            <span class="header-wordmark">ReStore</span>
+          </div>
+        `
+      }
+    } else if (currentDock) {
+      leftSlot = `
+        <div class="header-subview-title">
+          <h1>${currentDock.label}</h1>
+          <span class="badge muted">按 ◯ 返回主界面</span>
+        </div>
+      `
+    }
+
     return `
       <header class="system-header">
-        <div class="header-logo-minimal">
-          <img src="./assets/restore-logo.png" alt="ReStore" />
-          <span>ReStore</span>
-        </div>
-
-        <nav class="top-l1r1-bar" aria-label="顶部主导航">
-          <button type="button" class="shoulder-key" data-action="prev-tab" title="L1 上一页 (快捷键 Q)">L1</button>
-          ${NAV_TABS.map(
-            (tab) => `
-            <button
-              type="button"
-              class="top-nav-pill ${!state.lockScene.active && state.view === tab.id ? 'current' : ''} ${tab.disabledPreview ? 'is-disabled-preview' : ''}"
-              data-action="switch-view"
-              data-view="${tab.id}"
-            >
-              ${tab.disabledPreview ? ICONS.lock : ICONS[tab.icon]}
-              <span>${tab.label}</span>
-            </button>
-          `,
-          ).join('')}
-          <button type="button" class="shoulder-key" data-action="next-tab" title="R1 下一页 (快捷键 E)">R1</button>
-        </nav>
-
-        <div class="header-status-cluster">
-          <div class="service-indicator">
-            <i class="status-dot"></i>
-            <span>后台服务运行中</span>
-          </div>
-          <div class="user-pill">
-            <div class="user-avatar">YP</div>
-            <span>YunPeng</span>
-          </div>
-          <time class="system-clock">20:02</time>
+        ${leftSlot}
+        <div class="tvos-time-avatar-pill" aria-label="系统时间与当前账号头像">
+          <time class="tvos-clock">${formatAppleClock()}</time>
+          <div class="tvos-avatar">${AVATAR_SVG}</div>
         </div>
       </header>
     `
   }
 
-  /* ==================== 概览页（控制中心极简横向带，页内操作绝不跳页面） ==================== */
-  function renderHomePage() {
+  /* ==================== 底部四个纯 ICON 卡片渲染器（卡片内严格只有 ICON，零文字） ==================== */
+  function renderFourIconCards() {
+    return DOCK_ITEMS.map((item) => {
+      const isRouteActive = state.view === item.id && !state.lockScene.active
+      return `
+        <button
+          type="button"
+          class="dock-icon-card ${isRouteActive ? 'is-active-route' : ''}"
+          data-action="open-dock-item"
+          data-dock-id="${item.id}"
+          aria-label="${item.label}"
+          title="${item.label}"
+        >
+          ${DOCK_EMBLEMS[item.id]}
+        </button>
+      `
+    }).join('')
+  }
+
+  /* ==================== Variant A：tvOS 液态玻璃画境（主屏：上中无交互概览 + 下方全宽毛玻璃四图标托盘） ==================== */
+  function VariantAHome() {
+    const latestRp = state.restorePoints[0]
+    const enabledCount = state.locations.filter((l) => l.enabled).length
+
     return `
-      <main class="page-container">
-        <div class="vc-ribbon-shell">
-          <div class="vc-top-summary-bar">
-            <div style="display:flex; align-items:center; gap:16rem;">
-              <span class="badge green">${ICONS.check}<span>最近完整恢复点：今天 19:10</span></span>
-              <span style="font-size:16.5rem; color:#c5cfde;">已保护 12 项插件、19 款存档、14 款桌面图标、系统设置与 86 项媒体</span>
+      <main class="home-stage">
+        <section class="overview-showcase" aria-label="设备与存储状态概览">
+          <div class="va-overview-layout">
+            <div class="va-hero-left">
+              <div class="va-eyebrow">
+                <i class="status-dot-inline"></i>
+                <span>${state.hostStorage.daemonText} · ${enabledCount} 个备份位置已启用</span>
+              </div>
+              <h1 class="va-hero-headline">整机数据保护已就绪</h1>
+              <p class="va-hero-sub">
+                最近完整恢复点生成于 ${latestRp.title.replace(' 自动备份', '')}，共保护 12 项插件、19 款游戏存档、14 款桌面图标、系统设置与 86 项媒体记录。
+              </p>
+              <div class="va-host-strip">
+                <div class="va-host-metric">
+                  <strong>${state.hostStorage.free}</strong>
+                  <span>PS5 内置存储可用 / 共 ${state.hostStorage.total}</span>
+                </div>
+                <div class="va-host-divider"></div>
+                <div class="va-host-metric">
+                  <strong>${latestRp.size}</strong>
+                  <span>最新完整快照体积</span>
+                </div>
+                <div class="va-host-divider"></div>
+                <div class="va-host-metric">
+                  <strong>5 / 5 类</strong>
+                  <span>保护范围全部开启</span>
+                </div>
+              </div>
             </div>
-            <button type="button" class="pill sm primary" data-action="manual-backup">
-              ${ICONS.bolt}<span>立即备份</span>
-            </button>
-          </div>
 
-          <div class="vc-ribbon-grid">
-            <button type="button" class="vc-tall-card primary-card" data-action="manual-backup">
-              <div>
-                <img src="./assets/restore-logo-full.png" alt="ReStore" style="width:74rem; height:74rem; border-radius:18rem; margin-bottom:22rem;" />
-                <h2>立即创建恢复点</h2>
-                <p>检测自上次备份以来的存档与插件变更，未变化数据自动复用已有块。</p>
-                <div class="card-below-tags">
-                  <span class="badge blue">自动增量保护</span>
-                </div>
-              </div>
-              <div style="padding-top:16rem; border-top:1rem solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; font-size:14rem; color:#bfd6f6;">
-                <span>共 5 类保护对象</span>
-                <span>5.4 GB</span>
-              </div>
-            </button>
-
-            ${state.locations
-              .map(
-                (loc) => `
-              <button
-                type="button"
-                class="vc-tall-card ${state.homeFocusedLocationId === loc.id ? 'selected' : ''}"
-                data-action="focus-home-location"
-                data-loc="${loc.id}"
-              >
-                <div>
-                  <div class="loc-row-top" style="margin-bottom:22rem;">
-                    <div class="tile-icon">${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}</div>
-                    <span class="badge ${loc.status === 'connected' ? 'green' : 'blue'}">${loc.progress}%</span>
-                  </div>
-                  <h2>${loc.name}</h2>
-                  <p>${loc.statusText}，最近完成于 ${loc.lastSync}。</p>
-                  <div class="card-below-tags">
-                    <span class="badge muted">${loc.type === 'usb' ? '本地高速存储' : '网络存储'}</span>
-                  </div>
-                </div>
-                <div>
-                  <div class="loc-progress-line" style="margin-bottom:12rem;"><i style="width:${loc.progress}%"></i></div>
-                  <div style="display:flex; justify-content:space-between; font-size:13.5rem; color:#94a0b2;">
-                    <span>${loc.freeSpace}</span>
-                    <span>${loc.type === 'webdav' ? '按 ✕ 配置连接' : '按 ✕ 校验'}</span>
-                  </div>
-                </div>
-              </button>
-            `,
-              )
-              .join('')}
+            <div class="va-devices-stack">
+              ${state.locations
+                .map((loc) => {
+                  const dotClass = !loc.enabled ? 'paused' : loc.status === 'syncing' ? 'syncing' : ''
+                  const stateLabel = !loc.enabled ? '已暂停同步' : loc.statusText
+                  return `
+                    <div class="va-device-glass-card">
+                      <div class="va-device-top">
+                        <div class="va-device-name">
+                          ${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}
+                          <span>${loc.name}</span>
+                        </div>
+                        <div class="va-device-state">
+                          <i class="status-dot-inline ${dotClass}"></i>
+                          <span>${stateLabel}</span>
+                        </div>
+                      </div>
+                      <div class="liquid-meter">
+                        <i style="width:${loc.usedPercent}%"></i>
+                      </div>
+                      <div class="va-device-meta">
+                        <span>${loc.freeSpace}</span>
+                        <span>${loc.endpoint} · 最近同步 ${loc.lastSync}</span>
+                      </div>
+                    </div>
+                  `
+                })
+                .join('')}
+            </div>
           </div>
-        </div>
+        </section>
+
+        <nav class="bottom-dock-zone va-dock-tray" aria-label="底部主功能卡片">
+          ${renderFourIconCards()}
+        </nav>
       </main>
     `
   }
 
-  /* ==================== 恢复页（开放式顶栏胶囊 + 5 张纵向等高步骤卡片） ==================== */
+  /* ==================== Variant B：Bento 空间控制坞（对称毛玻璃环形矩阵 + 常驻居中四图标 Dock） ==================== */
+  function renderRadialGauge(freePercent, accentColor) {
+    const r = 33
+    const c = 2 * Math.PI * r
+    const usedPercent = 100 - freePercent
+    const dash = (usedPercent / 100) * c
+    return `
+      <svg class="vb-radial-svg" viewBox="0 0 82 82" aria-hidden="true">
+        <circle cx="41" cy="41" r="${r}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="8"/>
+        <circle
+          cx="41"
+          cy="41"
+          r="${r}"
+          fill="none"
+          stroke="${accentColor}"
+          stroke-width="8"
+          stroke-linecap="round"
+          stroke-dasharray="${dash.toFixed(1)} ${c.toFixed(1)}"
+          transform="rotate(-90 41 41)"
+        />
+        <text x="41" y="45" text-anchor="middle" fill="#F8FAFC" font-size="16" font-weight="600">${freePercent}%</text>
+      </svg>
+    `
+  }
+
+  function VariantBHome() {
+    const latestRp = state.restorePoints[0]
+    const ringColors = ['#38BDF8', '#60A5FA', '#818CF8']
+
+    return `
+      <main class="home-stage">
+        <section class="overview-showcase" aria-label="Bento 存储与设备状态矩阵">
+          <div class="vb-bento-grid">
+            <div class="vb-bento-card span-2">
+              <div class="vb-bento-head">
+                <span class="vb-bento-label">${ICONS.ssd}<span>PS5 主机内置存储与受保护数据构成</span></span>
+                <span class="badge blue">ReStore 整机概览</span>
+              </div>
+              <div style="display:flex; align-items:baseline; justify-content:space-between; gap:20rem;">
+                <div class="vb-bento-big">${state.hostStorage.free} 可用 <span style="font-size:19rem; font-weight:400; color:#9fb0c6;">/ 共 ${state.hostStorage.total}</span></div>
+                <span style="font-size:15rem; color:#bcd0ea;">受保护数据总计 5.4 GB</span>
+              </div>
+              <div class="vb-spectrum-bar">
+                <div class="vb-spectrum-seg" style="width:48%; background:#475569;"></div>
+                <div class="vb-spectrum-seg" style="width:14%; background:#3B82F6;"></div>
+                <div class="vb-spectrum-seg" style="width:8%; background:#38BDF8;"></div>
+                <div class="vb-spectrum-seg" style="width:4%; background:#818CF8;"></div>
+              </div>
+              <div class="vb-spectrum-legend">
+                <span class="vb-legend-item"><i class="vb-legend-swatch" style="background:#3B82F6;"></i>媒体图库 3.9 GB</span>
+                <span class="vb-legend-item"><i class="vb-legend-swatch" style="background:#38BDF8;"></i>通用存档 1.4 GB</span>
+                <span class="vb-legend-item"><i class="vb-legend-swatch" style="background:#818CF8;"></i>插件与桌面 112 MB</span>
+                <span class="vb-legend-item"><i class="vb-legend-swatch" style="background:#475569;"></i>系统与游戏本体 601 GB</span>
+              </div>
+            </div>
+
+            <div class="vb-bento-card">
+              <div class="vb-bento-head">
+                <span class="vb-bento-label">${ICONS.shield}<span>守护服务与最新恢复点</span></span>
+                <span class="badge green">运行正常</span>
+              </div>
+              <div>
+                <div class="vb-bento-big" style="font-size:31rem;">${latestRp.title.replace(' 自动备份', '')}</div>
+                <p style="margin:8rem 0 0; font-size:14.5rem; color:#a6b5c9; line-height:1.5;">
+                  ${latestRp.note}，退出游戏且存档写入稳定后自动增量同步。
+                </p>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:14rem; color:#94a6be; padding-top:10rem; border-top:1rem solid rgba(255,255,255,0.08);">
+                <span>已启用 ${state.locations.filter((l) => l.enabled).length} / 3 个位置</span>
+                <span>锁定保护 ${state.restorePoints.filter((r) => r.protected).length} 份</span>
+              </div>
+            </div>
+
+            ${state.locations
+              .map((loc, idx) => {
+                const dotClass = !loc.enabled ? 'paused' : loc.status === 'syncing' ? 'syncing' : ''
+                return `
+                  <div class="vb-bento-card">
+                    <div class="vb-bento-head">
+                      <span class="vb-bento-label">${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}<span>${loc.name}</span></span>
+                      <i class="status-dot-inline ${dotClass}"></i>
+                    </div>
+                    <div class="vb-ring-row">
+                      ${renderRadialGauge(loc.freePercent, ringColors[idx % ringColors.length])}
+                      <div class="vb-ring-copy">
+                        <strong>${loc.freeOnly} 可用</strong>
+                        <span>总容量 ${loc.totalOnly} · ${loc.endpoint}</span>
+                        <small>${!loc.enabled ? '已暂停同步' : loc.statusText}</small>
+                      </div>
+                    </div>
+                  </div>
+                `
+              })
+              .join('')}
+          </div>
+        </section>
+
+        <nav class="bottom-dock-zone vb-dock-shell" aria-label="底部常驻控制坞">
+          ${renderFourIconCards()}
+        </nav>
+      </main>
+    `
+  }
+
+  /* ==================== Variant C：PS5 极简全画幅光域（全景横置仪器舱 + 无外框独立发光大磁贴） ==================== */
+  function VariantCHome() {
+    const enabledCount = state.locations.filter((l) => l.enabled).length
+
+    return `
+      <main class="home-stage">
+        <section class="overview-showcase" aria-label="全景存储与位置状态总览">
+          <div class="vc-panoramic-overview">
+            <div class="vc-monument-copy">
+              <div class="vc-monument-kicker">
+                <i class="status-dot-inline"></i>
+                <span>ReStore · ${state.hostStorage.daemonText}</span>
+              </div>
+              <div class="vc-monument-value">5.4 GB 整机快照已同步</div>
+              <div class="vc-monument-sub">
+                最近完整恢复点：今天 19:10 · ${enabledCount} 台存储设备在线 · 共 5.26 TB 备份存储池
+              </div>
+            </div>
+
+            <div class="vc-horizon-capsule">
+              <div class="vc-horizon-col">
+                <div class="vc-horizon-top">
+                  <span>PS5 内置存储</span>
+                  <i class="status-dot-inline"></i>
+                </div>
+                <div class="vc-horizon-size">${state.hostStorage.free}<small>/ ${state.hostStorage.total}</small></div>
+                <div class="liquid-meter"><i style="width:${state.hostStorage.usedPercent}%"></i></div>
+                <div class="vc-horizon-foot">本机高速 NVMe · 5 类数据已受保护</div>
+              </div>
+
+              ${state.locations
+                .map((loc) => {
+                  const dotClass = !loc.enabled ? 'paused' : loc.status === 'syncing' ? 'syncing' : ''
+                  return `
+                    <div class="vc-horizon-col">
+                      <div class="vc-horizon-top">
+                        <span>${loc.name}</span>
+                        <i class="status-dot-inline ${dotClass}"></i>
+                      </div>
+                      <div class="vc-horizon-size">${loc.freeOnly}<small>/ ${loc.totalOnly}</small></div>
+                      <div class="liquid-meter"><i style="width:${loc.usedPercent}%"></i></div>
+                      <div class="vc-horizon-foot">${!loc.enabled ? '已暂停同步' : `${loc.statusText} · ${loc.lastSync}`}</div>
+                    </div>
+                  `
+                })
+                .join('')}
+            </div>
+          </div>
+        </section>
+
+        <nav class="bottom-dock-zone vc-monolith-dock" aria-label="底部独立功能大磁贴">
+          ${renderFourIconCards()}
+        </nav>
+      </main>
+    `
+  }
+
+  function renderPersistentDockIfVariantB() {
+    if (state.variant !== 'B') return ''
+    return `
+      <nav class="bottom-dock-zone vb-dock-shell is-compact" aria-label="底部常驻控制坞">
+        ${renderFourIconCards()}
+      </nav>
+    `
+  }
+
+  /* ==================== 子页 1：「恢复」（位置/恢复点药丸 + 5 张统一 30rem 液态玻璃步骤卡） ==================== */
   function renderRestorePage() {
     return `
-      <main class="page-container">
-        <div class="vc-ribbon-shell">
-          <div class="vc-top-summary-bar">
-            <div style="display:flex; align-items:center; gap:12rem;">
-              <span style="font-size:15rem; color:#95a2b4;">备份位置：</span>
-              ${state.locations
-                .map(
-                  (loc) => `
+      <main class="subpage-stage">
+        <div class="subpage-toolbar">
+          <div class="subpage-toolbar-group">
+            <span style="font-size:15rem; color:#9fb0c6;">备份位置：</span>
+            ${state.locations
+              .map(
+                (loc) => `
                 <button
                   type="button"
                   class="pill sm ${state.selectedLocationId === loc.id ? 'brand' : 'secondary'}"
@@ -405,12 +721,12 @@
                   <span>${loc.name}</span>
                 </button>
               `,
-                )
-                .join('')}
-              <span style="font-size:15rem; color:#95a2b4; margin-left:12rem;">恢复点：</span>
-              ${state.restorePoints
-                .map(
-                  (rp) => `
+              )
+              .join('')}
+            <span style="font-size:15rem; color:#9fb0c6; margin-left:10rem;">恢复点：</span>
+            ${state.restorePoints
+              .map(
+                (rp) => `
                 <button
                   type="button"
                   class="pill sm ${state.selectedRestorePointId === rp.id ? 'primary' : 'secondary'}"
@@ -420,96 +736,186 @@
                   <span>${rp.title}</span>
                 </button>
               `,
-                )
-                .join('')}
-            </div>
-            <button type="button" class="pill sm primary" data-action="start-lock-demo" data-mode="normal">
-              ${ICONS.restore}<span>开始恢复 (${state.selectedObjects.length}/5)</span>
-            </button>
+              )
+              .join('')}
           </div>
-
-          <div class="five-columns-grid" style="margin-top:0;">
-            ${FIVE_OBJECTS.map((obj) => {
-              const selected = state.selectedObjects.includes(obj.id)
-              return `
-                <button
-                  type="button"
-                  class="vc-tall-card ${selected ? 'primary-card selected' : ''}"
-                  style="min-height:480rem;"
-                  data-action="toggle-object"
-                  data-obj="${obj.id}"
-                >
-                  <div>
-                    <div class="object-tile-top" style="margin-bottom:22rem;">
-                      <div class="tile-icon">${ICONS[obj.icon]}</div>
-                      <div class="check-indicator">${ICONS.check}</div>
-                    </div>
-                    <h2>${obj.title}</h2>
-                    <p>${obj.desc}</p>
-                    <div class="card-below-tags">
-                      <span class="badge blue">执行顺序：第 ${obj.order} 步</span>
-                      ${obj.note ? `<span class="badge gold">${obj.note}</span>` : ''}
-                    </div>
-                  </div>
-                  <div>
-                    <div style="padding-top:14rem; border-top:1rem solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; font-size:14rem; color:#b5c2d4;">
-                      <span>${obj.countText}</span>
-                      <span>${obj.size}</span>
-                    </div>
-                  </div>
-                </button>
-              `
-            }).join('')}
-          </div>
+          <button type="button" class="pill sm primary" data-action="start-lock-demo" data-mode="normal">
+            ${ICONS.restore}<span>开始恢复 (${state.selectedObjects.length}/5)</span>
+          </button>
         </div>
+
+        <div class="five-columns-grid">
+          ${FIVE_OBJECTS.map((obj) => {
+            const selected = state.selectedObjects.includes(obj.id)
+            return `
+              <button
+                type="button"
+                class="glass-tall-card ${selected ? 'selected' : ''}"
+                data-action="toggle-object"
+                data-obj="${obj.id}"
+              >
+                <div>
+                  <div class="object-tile-top">
+                    <div class="tile-icon">${ICONS[obj.icon]}</div>
+                    <div class="check-indicator">${ICONS.check}</div>
+                  </div>
+                  <h2>${obj.title}</h2>
+                  <p>${obj.desc}</p>
+                  <div class="card-below-tags">
+                    <span class="badge blue">第 ${obj.order} 步</span>
+                    ${obj.note ? `<span class="badge gold">${obj.note}</span>` : ''}
+                  </div>
+                </div>
+                <div style="padding-top:14rem; border-top:1rem solid rgba(255,255,255,0.09); display:flex; justify-content:space-between; font-size:14rem; color:#b8c7dc;">
+                  <span>${obj.countText}</span>
+                  <span>${obj.size}</span>
+                </div>
+              </button>
+            `
+          }).join('')}
+        </div>
+
+        ${renderPersistentDockIfVariantB()}
       </main>
     `
   }
 
-  /* ==================== 设置页（高密度双栏四模块工作台，全屏一眼看全） ==================== */
-  function renderSettingsPage() {
+  /* ==================== 子页 2：「软件」（底层卡片 + 30rem 液态玻璃预览锁遮罩） ==================== */
+  function renderAppsPage() {
     return `
-      <main class="page-container">
-        <div class="vc-ribbon-shell">
-          <div class="vc-top-summary-bar">
-            <div style="display:flex; align-items:center; gap:14rem;">
-              <span class="badge green">${ICONS.check}<span>设置实时生效</span></span>
-              <span style="font-size:16rem; color:#bcc7d7;">多位置独立同步 · 自动备份范围 · 恢复点保护与空间清理 · 系统守护服务</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:10rem;">
-              <button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="lan">
-                <span>配置 WebDAV 凭据</span>
-              </button>
-              <button type="button" class="pill sm brand" data-action="open-onboarding">
-                <span>重新打开首次引导</span>
-              </button>
+      <main class="subpage-stage">
+        <div class="subpage-toolbar">
+          <div class="subpage-toolbar-group">
+            <span class="badge muted">全部</span>
+            <span class="badge muted">独立应用</span>
+            <span class="badge muted">扩展插件</span>
+            <span class="badge muted">系统载荷</span>
+          </div>
+        </div>
+
+        <div class="store-stage-wrap is-locked">
+          <div class="store-underlying-canvas" aria-hidden="true">
+            <div class="library-grid">
+              ${STORE_APPS.map(
+                (app) => `
+                <article class="store-app-card">
+                  <div class="store-app-top">
+                    <img src="${app.art}" alt="${app.name}" />
+                    <div>
+                      <strong>${app.name}</strong>
+                      <small>${app.version}</small>
+                    </div>
+                  </div>
+                  <p class="store-app-desc">${app.desc}</p>
+                  <div class="store-app-footer">
+                    <span>${app.category} · ${app.size}</span>
+                    <span class="badge muted">获取</span>
+                  </div>
+                </article>
+              `,
+              ).join('')}
             </div>
           </div>
 
-          <div class="settings-dense-grid">
-            <!-- 模块 1：备份位置与网络配置 -->
-            <section class="settings-dense-card">
-              <div class="settings-dense-head">
-                <div>
-                  <div class="settings-dense-title">
-                    <div class="tile-icon">${ICONS.cloud}</div>
-                    <h2>备份位置与网络配置</h2>
+          <div class="store-preview-lock-overlay">
+            <div class="store-lock-glass-card">
+              <div class="store-lock-icon-badge">${ICONS.lock}</div>
+              <h2>软件频道暂未开放</h2>
+              <p>自制应用、系统载荷与扩展插件在线获取功能将在后续版本推出。</p>
+            </div>
+          </div>
+        </div>
+
+        ${renderPersistentDockIfVariantB()}
+      </main>
+    `
+  }
+
+  /* ==================== 子页 3：「商店」（底层封面网格 + 30rem 液态玻璃预览锁遮罩） ==================== */
+  function renderStorePage() {
+    return `
+      <main class="subpage-stage">
+        <div class="subpage-toolbar">
+          <div class="subpage-toolbar-group">
+            <span class="badge muted">全部来源</span>
+            <span class="badge muted">百度网盘</span>
+            <span class="badge muted">夸克网盘</span>
+          </div>
+        </div>
+
+        <div class="store-stage-wrap is-locked">
+          <div class="store-underlying-canvas" aria-hidden="true">
+            <div class="game-grid">
+              ${STORE_GAMES.map(
+                (g) => `
+                <article class="game-tile">
+                  <div class="game-cover">
+                    <img src="${g.cover}" alt="${g.title}" />
                   </div>
-                  <p class="settings-dense-sub">各位置独立同步互不阻塞，可通过手柄调用系统输入法填写凭据</p>
+                  <h3>${g.title}</h3>
+                  <p>${g.meta}</p>
+                </article>
+              `,
+              ).join('')}
+            </div>
+          </div>
+
+          <div class="store-preview-lock-overlay">
+            <div class="store-lock-glass-card">
+              <div class="store-lock-icon-badge">${ICONS.lock}</div>
+              <h2>商店频道暂未开放</h2>
+              <p>网盘连接与游戏库在线下载功能将在后续版本推出。</p>
+            </div>
+          </div>
+        </div>
+
+        ${renderPersistentDockIfVariantB()}
+      </main>
+    `
+  }
+
+  /* ==================== 子页 4：「其他」（2×2 高密度玻璃工作台，统一 30rem 圆角） ==================== */
+  function renderOtherPage() {
+    return `
+      <main class="subpage-stage">
+        <div class="subpage-toolbar">
+          <div class="subpage-toolbar-group">
+            <span class="badge green">${ICONS.check}<span>配置实时生效</span></span>
+            <span style="font-size:15rem; color:#b8c7dc;">备份位置与网络 · 自动备份范围 · 恢复点保护与清理 · 后台守护与首次引导</span>
+          </div>
+          <div class="subpage-toolbar-group">
+            <button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="lan">
+              <span>配置 WebDAV 凭据</span>
+            </button>
+            <button type="button" class="pill sm brand" data-action="open-onboarding">
+              <span>重新打开首次引导</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-dense-grid">
+          <section class="settings-dense-card">
+            <div class="settings-dense-head">
+              <div>
+                <div class="settings-dense-title">
+                  <div class="tile-icon">${ICONS.cloud}</div>
+                  <h2>备份位置与网络配置</h2>
                 </div>
-                <span class="badge blue">已启用 ${state.locations.filter((l) => l.enabled).length} / 3 个位置</span>
+                <p class="settings-dense-sub">各位置独立同步互不阻塞，支持手柄软键盘输入连接凭据</p>
               </div>
-              <div class="settings-compact-list">
-                ${state.locations
-                  .map(
-                    (loc) => `
+              <span class="badge blue">已启用 ${state.locations.filter((l) => l.enabled).length} / 3</span>
+            </div>
+            <div class="settings-compact-list">
+              ${state.locations
+                .map(
+                  (loc) => `
                   <div class="settings-compact-row">
                     <div class="settings-compact-main">
                       <strong>${loc.name}</strong>
-                      <p>${loc.statusText} · 最近完成：${loc.lastSync} · ${loc.freeSpace}</p>
+                      <p>${loc.statusText} · ${loc.freeSpace}</p>
                       <div class="settings-compact-tags">
                         <span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已启用' : '已暂停'}</span>
-                        <span class="badge muted">${loc.type === 'usb' ? '本地存储' : 'WebDAV 网络存储'}</span>
+                        <span class="badge muted">${loc.endpoint}</span>
                       </div>
                     </div>
                     <div class="settings-row-actions">
@@ -524,83 +930,77 @@
                     </div>
                   </div>
                 `,
-                  )
-                  .join('')}
-              </div>
-            </section>
+                )
+                .join('')}
+            </div>
+          </section>
 
-            <!-- 模块 2：自动备份内容范围 -->
-            <section class="settings-dense-card">
-              <div class="settings-dense-head">
-                <div>
-                  <div class="settings-dense-title">
-                    <div class="tile-icon">${ICONS.save}</div>
-                    <h2>自动备份内容范围</h2>
-                  </div>
-                  <p class="settings-dense-sub">关闭游戏或变更配置后自动增量同步所选项目，未变数据自动复用</p>
+          <section class="settings-dense-card">
+            <div class="settings-dense-head">
+              <div>
+                <div class="settings-dense-title">
+                  <div class="tile-icon">${ICONS.save}</div>
+                  <h2>自动备份内容范围</h2>
                 </div>
-                <span class="badge green">已开启 ${state.autoBackupScope.length} / 5 项</span>
+                <p class="settings-dense-sub">关闭游戏或变更配置后自动增量同步所选项目</p>
               </div>
-              <div class="settings-scope-grid">
-                ${FIVE_OBJECTS.map((obj, idx) => {
-                  const on = state.autoBackupScope.includes(obj.id)
-                  return `
-                    <button
-                      type="button"
-                      class="settings-scope-item ${on ? 'selected' : ''} ${idx === 4 ? 'span-2' : ''}"
-                      data-action="toggle-auto-scope"
-                      data-obj="${obj.id}"
-                    >
-                      <div class="settings-compact-main">
-                        <strong>${obj.title}</strong>
-                        <p>${obj.desc}</p>
-                        <div class="settings-compact-tags">
-                          <span class="badge ${on ? 'blue' : 'muted'}">${on ? '自动备份中' : '已关闭'}</span>
-                          <span class="badge muted">${obj.countText} · ${obj.size}</span>
-                        </div>
-                      </div>
-                      <div class="check-indicator">${ICONS.check}</div>
-                    </button>
-                  `
-                }).join('')}
-              </div>
-            </section>
+              <span class="badge green">已开启 ${state.autoBackupScope.length} / 5</span>
+            </div>
+            <div class="settings-scope-grid">
+              ${FIVE_OBJECTS.map((obj, idx) => {
+                const on = state.autoBackupScope.includes(obj.id)
+                return `
+                  <button
+                    type="button"
+                    class="settings-scope-item ${on ? 'selected' : ''} ${idx === 4 ? 'span-2' : ''}"
+                    data-action="toggle-auto-scope"
+                    data-obj="${obj.id}"
+                  >
+                    <div class="settings-compact-main">
+                      <strong>${obj.title}</strong>
+                      <p>${obj.countText} · ${obj.size}</p>
+                    </div>
+                    <div class="check-indicator">${ICONS.check}</div>
+                  </button>
+                `
+              }).join('')}
+            </div>
+          </section>
 
-            <!-- 模块 3：恢复点保护与空间清理 -->
-            <section class="settings-dense-card">
-              <div class="settings-dense-head">
-                <div>
-                  <div class="settings-dense-title">
-                    <div class="tile-icon">${ICONS.shield}</div>
-                    <h2>恢复点保护与空间清理</h2>
-                  </div>
-                  <p class="settings-dense-sub">空间不足时自动从旧到新清理未锁定恢复点，始终保留最新完整恢复点</p>
+          <section class="settings-dense-card">
+            <div class="settings-dense-head">
+              <div>
+                <div class="settings-dense-title">
+                  <div class="tile-icon">${ICONS.shield}</div>
+                  <h2>恢复点保护与空间清理</h2>
                 </div>
-                <span class="badge blue">保底保留最新完整点</span>
+                <p class="settings-dense-sub">空间不足时自动清理未锁定旧恢复点，保底保留最新完整点</p>
               </div>
-              ${
-                state.spaceLowSimulated
-                  ? `
-                <div class="inline-notice-box warn" style="margin-top:0; padding:12rem 16rem;">
-                  <div>
-                    <strong style="display:block; font-size:15.5rem; color:#ffd4d2; margin-bottom:2rem;">USB 存储设备可用空间不足</strong>
-                    <span style="font-size:13rem; color:#e6c3c1;">已清理未锁定旧恢复点并保留最新完整点，局域网与云端同步正常。</span>
-                  </div>
-                  <span class="badge gold">已保底</span>
+              <span class="badge blue">智能保底</span>
+            </div>
+            ${
+              state.spaceLowSimulated
+                ? `
+              <div class="inline-notice-box warn" style="margin-top:0; padding:10rem 16rem;">
+                <div>
+                  <strong style="display:block; font-size:14.5rem; color:#ffd4d2;">USB 存储设备可用空间不足</strong>
+                  <span style="font-size:12.5rem; color:#e6c3c1;">已自动清理未锁定旧恢复点并保留最新完整点。</span>
                 </div>
-              `
-                  : ''
-              }
-              <div class="settings-compact-list">
-                ${state.restorePoints
-                  .map(
-                    (rp) => `
+                <span class="badge gold">已保底</span>
+              </div>
+            `
+                : ''
+            }
+            <div class="settings-compact-list">
+              ${state.restorePoints
+                .map(
+                  (rp) => `
                   <div class="settings-compact-row">
                     <div class="settings-compact-main">
                       <strong>${rp.title}</strong>
                       <p>${rp.note} · ${rp.size}</p>
                       <div class="settings-compact-tags">
-                        <span class="badge ${rp.protected ? 'gold' : 'muted'}">${rp.protected ? '已锁定保护' : '未锁定（可自动清理）'}</span>
+                        <span class="badge ${rp.protected ? 'gold' : 'muted'}">${rp.protected ? '已锁定保护' : '可自动清理'}</span>
                         ${rp.isLatestComplete ? '<span class="badge blue">最新完整点</span>' : ''}
                       </div>
                     </div>
@@ -611,58 +1011,51 @@
                     </div>
                   </div>
                 `,
-                  )
-                  .join('')}
-              </div>
-            </section>
+                )
+                .join('')}
+            </div>
+          </section>
 
-            <!-- 模块 4：后台守护服务与系统触发策略 -->
-            <section class="settings-dense-card">
-              <div class="settings-dense-head">
-                <div>
-                  <div class="settings-dense-title">
-                    <div class="tile-icon">${ICONS.settings}</div>
-                    <h2>后台守护服务与触发策略</h2>
-                  </div>
-                  <p class="settings-dense-sub">关闭入口应用后依然常驻后台，在游戏退出且存档写入稳定后自动同步</p>
+          <section class="settings-dense-card">
+            <div class="settings-dense-head">
+              <div>
+                <div class="settings-dense-title">
+                  <div class="tile-icon">${ICONS.settings}</div>
+                  <h2>后台守护服务与触发策略</h2>
                 </div>
-                <span class="badge green">常驻运行中</span>
+                <p class="settings-dense-sub">关闭主界面后常驻后台，在游戏退出且存档落盘稳定后自动同步</p>
               </div>
-              <div class="settings-compact-list">
-                <div class="settings-compact-row">
-                  <div class="settings-compact-main">
-                    <strong>游戏退出后存档稳定监听</strong>
-                    <p>游戏运行期间绝不抢占读写，待游戏关闭且存档落盘稳定后自动创建增量恢复点。</p>
-                    <div class="settings-compact-tags">
-                      <span class="badge green">已开启</span>
-                      <span class="badge muted">零抢占保护</span>
-                    </div>
-                  </div>
-                  <div class="settings-row-actions">
-                    <button type="button" class="pill sm secondary" data-action="manual-backup">立即备份</button>
-                  </div>
+              <span class="badge green">常驻运行中</span>
+            </div>
+            <div class="settings-compact-list">
+              <div class="settings-compact-row">
+                <div class="settings-compact-main">
+                  <strong>游戏退出后存档稳定监听</strong>
+                  <p>游戏运行期间零抢占读写，退出游戏后自动创建增量恢复点。</p>
                 </div>
-                <div class="settings-compact-row">
-                  <div class="settings-compact-main">
-                    <strong>插件与宿主配置即时同步</strong>
-                    <p>当系统插件、自启列表或外置盘扫描路径发生变化时，立即增量同步至所有已启用位置。</p>
-                    <div class="settings-compact-tags">
-                      <span class="badge green">实时监听</span>
-                      <span class="badge muted">块级去重复用</span>
-                    </div>
-                  </div>
-                  <div class="settings-row-actions">
-                    <button type="button" class="pill sm secondary" data-action="open-onboarding">引导向导</button>
-                  </div>
+                <div class="settings-row-actions">
+                  <button type="button" class="pill sm secondary" data-action="manual-backup">立即备份</button>
                 </div>
               </div>
-            </section>
-          </div>
+              <div class="settings-compact-row">
+                <div class="settings-compact-main">
+                  <strong>插件与宿主配置即时同步</strong>
+                  <p>插件、自启列表或外置盘扫描路径变更时即时增量同步。</p>
+                </div>
+                <div class="settings-row-actions">
+                  <button type="button" class="pill sm secondary" data-action="open-onboarding">引导向导</button>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
+
+        ${renderPersistentDockIfVariantB()}
       </main>
     `
   }
 
+  /* ==================== 首次引导覆盖层 & 专注恢复进度锁 ==================== */
   function renderOnboardingOverlay() {
     if (!state.onboardingOpen) return ''
     const hasRp = state.onboardingHasRp
@@ -705,11 +1098,11 @@
                       ${ICONS.check}
                     </button>
                   </div>
-                  <p style="margin:0; font-size:14.5rem; color:#9ba6b6;">
+                  <p style="margin:0; font-size:14.5rem; color:#9fb0c6;">
                     ${hasRp ? `最近备份：${loc.lastSync}` : '已就绪，可用于存放备份'} · ${loc.freeSpace}
                   </p>
                 </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; padding-top:12rem; border-top:1rem solid rgba(255,255,255,0.07);">
+                <div style="display:flex; justify-content:space-between; align-items:center; padding-top:12rem; border-top:1rem solid rgba(255,255,255,0.08);">
                   <span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已选择' : '未启用'}</span>
                   ${
                     loc.type === 'webdav'
@@ -747,7 +1140,7 @@
                       <strong>${rp.title}</strong>
                       ${rp.isLatestComplete ? '<span class="badge blue">默认选中</span>' : ''}
                     </div>
-                    <div class="rp-card-desc" style="margin-top:6rem;">${rp.summary}</div>
+                    <div class="rp-card-desc" style="margin-top:8rem;">${rp.summary}</div>
                   </div>
                   <div class="rp-card-foot">
                     <span>${rp.size}</span>
@@ -763,13 +1156,11 @@
           <div class="wizard-footer-bar">
             <div>
               <strong style="font-size:19rem; display:block; margin-bottom:4rem;">已选中「${state.restorePoints.find((r) => r.id === state.selectedRestorePointId)?.title}」</strong>
-              <span style="font-size:14.5rem; color:#9aa6b6;">确认后将立即按依赖顺序恢复整机数据。</span>
+              <span style="font-size:14.5rem; color:#9fb0c6;">确认后将立即按依赖顺序恢复整机数据。</span>
             </div>
-            <div class="home-hero-actions">
-              <button type="button" class="pill primary" data-action="start-lock-demo" data-mode="normal">
-                ${ICONS.restore}<span>开始整机恢复</span>
-              </button>
-            </div>
+            <button type="button" class="pill primary" data-action="start-lock-demo" data-mode="normal">
+              ${ICONS.restore}<span>开始整机恢复</span>
+            </button>
           </div>
         `
             : `
@@ -785,17 +1176,16 @@
                   <button
                     type="button"
                     class="object-tile-card ${selected ? 'selected' : ''}"
-                    style="min-height:165rem;"
                     data-action="toggle-object"
                     data-obj="${obj.id}"
                   >
-                    <div class="object-tile-top">
+                    <div class="object-tile-top" style="margin-bottom:0;">
                       <div class="tile-icon">${ICONS[obj.icon]}</div>
                       <div class="check-indicator">${ICONS.check}</div>
                     </div>
-                    <div class="object-tile-body">
-                      <strong>${obj.title}</strong>
-                      <span>${obj.countText}</span>
+                    <div>
+                      <strong style="display:block; font-size:18rem; margin-bottom:4rem;">${obj.title}</strong>
+                      <span style="font-size:13.5rem; color:#9fb0c6;">${obj.countText}</span>
                     </div>
                   </button>
                 `
@@ -806,13 +1196,11 @@
           <div class="wizard-footer-bar">
             <div>
               <strong style="font-size:19rem; display:block; margin-bottom:4rem;">创建第一份完整恢复点</strong>
-              <span style="font-size:14.5rem; color:#9aa6b6;">预计大小约 5.4 GB，完成后将自动同步至所选备份位置。</span>
+              <span style="font-size:14.5rem; color:#9fb0c6;">预计大小约 5.4 GB，完成后将自动同步至所选备份位置。</span>
             </div>
-            <div class="home-hero-actions">
-              <button type="button" class="pill primary" data-action="trigger-initial-backup">
-                ${ICONS.bolt}<span>开始首次备份</span>
-              </button>
-            </div>
+            <button type="button" class="pill primary" data-action="trigger-initial-backup">
+              ${ICONS.bolt}<span>开始首次备份</span>
+            </button>
           </div>
         `
         }
@@ -838,7 +1226,7 @@
         <div class="lock-progress-hero">
           <div>
             <span class="badge green">来源：USB 存储设备 · 今天 19:10 自动备份</span>
-            <h2 style="font-size:36rem; font-weight:300; margin:14rem 0 8rem;">
+            <h2 style="font-size:36rem; font-weight:400; margin:14rem 0 8rem;">
               ${
                 mode === 'conflict'
                   ? '检测到《最后生还者 Part I》正在运行，已优先恢复其余项目'
@@ -847,14 +1235,14 @@
                     : '正在恢复全游戏通用存档'
               }
             </h2>
-            <p style="font-size:17rem; color:#aeb8c7; margin:0;">
+            <p style="font-size:17rem; color:#b2c0d4; margin:0;">
               ${state.lockScene.currentDetail}
             </p>
             <div class="progress-bar-track">
               <div class="progress-bar-fill" style="width:${state.lockScene.progress}%"></div>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:14.5rem; color:#96a2b4;">
-              <span>已完成：系统插件与载荷 (12/12) · 游戏桌面展示 (14/14) · 游戏存档 (14/19)</span>
+            <div style="display:flex; justify-content:space-between; font-size:14.5rem; color:#9fb0c6;">
+              <span>已完成：插件与载荷 (12/12) · 游戏桌面展示 (14/14) · 游戏存档 (14/19)</span>
               <span>剩余约 45 秒</span>
             </div>
 
@@ -863,7 +1251,7 @@
                 ? `
               <div class="inline-notice-box warn">
                 <div>
-                  <strong style="display:block; font-size:17rem; color:#ffd4d2; margin-bottom:4rem;">请先保存并关闭正在运行的《最后生还者 Part I》</strong>
+                  <strong style="display:block; font-size:16.5rem; color:#ffd4d2; margin-bottom:4rem;">请先保存并关闭正在运行的《最后生还者 Part I》</strong>
                   <span style="font-size:14rem; color:#e6c3c1;">为避免覆盖正在游玩的进度，系统已暂停该游戏存档写入，其余无冲突项目正继续恢复。</span>
                 </div>
                 <button type="button" class="pill sm primary" data-action="resolve-conflict-continue">已关闭游戏，继续恢复</button>
@@ -877,7 +1265,7 @@
                 ? `
               <div class="inline-notice-box">
                 <div>
-                  <strong style="display:block; font-size:17rem; color:#cfe6ff; margin-bottom:4rem;">已自动核验中断前进度并继续执行</strong>
+                  <strong style="display:block; font-size:16.5rem; color:#cfe6ff; margin-bottom:4rem;">已自动核验中断前进度并继续执行</strong>
                   <span style="font-size:14rem; color:#b8cde6;">重启前已完成的系统插件与桌面图标无需重复恢复，当前直接从第 15 款游戏存档继续。</span>
                 </div>
                 <span class="badge green">断点续做</span>
@@ -887,118 +1275,25 @@
             }
           </div>
 
-          <div class="section-block" style="background:rgba(14,17,23,0.92);">
+          <div class="lock-side-card">
             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18rem;">
               <div class="progress-big-number">${state.lockScene.progress}%</div>
-              <img src="./assets/restore-logo.png" alt="ReStore" style="width:68rem; height:68rem; border-radius:16rem;" />
+              <img src="./assets/restore-logo.png" alt="ReStore" style="width:66rem; height:66rem; border-radius:20rem;" />
             </div>
             <div class="settings-row-list">
-              <div class="settings-row-card" style="padding:14rem 18rem;"><span>1. 系统插件与载荷</span><span class="badge green">已完成</span></div>
-              <div class="settings-row-card" style="padding:14rem 18rem;"><span>2. 游戏桌面展示</span><span class="badge green">已完成</span></div>
-              <div class="settings-row-card" style="padding:14rem 18rem; border-color:#66a8ff;"><strong>3. 全游戏通用存档</strong><span class="badge blue">进行中 (14/19)</span></div>
-              <div class="settings-row-card" style="padding:14rem 18rem;"><span>4. 系统设置与媒体图库</span><span class="badge muted">等待中</span></div>
+              <div class="settings-row-card"><span>1. 系统插件与载荷</span><span class="badge green">已完成</span></div>
+              <div class="settings-row-card"><span>2. 游戏桌面展示</span><span class="badge green">已完成</span></div>
+              <div class="settings-row-card" style="border-color:rgba(118,190,255,0.55);"><strong>3. 全游戏通用存档</strong><span class="badge blue">进行中 (14/19)</span></div>
+              <div class="settings-row-card"><span>4. 系统设置与媒体图库</span><span class="badge muted">等待中</span></div>
             </div>
           </div>
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:18rem; border-top:1rem solid rgba(255,255,255,0.09);">
-          <span style="font-size:14.5rem; color:#94a0b2;">若中途断电或重启，重新打开 ReStore 后将自动从断点处继续恢复。</span>
-          <div class="home-hero-actions">
-            <button type="button" class="pill primary sm" data-action="open-restore-result-modal">查看恢复完成汇总</button>
-          </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:16rem; border-top:1rem solid rgba(255,255,255,0.09);">
+          <span style="font-size:14.5rem; color:#9fb0c6;">若中途断电或重启，重新打开 ReStore 后将自动从断点处继续恢复。</span>
+          <button type="button" class="pill primary sm" data-action="open-restore-result-modal">查看恢复完成汇总</button>
         </div>
       </section>
-    `
-  }
-
-  /* ==================== 软件商店 & 网盘游戏（纯锁定遮罩，无任何跨页跳转按钮） ==================== */
-  function renderStoreAppsPage() {
-    return `
-      <main class="page-container">
-        <div class="section-block-header" style="margin-bottom:16rem;">
-          <h1 style="margin:0; font-size:30rem; font-weight:400;">软件商店</h1>
-          <div class="home-hero-actions">
-            <span class="badge muted">全部</span>
-            <span class="badge muted">独立应用</span>
-            <span class="badge muted">扩展插件</span>
-            <span class="badge muted">系统载荷</span>
-          </div>
-        </div>
-
-        <div class="store-stage-wrap is-locked">
-          <div class="store-underlying-canvas" aria-hidden="true">
-            <div class="library-grid">
-              ${STORE_APPS.map(
-                (app) => `
-                <article class="store-app-card">
-                  <div class="store-app-top">
-                    <img src="${app.art}" alt="${app.name}" />
-                    <div>
-                      <strong>${app.name}</strong>
-                      <small>${app.version}</small>
-                    </div>
-                  </div>
-                  <p class="store-app-desc">${app.desc}</p>
-                  <div class="store-app-footer">
-                    <span>${app.category} · ${app.size}</span>
-                    <span class="badge muted">获取</span>
-                  </div>
-                </article>
-              `,
-              ).join('')}
-            </div>
-          </div>
-
-          <div class="store-preview-lock-overlay">
-            <div class="store-lock-glass-card">
-              <div class="store-lock-icon-badge">${ICONS.lock}</div>
-              <h2>软件商店暂未开放</h2>
-              <p>自制应用与插件在线下载功能将在后续版本推出。</p>
-            </div>
-          </div>
-        </div>
-      </main>
-    `
-  }
-
-  function renderStoreGamesPage() {
-    return `
-      <main class="page-container">
-        <div class="section-block-header" style="margin-bottom:16rem;">
-          <h1 style="margin:0; font-size:30rem; font-weight:400;">网盘游戏</h1>
-          <div class="home-hero-actions">
-            <span class="badge muted">全部来源</span>
-            <span class="badge muted">百度网盘</span>
-            <span class="badge muted">夸克网盘</span>
-          </div>
-        </div>
-
-        <div class="store-stage-wrap is-locked">
-          <div class="store-underlying-canvas" aria-hidden="true">
-            <div class="game-grid">
-              ${STORE_GAMES.map(
-                (g) => `
-                <article class="game-tile">
-                  <div class="game-cover">
-                    <img src="${g.cover}" alt="${g.title}" />
-                  </div>
-                  <h3>${g.title}</h3>
-                  <p>${g.meta}</p>
-                </article>
-              `,
-              ).join('')}
-            </div>
-          </div>
-
-          <div class="store-preview-lock-overlay">
-            <div class="store-lock-glass-card">
-              <div class="store-lock-icon-badge">${ICONS.lock}</div>
-              <h2>网盘游戏暂未开放</h2>
-              <p>网盘扫码连接与游戏下载功能将在后续版本推出。</p>
-            </div>
-          </div>
-        </div>
-      </main>
     `
   }
 
@@ -1043,9 +1338,9 @@
                 )
                 .join('')}
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:22rem;">
               <span class="badge green">${ICONS.check}<span>连接测试正常</span></span>
-              <div class="home-hero-actions">
+              <div style="display:flex; gap:12rem;">
                 <button type="button" class="pill secondary sm" data-action="close-modal">取消</button>
                 <button type="button" class="pill primary sm" data-action="save-webdav-osk">保存并连接</button>
               </div>
@@ -1062,13 +1357,13 @@
           <div class="modal wide">
             <h2>恢复完成汇总</h2>
             <p>以下为本次恢复任务的执行结果分类清单。</p>
-            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16rem;">
-              <div class="section-block" style="padding:20rem;">
-                <div class="loc-row-top" style="margin-bottom:12rem;">
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:18rem;">
+              <div class="wizard-loc-card">
+                <div class="loc-row-top">
                   <strong>已恢复</strong>
                   <span class="badge green">${retried ? '全部完成' : '4 类完整 + 18 款存档'}</span>
                 </div>
-                <div class="settings-row-list" style="font-size:14rem; color:#a5b0c0; line-height:1.55;">
+                <div style="font-size:14rem; color:#b2c0d4; line-height:1.6;">
                   <div>• 系统插件与载荷：12 项已启用</div>
                   <div>• 游戏桌面展示：14 款图标已还原</div>
                   <div>• 全游戏通用存档：${retried ? '全部 19 款已恢复' : '18 款游戏存档已恢复'}</div>
@@ -1076,23 +1371,23 @@
                 </div>
               </div>
 
-              <div class="section-block" style="padding:20rem;">
-                <div class="loc-row-top" style="margin-bottom:12rem;">
+              <div class="wizard-loc-card">
+                <div class="loc-row-top">
                   <strong>待处理</strong>
                   <span class="badge gold">2 款待挂载外置盘</span>
                 </div>
-                <div class="settings-row-list" style="font-size:14rem; color:#a5b0c0; line-height:1.55;">
+                <div style="font-size:14rem; color:#b2c0d4; line-height:1.6;">
                   <div>• 《战神：诸神黄昏》：桌面图标已恢复，接入外置存储后即可启动</div>
                   <div>• 《死亡回归》：桌面图标已恢复，待安装游戏本体</div>
                 </div>
               </div>
 
-              <div class="section-block" style="padding:20rem;">
-                <div class="loc-row-top" style="margin-bottom:12rem;">
+              <div class="wizard-loc-card">
+                <div class="loc-row-top">
                   <strong>未完成</strong>
                   <span class="badge ${retried ? 'green' : 'gold'}">${retried ? '0 项' : '1 项可重试'}</span>
                 </div>
-                <div class="settings-row-list" style="font-size:14rem; color:#a5b0c0; line-height:1.55;">
+                <div style="font-size:14rem; color:#b2c0d4; line-height:1.6;">
                   ${
                     retried
                       ? '<div>• 《最后生还者 Part I》存档已重试恢复成功。</div>'
@@ -1116,7 +1411,7 @@
     return ''
   }
 
-  /* ==================== 100% 纯净的底部手柄按键提示栏 ==================== */
+  /* ==================== 最底部右侧按钮提示：确认、返回、备份、恢复 ==================== */
   function renderDualSenseBar() {
     return `
       <footer class="dualsense-bar" aria-label="手柄按键提示栏">
@@ -1128,44 +1423,72 @@
             <span class="ds-glyph">◯</span><span>返回</span>
           </button>
           <button type="button" class="ds-prompt" data-action="ds-triangle">
-            <span class="ds-glyph">△</span><span>立即备份</span>
+            <span class="ds-glyph">△</span><span>备份</span>
           </button>
           <button type="button" class="ds-prompt" data-action="ds-square">
-            <span class="ds-glyph">□</span><span>锁定恢复点</span>
+            <span class="ds-glyph">□</span><span>恢复</span>
           </button>
         </div>
       </footer>
     `
   }
 
-  /* ==================== 独立悬浮的开发者/原型调试浮层（不混入产品 UI） ==================== */
+  /* ==================== 底部正中 Prototype Variant Switcher（遵循 UI.md 规范） ==================== */
+  function renderPrototypeSwitcher() {
+    const currentObj = VARIANTS.find((v) => v.key === state.variant) || VARIANTS[0]
+    return `
+      <div class="prototype-switcher" role="region" aria-label="原型设计变体切换器">
+        <button
+          type="button"
+          class="prototype-switcher-arrow"
+          data-action="prev-variant"
+          title="上一变体 (快捷键 [ 或 Shift+←)"
+          aria-label="上一变体"
+        >
+          ←
+        </button>
+        <span class="prototype-switcher-label">${currentObj.key} (${currentObj.name})</span>
+        <button
+          type="button"
+          class="prototype-switcher-arrow"
+          data-action="next-variant"
+          title="下一变体 (快捷键 ] 或 Shift+→)"
+          aria-label="下一变体"
+        >
+          →
+        </button>
+      </div>
+    `
+  }
+
+  /* ==================== 左下角可收起开发者状态调试浮窗 ==================== */
   function renderFloatingDevDock() {
     if (state.devDockCollapsed) {
       return `
         <aside class="proto-floating-dock" aria-label="开发者原型调试浮窗">
           <div class="proto-dock-row">
-            <button type="button" class="proto-dev-tag" data-action="toggle-dev-dock">展开 DEV 调试面板</button>
+            <button type="button" class="proto-dev-tag" data-action="toggle-dev-dock">DEV 场景调试</button>
           </div>
         </aside>
       `
     }
     return `
-      <aside class="proto-floating-dock" aria-label="开发者原型调试浮窗">
+      <aside class="proto-floating-dock expanded" aria-label="开发者原型调试浮窗">
         <div class="proto-dock-row">
-          <span class="proto-dev-tag">PROTOTYPE DEV（仅原型调试悬浮窗）</span>
+          <span class="proto-dev-tag">PROTOTYPE DEV</span>
           <button
             type="button"
             class="proto-dock-btn ${state.onboardingOpen && state.onboardingHasRp ? 'active' : ''}"
             data-action="demo-onboarding-has-rp"
           >
-            引导浮层：已有恢复点
+            引导：有恢复点
           </button>
           <button
             type="button"
             class="proto-dock-btn ${state.onboardingOpen && !state.onboardingHasRp ? 'active' : ''}"
             data-action="demo-onboarding-empty"
           >
-            引导浮层：无恢复点
+            引导：无恢复点
           </button>
           <button
             type="button"
@@ -1196,7 +1519,7 @@
             class="proto-dock-btn ${state.spaceLowSimulated ? 'active' : ''}"
             data-action="toggle-space-alert"
           >
-            设置：空间不足提示
+            空间不足告警
           </button>
           <button type="button" class="proto-dock-btn" data-action="toggle-dev-dock">收起</button>
         </div>
@@ -1207,10 +1530,12 @@
   function renderMainScene() {
     if (state.lockScene.active) return renderRestoreLockScene()
     if (state.view === 'restore') return renderRestorePage()
-    if (state.view === 'store-apps') return renderStoreAppsPage()
-    if (state.view === 'store-games') return renderStoreGamesPage()
-    if (state.view === 'settings') return renderSettingsPage()
-    return renderHomePage()
+    if (state.view === 'apps') return renderAppsPage()
+    if (state.view === 'store') return renderStorePage()
+    if (state.view === 'other') return renderOtherPage()
+    if (state.variant === 'B') return VariantBHome()
+    if (state.variant === 'C') return VariantCHome()
+    return VariantAHome()
   }
 
   function render(reason = 'update') {
@@ -1223,6 +1548,7 @@
         class="app-shell"
         data-variant="${state.variant}"
         data-view="${state.lockScene.active ? 'restore-lock' : state.view}"
+        data-focus-dock="${state.focusedDockId}"
       >
         <div class="console-wallpaper" aria-hidden="true">
           <video src="./assets/ps5-showcase-excerpt.mp4" autoplay muted loop playsinline></video>
@@ -1231,6 +1557,7 @@
         ${renderMainScene()}
         ${renderOnboardingOverlay()}
         ${renderDualSenseBar()}
+        ${renderPrototypeSwitcher()}
         ${renderFloatingDevDock()}
         ${renderModal()}
       </div>
@@ -1242,17 +1569,59 @@
     syncUrl()
   }
 
-  function cycleTab(delta) {
-    if (state.onboardingOpen) return
-    if (state.lockScene.active) {
-      showToast('正在恢复数据，请勿切换页面')
-      return
-    }
-    const idx = NAV_TABS.findIndex((t) => t.id === state.view)
-    const next = (idx + delta + NAV_TABS.length) % NAV_TABS.length
-    state.view = NAV_TABS[next].id
+  function cycleVariant(delta) {
+    const idx = VARIANTS.findIndex((v) => v.key === state.variant)
+    const next = (idx + delta + VARIANTS.length) % VARIANTS.length
+    state.variant = VARIANTS[next].key
     render('route')
   }
+
+  function triggerQuickBackup() {
+    state.locations.forEach((loc) => {
+      if (loc.enabled) {
+        loc.status = 'connected'
+        loc.progress = 100
+        loc.statusText = loc.type === 'usb' ? '已接入 · 已同步最新备份' : '在线 · 已同步最新备份'
+        loc.lastSync = '刚刚'
+      }
+    })
+    showToast('已启动后台增量备份，存储位置状态已更新')
+    render('update')
+  }
+
+  function handleBackAction() {
+    if (state.modal) {
+      state.modal = null
+      render('update')
+    } else if (state.onboardingOpen) {
+      state.onboardingOpen = false
+      render('route')
+    } else if (state.lockScene.active) {
+      state.lockScene.active = false
+      render('route')
+    } else if (state.view !== 'home') {
+      state.view = 'home'
+      render('route')
+    }
+  }
+
+  document.addEventListener('focusin', (e) => {
+    const dockCard = e.target?.closest?.('.dock-icon-card[data-dock-id]')
+    if (dockCard) {
+      state.focusedDockId = dockCard.dataset.dockId
+      const shell = document.querySelector('#app .app-shell')
+      if (shell) shell.dataset.focusDock = state.focusedDockId
+    }
+  })
+
+  document.addEventListener('mouseover', (e) => {
+    const dockCard = e.target?.closest?.('.dock-icon-card[data-dock-id]')
+    if (dockCard && state.focusedDockId !== dockCard.dataset.dockId) {
+      state.focusedDockId = dockCard.dataset.dockId
+      const shell = document.querySelector('#app .app-shell')
+      if (shell) shell.dataset.focusDock = state.focusedDockId
+    }
+  })
 
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action]')
@@ -1260,48 +1629,32 @@
     const action = btn.dataset.action
 
     switch (action) {
-      case 'switch-view':
+      case 'open-dock-item': {
         if (state.lockScene.active) {
           showToast('正在恢复数据，请先完成当前恢复任务')
           return
         }
+        const targetId = btn.dataset.dockId
+        state.focusedDockId = targetId
         state.onboardingOpen = false
-        state.view = btn.dataset.view
+        if (state.variant === 'B' && state.view === targetId) {
+          state.view = 'home'
+        } else {
+          state.view = targetId
+        }
         render('route')
         break
-      case 'prev-tab':
-        cycleTab(-1)
+      }
+      case 'prev-variant':
+        cycleVariant(-1)
         break
-      case 'next-tab':
-        cycleTab(1)
-        break
-      case 'set-variant':
-        state.variant = btn.dataset.variant
-        render('route')
+      case 'next-variant':
+        cycleVariant(1)
         break
       case 'toggle-dev-dock':
         state.devDockCollapsed = !state.devDockCollapsed
         render('update')
         break
-      case 'focus-home-location': {
-        state.homeFocusedLocationId = btn.dataset.loc
-        const loc = state.locations.find((l) => l.id === btn.dataset.loc)
-        if (loc && loc.type === 'webdav') {
-          state.editingLocationId = loc.id
-          state.modal = 'webdav-osk'
-        } else if (loc) {
-          showToast(`${loc.name}：${loc.statusText}`)
-        }
-        render('update')
-        break
-      }
-      case 'focus-home-object': {
-        state.homeFocusedObjectId = btn.dataset.obj
-        const obj = FIVE_OBJECTS.find((o) => o.id === btn.dataset.obj)
-        if (obj) showToast(`已选中查看：${obj.title}（${obj.countText}）`)
-        render('update')
-        break
-      }
       case 'open-onboarding':
         state.onboardingOpen = true
         render('route')
@@ -1331,10 +1684,6 @@
         }
         render('update')
         break
-      case 'set-settings-cat':
-        state.settingsCategory = btn.dataset.cat
-        render('update')
-        break
       case 'toggle-location': {
         const loc = state.locations.find((l) => l.id === btn.dataset.loc)
         if (loc) {
@@ -1358,7 +1707,7 @@
           if (state.selectedObjects.length > 1) {
             state.selectedObjects = state.selectedObjects.filter((x) => x !== id)
           } else {
-            showToast('请至少保留一项内容')
+            showToast('请至少保留一项恢复内容')
           }
         } else {
           state.selectedObjects = [...state.selectedObjects, id]
@@ -1366,18 +1715,12 @@
         render('update')
         break
       }
-      case 'select-all-objects':
-        state.selectedObjects = FIVE_OBJECTS.map((o) => o.id)
-        showToast('已全选全部 5 项恢复内容')
-        render('update')
-        break
       case 'trigger-initial-backup':
         state.onboardingOpen = false
-        showToast('已开始创建首份完整恢复点')
-        render('route')
+        triggerQuickBackup()
         break
       case 'manual-backup':
-        showToast('已启动后台增量备份')
+        triggerQuickBackup()
         break
       case 'start-lock-demo': {
         const targetMode = btn.dataset.mode || 'normal'
@@ -1413,6 +1756,7 @@
       case 'finish-restore-and-close':
         state.modal = null
         state.lockScene.active = false
+        state.view = 'home'
         render('route')
         break
       case 'open-webdav-osk':
@@ -1439,7 +1783,7 @@
           loc.enabled = true
           loc.status = 'connected'
           loc.progress = 100
-          loc.statusText = '已同步最新备份'
+          loc.statusText = '在线 · 已同步最新备份'
         }
         state.modal = null
         showToast('WebDAV 连接配置已保存')
@@ -1461,7 +1805,7 @@
       }
       case 'toggle-space-alert':
         state.spaceLowSimulated = !state.spaceLowSimulated
-        showToast(state.spaceLowSimulated ? '已在设置页开启空间不足告警预览' : '已关闭空间不足告警预览')
+        showToast(state.spaceLowSimulated ? '已在「其他」页开启空间不足告警预览' : '已关闭空间不足告警预览')
         render('update')
         break
       case 'toggle-auto-scope': {
@@ -1473,36 +1817,36 @@
         break
       }
       case 'ds-cross': {
-        const focused = document.querySelector('[data-pad-focus="true"]') || document.activeElement
-        if (focused && focused !== document.body && typeof focused.click === 'function') {
+        const focused =
+          document.querySelector('[data-pad-focus="true"]') ||
+          (document.activeElement && document.activeElement !== document.body
+            ? document.activeElement
+            : document.querySelector('.dock-icon-card'))
+        if (focused && typeof focused.click === 'function') {
           focused.click()
         }
         break
       }
       case 'ds-circle':
-        if (state.modal) {
-          state.modal = null
-          render('update')
-        } else if (state.onboardingOpen) {
-          state.onboardingOpen = false
-          render('route')
-        } else if (state.lockScene.active) {
-          state.lockScene.active = false
-          render('route')
-        }
+        handleBackAction()
         break
       case 'ds-triangle':
-        showToast('已启动后台增量备份')
+        triggerQuickBackup()
         break
-      case 'ds-square': {
-        const rp = state.restorePoints.find((r) => r.id === state.selectedRestorePointId)
-        if (rp) {
-          rp.protected = !rp.protected
-          showToast(`${rp.title}${rp.protected ? '已锁定保护' : '已解除保护'}`)
-          render('update')
+      case 'ds-square':
+        if (state.lockScene.active) {
+          showToast('恢复任务正在执行中')
+        } else if (state.view !== 'restore') {
+          state.onboardingOpen = false
+          state.view = 'restore'
+          render('route')
+        } else {
+          state.lockScene.active = true
+          state.lockScene.mode = 'normal'
+          state.lockScene.progress = 68
+          render('route')
         }
         break
-      }
     }
   })
 
@@ -1515,7 +1859,7 @@
 
     const candidates = [
       ...(scopeRoot || document).querySelectorAll(
-        'button:not([disabled]):not(.proto-dock-btn):not(.proto-dev-tag), input:not([disabled])',
+        'button:not([disabled]):not(.proto-dock-btn):not(.proto-dev-tag):not(.prototype-switcher-arrow):not(.ds-prompt), input:not([disabled])',
       ),
     ].filter((el) => {
       const r = el.getBoundingClientRect()
@@ -1529,7 +1873,7 @@
 
     if (!current || !candidates.includes(current)) {
       candidates[0].dataset.padFocus = 'true'
-      candidates[0].focus({ preventScroll: false })
+      candidates[0].focus({ preventScroll: true })
       return
     }
 
@@ -1562,15 +1906,15 @@
       }
     }
 
-    const next = best || candidates[0]
+    const next = best || current
     document.querySelectorAll('[data-pad-focus="true"]').forEach((n) => delete n.dataset.padFocus)
     next.dataset.padFocus = 'true'
-    next.focus({ preventScroll: false })
+    next.focus({ preventScroll: true })
   }
 
   document.addEventListener('keydown', (e) => {
     const tag = e.target?.tagName
-    if (tag === 'INPUT' || tag === 'TEXTAREA') {
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target?.isContentEditable) {
       if (e.key === 'Escape') {
         state.modal = null
         render('update')
@@ -1578,7 +1922,13 @@
       return
     }
 
-    if (e.key === 'ArrowRight') {
+    if (e.key === '[' || (e.shiftKey && e.key === 'ArrowLeft')) {
+      e.preventDefault()
+      cycleVariant(-1)
+    } else if (e.key === ']' || (e.shiftKey && e.key === 'ArrowRight')) {
+      e.preventDefault()
+      cycleVariant(1)
+    } else if (e.key === 'ArrowRight') {
       e.preventDefault()
       moveFocusSpatially('right')
     } else if (e.key === 'ArrowLeft') {
@@ -1590,23 +1940,23 @@
     } else if (e.key === 'ArrowUp') {
       e.preventDefault()
       moveFocusSpatially('up')
-    } else if (e.key === 'q' || e.key === 'Q') {
-      e.preventDefault()
-      cycleTab(-1)
-    } else if (e.key === 'e' || e.key === 'E') {
-      e.preventDefault()
-      cycleTab(1)
     } else if (e.key === 'Escape' || e.key === 'Backspace') {
       e.preventDefault()
-      document.querySelector('[data-action="ds-circle"]')?.click()
+      handleBackAction()
     } else if (e.key === 't' || e.key === 'T') {
       e.preventDefault()
-      document.querySelector('[data-action="ds-triangle"]')?.click()
-    } else if (e.key === 'f' || e.key === 'F') {
+      triggerQuickBackup()
+    } else if (e.key === 'f' || e.key === 'F' || e.key === 'r' || e.key === 'R') {
       e.preventDefault()
       document.querySelector('[data-action="ds-square"]')?.click()
     }
   })
 
-  render('initial')
+  /* 每 30 秒同步右上角时钟 */
+  setInterval(() => {
+    const clockNode = document.querySelector('.tvos-clock')
+    if (clockNode) clockNode.textContent = formatAppleClock()
+  }, 30000)
+
+  render('init')
 })()
