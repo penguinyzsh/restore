@@ -1,9 +1,10 @@
-/* ReStore PS5 × Apple tvOS 融合设计高保真原型样式 (#37)
-   三套结构变体 (?variant=A|B|C)：
-   - Variant A：tvOS 液态玻璃画境（Apple TV Top Shelf 开放展台 + 全宽毛玻璃托盘四图标卡）
-   - Variant B：Bento 空间控制坞（visionOS 对称环形容量矩阵 + 居中常驻四图标 Dock）
-   - Variant C：PS5 极简全画幅光域（全景横置仪器舱 + 无外框独立发光大磁贴）
-   严格统一圆角令牌：全站所有卡片统一使用 --radius-card (30rem)，外层包裹托盘采用同心曲率 --radius-dock */
+/* ReStore PS5 × Apple Bento 空间控制坞高保真原型样式 (#37)
+   - 右上角：时间 + 标准用户 Icon 胶囊
+   - 上中部：无交互 Bento 空间概览矩阵（主机存储光谱 + 守护恢复点 + 三大存储位置环形容量卡）
+   - 底部：常驻四纯图标控制坞（恢复、软件、商店、其他）+ 右下角「确认、返回、备份、恢复」
+   - 恢复页：2 列 × 3 行（一行两个、共三行）横向大圆角 Bento 卡片
+   - 引导页：分步向导（Step 1 → Step 2 → Step 3 逐步推进）
+   - 严格统一大圆角：所有主卡片统一使用 --radius-card (30rem) */
 :root {
   font-size: calc(100vw / 1920);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Helvetica Neue', sans-serif;
@@ -14,7 +15,6 @@
   font-synthesis: none;
   -webkit-font-smoothing: antialiased;
 
-  /* PlayStation × Apple 色彩体系 */
   --ps-blue: #00439c;
   --ps-blue-bright: #2e7cf6;
   --ps-cyan: #6ec3ff;
@@ -25,15 +25,15 @@
   /* 严格统一的大圆角系统（Apple 同心连续曲率） */
   --radius-card: 30rem;
   --radius-inner: 20rem;
-  --radius-dock: 46rem;
+  --radius-dock: 44rem;
   --radius-pill: 999rem;
 
   /* 液态玻璃光学表面令牌 */
-  --glass-bg: rgba(24, 29, 39, 0.62);
-  --glass-bg-strong: rgba(20, 25, 34, 0.78);
+  --glass-bg: rgba(19, 24, 34, 0.68);
+  --glass-bg-strong: rgba(20, 25, 35, 0.84);
   --glass-border: rgba(255, 255, 255, 0.13);
   --glass-specular: inset 0 1.5rem 0 rgba(255, 255, 255, 0.24), inset 0 0 0 1rem rgba(255, 255, 255, 0.05);
-  --glass-shadow: 0 26rem 58rem rgba(0, 0, 0, 0.46);
+  --glass-shadow: 0 22rem 50rem rgba(0, 0, 0, 0.42);
 
   --page-x: 88rem;
 }
@@ -76,7 +76,7 @@ button {
 }
 
 button:active {
-  transform: scale(0.982);
+  transform: scale(0.985);
 }
 
 svg {
@@ -97,15 +97,15 @@ input:focus-visible,
 [data-pad-focus='true'] {
   outline: none !important;
   box-shadow:
-    0 0 0 3rem rgba(255, 255, 255, 0.95),
+    0 0 0 3rem rgba(255, 255, 255, 0.96),
     0 0 0 8rem rgba(46, 124, 246, 0.42),
-    0 24rem 54rem rgba(0, 0, 0, 0.62) !important;
+    0 22rem 48rem rgba(0, 0, 0, 0.58) !important;
 }
 
 .dock-icon-card:hover,
 .dock-icon-card:focus-visible,
 .dock-icon-card[data-pad-focus='true'] {
-  transform: translateY(-8rem) scale(1.048);
+  transform: translateY(-6rem) scale(1.045);
   z-index: 5;
 }
 
@@ -118,7 +118,7 @@ input:focus-visible,
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding-bottom: 84rem;
+  padding-bottom: 24rem;
   overflow: hidden;
 }
 
@@ -137,8 +137,8 @@ input:focus-visible,
   object-fit: cover;
   object-position: center 22%;
   pointer-events: none;
-  opacity: 0.56;
-  filter: saturate(1.12) contrast(1.03);
+  opacity: 0.54;
+  filter: saturate(1.1) contrast(1.03);
 }
 
 .console-wallpaper::after {
@@ -165,31 +165,16 @@ input:focus-visible,
   --aura-color: rgba(148, 163, 184, 0.28);
 }
 
-/* ==================== 顶栏：左极简标题/留白 + 右上角 Apple TV 时间与头像胶囊 ==================== */
+/* ==================== 顶栏：左页面标题 + 右上角「时间 + 标准 Icon 头像」胶囊 ==================== */
 .system-header {
-  height: 106rem;
+  height: 98rem;
   flex-shrink: 0;
   position: relative;
   z-index: 25;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rem var(--page-x) 0;
-}
-
-.header-stage-brand {
-  display: flex;
-  align-items: baseline;
-  gap: 16rem;
-  pointer-events: none;
-}
-
-.header-wordmark {
-  font-size: 42rem;
-  font-weight: 600;
-  letter-spacing: -0.8rem;
-  color: #f8fafc;
-  text-shadow: 0 8rem 28rem rgba(0, 0, 0, 0.42);
+  padding: 22rem var(--page-x) 0;
 }
 
 .header-subview-title {
@@ -206,16 +191,16 @@ input:focus-visible,
   color: #f8fafc;
 }
 
-/* 严格复刻参考图右上角：仅时间 + 圆形头像 */
+/* 右上角仅时间 + 标准用户 Icon 头像 */
 .tvos-time-avatar-pill {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 14rem;
   height: 54rem;
-  padding: 6rem 7rem 6rem 20rem;
+  padding: 6rem 8rem 6rem 20rem;
   border-radius: var(--radius-pill);
-  background: rgba(32, 37, 47, 0.56);
+  background: rgba(28, 34, 45, 0.62);
   backdrop-filter: blur(30rem) saturate(165%);
   -webkit-backdrop-filter: blur(30rem) saturate(165%);
   border: 1rem solid rgba(255, 255, 255, 0.14);
@@ -232,21 +217,20 @@ input:focus-visible,
   color: rgba(248, 250, 252, 0.96);
 }
 
-.tvos-avatar {
-  width: 40rem;
-  height: 40rem;
-  border-radius: 50%;
-  overflow: hidden;
-  background: linear-gradient(145deg, #ffd7c2 0%, #f5b395 52%, #c98bff 100%);
-  border: 1.5rem solid rgba(255, 255, 255, 0.45);
-  box-shadow: 0 4rem 12rem rgba(0, 0, 0, 0.28);
-  display: grid;
-  place-items: center;
-}
-
-.tvos-avatar svg {
+.tvos-avatar-icon {
   width: 38rem;
   height: 38rem;
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(46, 124, 246, 0.45), rgba(30, 58, 138, 0.65));
+  border: 1.5rem solid rgba(255, 255, 255, 0.32);
+  display: grid;
+  place-items: center;
+  color: #f8fafc;
+}
+
+.tvos-avatar-icon svg {
+  width: 21rem;
+  height: 21rem;
 }
 
 /* ==================== 通用药丸与状态微标 ==================== */
@@ -357,18 +341,18 @@ input:focus-visible,
   box-shadow: none;
 }
 
-/* ==================== 主屏幕壳层：上中无交互「概览」 + 最下方四纯图标卡片 ==================== */
-.home-stage {
+/* ==================== 主屏幕壳层：上中无交互 Bento 概览 + 底部居中常驻四纯图标控制坞 ==================== */
+.home-stage,
+.subpage-stage {
   flex: 1;
   min-height: 0;
-  padding: 8rem var(--page-x) 22rem;
+  padding: 8rem var(--page-x) 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 24rem;
+  gap: 20rem;
 }
 
-/* 上中部概览严格无交互、无焦点、纯环境展示 */
 .overview-showcase {
   flex: 1;
   min-height: 0;
@@ -379,211 +363,6 @@ input:focus-visible,
   justify-content: center;
 }
 
-/* ==================== Variant A 概览 & 底部托盘（Apple TV 液态玻璃画境） ==================== */
-.va-overview-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
-  gap: 44rem;
-  align-items: center;
-}
-
-.va-hero-left {
-  display: flex;
-  flex-direction: column;
-  gap: 22rem;
-  padding-right: 16rem;
-}
-
-.va-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 10rem;
-  align-self: flex-start;
-  padding: 8rem 18rem;
-  border-radius: var(--radius-pill);
-  background: rgba(24, 31, 44, 0.56);
-  backdrop-filter: blur(24rem);
-  border: 1rem solid rgba(255, 255, 255, 0.14);
-  font-size: 15rem;
-  color: #d6e4f7;
-}
-
-.va-hero-headline {
-  margin: 0;
-  font-size: 56rem;
-  font-weight: 500;
-  line-height: 1.12;
-  letter-spacing: -1.2rem;
-  color: #ffffff;
-  text-shadow: 0 14rem 38rem rgba(0, 0, 0, 0.45);
-}
-
-.va-hero-sub {
-  margin: 0;
-  font-size: 19rem;
-  line-height: 1.55;
-  color: rgba(226, 234, 245, 0.84);
-  max-width: 720rem;
-}
-
-.va-host-strip {
-  display: inline-flex;
-  align-items: center;
-  gap: 28rem;
-  align-self: flex-start;
-  padding: 20rem 28rem;
-  border-radius: var(--radius-card);
-  background: rgba(20, 26, 36, 0.58);
-  backdrop-filter: blur(32rem) saturate(160%);
-  border: 1rem solid var(--glass-border);
-  box-shadow: var(--glass-specular), var(--glass-shadow);
-}
-
-.va-host-metric strong {
-  display: block;
-  font-size: 27rem;
-  font-weight: 600;
-  color: #f8fafc;
-}
-
-.va-host-metric span {
-  display: block;
-  margin-top: 4rem;
-  font-size: 14rem;
-  color: #9fb0c7;
-}
-
-.va-host-divider {
-  width: 1rem;
-  height: 42rem;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.va-devices-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 16rem;
-}
-
-.va-device-glass-card {
-  padding: 22rem 28rem;
-  border-radius: var(--radius-card);
-  background: rgba(22, 27, 38, 0.62);
-  backdrop-filter: blur(34rem) saturate(165%);
-  -webkit-backdrop-filter: blur(34rem) saturate(165%);
-  border: 1rem solid rgba(255, 255, 255, 0.14);
-  box-shadow: var(--glass-specular), 0 20rem 44rem rgba(0, 0, 0, 0.36);
-  display: flex;
-  flex-direction: column;
-  gap: 12rem;
-}
-
-.va-device-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16rem;
-}
-
-.va-device-name {
-  display: flex;
-  align-items: center;
-  gap: 12rem;
-  font-size: 20rem;
-  font-weight: 500;
-  color: #f6f9fd;
-}
-
-.va-device-name svg {
-  width: 24rem;
-  height: 24rem;
-  color: #8cc8ff;
-}
-
-.va-device-state {
-  display: inline-flex;
-  align-items: center;
-  gap: 8rem;
-  font-size: 14.5rem;
-  color: #ced9ea;
-}
-
-.liquid-meter {
-  height: 8rem;
-  border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.11);
-  overflow: hidden;
-}
-
-.liquid-meter > i {
-  display: block;
-  height: 100%;
-  border-radius: var(--radius-pill);
-  background: linear-gradient(90deg, #3b82f6, #7dd3fc);
-}
-
-.va-device-meta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 14rem;
-  color: #9fb0c6;
-}
-
-/* Variant A 底部全宽 Apple TV 液态玻璃托盘 + 四张宽屏纯 ICON 卡 */
-.va-dock-tray {
-  padding: 16rem;
-  border-radius: var(--radius-dock);
-  background: rgba(34, 39, 48, 0.54);
-  backdrop-filter: blur(40rem) saturate(175%);
-  -webkit-backdrop-filter: blur(40rem) saturate(175%);
-  border: 1rem solid rgba(255, 255, 255, 0.16);
-  box-shadow:
-    inset 0 1.5rem 0 rgba(255, 255, 255, 0.26),
-    0 30rem 70rem rgba(0, 0, 0, 0.55);
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 22rem;
-}
-
-.va-dock-tray .dock-icon-card {
-  height: 196rem;
-  border-radius: var(--radius-card);
-  position: relative;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-  box-shadow:
-    inset 0 1.5rem 0 rgba(255, 255, 255, 0.32),
-    0 16rem 34rem rgba(0, 0, 0, 0.42);
-}
-
-/* Apple TV 风格质感色板 × PS5 深邃光感 */
-.va-dock-tray .dock-icon-card[data-dock-id='restore'] {
-  background:
-    radial-gradient(circle at 30% 20%, rgba(125, 211, 252, 0.38), transparent 55%),
-    linear-gradient(155deg, #1d6bf3 0%, #00439c 56%, #082054 100%);
-}
-
-.va-dock-tray .dock-icon-card[data-dock-id='apps'] {
-  background:
-    radial-gradient(circle at 50% 18%, rgba(56, 189, 248, 0.25), transparent 58%),
-    linear-gradient(160deg, #1e2633 0%, #121722 65%, #0c1018 100%);
-}
-
-.va-dock-tray .dock-icon-card[data-dock-id='store'] {
-  background:
-    radial-gradient(circle at 32% 18%, rgba(165, 180, 252, 0.38), transparent 55%),
-    linear-gradient(155deg, #3b5bdb 0%, #1e3a8a 58%, #15193b 100%);
-}
-
-.va-dock-tray .dock-icon-card[data-dock-id='other'] {
-  background:
-    radial-gradient(circle at 50% 15%, rgba(226, 232, 240, 0.2), transparent 58%),
-    linear-gradient(160deg, #2d3442 0%, #1a202b 65%, #11151d 100%);
-}
-
-/* ==================== Variant B 概览 & 常驻居中控制坞（Bento 空间仪表盘） ==================== */
 .vb-bento-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -593,11 +372,11 @@ input:focus-visible,
 .vb-bento-card {
   padding: 26rem 30rem;
   border-radius: var(--radius-card);
-  background: rgba(19, 24, 34, 0.66);
+  background: var(--glass-bg);
   backdrop-filter: blur(34rem) saturate(165%);
   -webkit-backdrop-filter: blur(34rem) saturate(165%);
-  border: 1rem solid rgba(255, 255, 255, 0.13);
-  box-shadow: var(--glass-specular), 0 22rem 48rem rgba(0, 0, 0, 0.4);
+  border: 1rem solid var(--glass-border);
+  box-shadow: var(--glass-specular), var(--glass-shadow);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -699,13 +478,13 @@ input:focus-visible,
   color: #7eb8ff;
 }
 
-/* Variant B 居中紧凑常驻控制坞（主屏与子页均常驻底部） */
+/* ==================== 底部居中常驻四纯图标控制坞 ==================== */
 .vb-dock-shell {
   align-self: center;
-  width: 960rem;
+  width: 920rem;
   max-width: 100%;
   padding: 14rem;
-  border-radius: 44rem;
+  border-radius: var(--radius-dock);
   background: rgba(26, 31, 42, 0.68);
   backdrop-filter: blur(40rem) saturate(180%);
   -webkit-backdrop-filter: blur(40rem) saturate(180%);
@@ -716,16 +495,17 @@ input:focus-visible,
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16rem;
+  flex-shrink: 0;
 }
 
 .vb-dock-shell.is-compact {
-  width: 760rem;
+  width: 720rem;
   padding: 10rem;
   border-radius: 40rem;
 }
 
 .vb-dock-shell .dock-icon-card {
-  height: 144rem;
+  height: 136rem;
   border-radius: var(--radius-card);
   background: linear-gradient(165deg, rgba(46, 54, 70, 0.72), rgba(22, 27, 37, 0.88));
   border: 1rem solid rgba(255, 255, 255, 0.12);
@@ -735,7 +515,7 @@ input:focus-visible,
 }
 
 .vb-dock-shell.is-compact .dock-icon-card {
-  height: 92rem;
+  height: 82rem;
 }
 
 .vb-dock-shell .dock-icon-card.is-active-route {
@@ -745,146 +525,16 @@ input:focus-visible,
   border-color: rgba(147, 197, 253, 0.65);
 }
 
-/* ==================== Variant C 概览 & 无框独立大磁贴（PS5 极简全画幅光域） ==================== */
-.vc-panoramic-overview {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 34rem;
-}
-
-.vc-monument-copy {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12rem;
-}
-
-.vc-monument-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 10rem;
-  font-size: 16rem;
-  letter-spacing: 1.5rem;
-  text-transform: uppercase;
-  color: #9ec5ff;
-}
-
-.vc-monument-value {
-  font-size: 74rem;
-  font-weight: 300;
-  letter-spacing: -2rem;
-  line-height: 1.04;
-  color: #ffffff;
-  text-shadow: 0 16rem 44rem rgba(0, 0, 0, 0.5);
-}
-
-.vc-monument-sub {
-  font-size: 19rem;
-  color: rgba(218, 228, 242, 0.82);
-}
-
-.vc-horizon-capsule {
-  width: 100%;
-  padding: 28rem 36rem;
-  border-radius: var(--radius-card);
-  background: rgba(16, 20, 29, 0.58);
-  backdrop-filter: blur(36rem) saturate(165%);
-  -webkit-backdrop-filter: blur(36rem) saturate(165%);
-  border: 1rem solid rgba(255, 255, 255, 0.14);
-  box-shadow: var(--glass-specular), 0 28rem 64rem rgba(0, 0, 0, 0.45);
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
-  text-align: left;
-}
-
-.vc-horizon-col {
-  padding: 0 28rem;
-  border-right: 1rem solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 12rem;
-}
-
-.vc-horizon-col:first-child {
-  padding-left: 4rem;
-}
-
-.vc-horizon-col:last-child {
-  padding-right: 4rem;
-  border-right: none;
-}
-
-.vc-horizon-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 16rem;
-  color: #b8c6da;
-}
-
-.vc-horizon-size {
-  font-size: 28rem;
-  font-weight: 500;
-  color: #f8fafc;
-}
-
-.vc-horizon-size small {
-  font-size: 15rem;
-  font-weight: 400;
-  color: #8fa1b8;
-  margin-left: 6rem;
-}
-
-.vc-horizon-foot {
-  font-size: 14rem;
-  color: #96a8c0;
-  display: flex;
-  align-items: center;
-  gap: 8rem;
-}
-
-/* Variant C 底部无外层托盘、4 张独立悬浮水晶磁贴 */
-.vc-monolith-dock {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 28rem;
-}
-
-.vc-monolith-dock .dock-icon-card {
-  height: 206rem;
-  border-radius: var(--radius-card);
-  background:
-    radial-gradient(circle at 50% 0%, rgba(110, 195, 255, 0.2), transparent 62%),
-    linear-gradient(180deg, rgba(28, 35, 48, 0.66), rgba(14, 18, 26, 0.84));
-  backdrop-filter: blur(36rem) saturate(165%);
-  -webkit-backdrop-filter: blur(36rem) saturate(165%);
-  border: 1.5rem solid rgba(255, 255, 255, 0.15);
-  box-shadow:
-    inset 0 1.5rem 0 rgba(255, 255, 255, 0.26),
-    0 24rem 54rem rgba(0, 0, 0, 0.5);
-  display: grid;
-  place-items: center;
-}
-
-/* 四个底部纯 ICON 卡片内部的定制立体图标尺寸 */
 .dock-emblem {
-  width: 104rem;
-  height: 104rem;
-  filter: drop-shadow(0 14rem 24rem rgba(0, 0, 0, 0.42));
+  width: 76rem;
+  height: 76rem;
+  filter: drop-shadow(0 12rem 22rem rgba(0, 0, 0, 0.4));
   transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.vb-dock-shell .dock-emblem {
-  width: 78rem;
-  height: 78rem;
-}
-
 .vb-dock-shell.is-compact .dock-emblem {
-  width: 50rem;
-  height: 50rem;
+  width: 48rem;
+  height: 48rem;
 }
 
 .dock-icon-card:hover .dock-emblem,
@@ -893,15 +543,13 @@ input:focus-visible,
   transform: scale(1.08);
 }
 
-/* ==================== 子页面容器（恢复 / 软件 / 商店 / 其他，全部严格统一 30rem 圆角） ==================== */
-.subpage-stage {
+/* ==================== 子页面公共布局与「恢复」页 2 列 × 3 行横向卡片 ==================== */
+.subpage-content-body {
   flex: 1;
   min-height: 0;
-  padding: 6rem var(--page-x) 18rem;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 18rem;
+  gap: 16rem;
 }
 
 .subpage-toolbar {
@@ -919,59 +567,126 @@ input:focus-visible,
   flex-wrap: wrap;
 }
 
-.five-columns-grid {
+/* 恢复页：一行两个、三行即可的横向 Bento 卡片网格（从上到下） */
+.restore-two-by-three-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 20rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 16rem;
   align-items: stretch;
 }
 
-.glass-tall-card {
-  padding: 28rem;
+.restore-horiz-card {
+  padding: 20rem 26rem;
   border-radius: var(--radius-card);
   background: var(--glass-bg);
-  backdrop-filter: blur(34rem) saturate(160%);
-  -webkit-backdrop-filter: blur(34rem) saturate(160%);
+  backdrop-filter: blur(34rem) saturate(165%);
+  -webkit-backdrop-filter: blur(34rem) saturate(165%);
   border: 1.5rem solid var(--glass-border);
-  box-shadow: var(--glass-specular), var(--glass-shadow);
+  box-shadow: var(--glass-specular), 0 18rem 42rem rgba(0, 0, 0, 0.36);
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  gap: 12rem;
+}
+
+.restore-horiz-card.selected {
+  background:
+    radial-gradient(circle at 18% 25%, rgba(29, 107, 243, 0.34), transparent 64%),
+    rgba(20, 28, 42, 0.82);
+  border-color: rgba(118, 190, 255, 0.56);
+}
+
+.restore-horiz-card.action-cta-card {
+  background:
+    radial-gradient(circle at 80% 25%, rgba(96, 165, 250, 0.42), transparent 60%),
+    linear-gradient(145deg, rgba(24, 92, 214, 0.86), rgba(9, 34, 86, 0.92));
+  border-color: rgba(147, 197, 253, 0.65);
+}
+
+.restore-horiz-top {
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 18rem;
 }
 
-.glass-tall-card.selected {
-  background:
-    radial-gradient(circle at 50% 12%, rgba(29, 107, 243, 0.44), transparent 64%),
-    rgba(20, 28, 42, 0.82);
-  border-color: rgba(125, 195, 255, 0.56);
+.restore-horiz-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rem;
+  min-width: 0;
+  flex: 1;
 }
 
-.glass-tall-card h2 {
-  font-size: 25rem;
+.restore-step-icon-box {
+  width: 52rem;
+  height: 52rem;
+  border-radius: var(--radius-inner);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rem solid rgba(255, 255, 255, 0.14);
+  display: grid;
+  place-items: center;
+  color: #8cc8ff;
+  flex-shrink: 0;
+}
+
+.restore-step-icon-box svg {
+  width: 26rem;
+  height: 26rem;
+}
+
+.restore-horiz-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.restore-horiz-copy h2 {
+  margin: 0 0 5rem;
+  font-size: 21rem;
   font-weight: 500;
-  margin: 0 0 10rem;
   color: #f8fafc;
 }
 
-.glass-tall-card p {
-  font-size: 15rem;
-  color: #a9b7ca;
-  line-height: 1.55;
+.restore-horiz-copy p {
   margin: 0;
+  font-size: 13.5rem;
+  color: #a9b8cc;
+  line-height: 1.42;
 }
 
-.object-tile-top {
+.restore-horiz-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20rem;
+  gap: 12rem;
+  padding-top: 10rem;
+  border-top: 1rem solid rgba(255, 255, 255, 0.08);
+}
+
+.restore-horiz-tags {
+  display: flex;
+  align-items: center;
+  gap: 8rem;
+  flex-wrap: wrap;
+}
+
+.restore-horiz-stat {
+  font-size: 14rem;
+  color: #b8c7dc;
+}
+
+.restore-horiz-stat strong {
+  font-size: 16rem;
+  font-weight: 600;
+  color: #f8fafc;
+  margin-left: 8rem;
 }
 
 .tile-icon {
-  width: 38rem;
-  height: 38rem;
+  width: 34rem;
+  height: 34rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -979,8 +694,8 @@ input:focus-visible,
 }
 
 .tile-icon svg {
-  width: 30rem;
-  height: 30rem;
+  width: 26rem;
+  height: 26rem;
 }
 
 .check-indicator {
@@ -1004,34 +719,26 @@ input:focus-visible,
   height: 15rem;
 }
 
-.card-below-tags {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8rem;
-  margin-top: 16rem;
-}
-
 /* ==================== 「其他」页面（2×2 高密度四模块玻璃工作台，统一 30rem 圆角） ==================== */
 .settings-dense-grid {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18rem;
+  gap: 16rem;
   align-items: stretch;
 }
 
 .settings-dense-card {
-  padding: 20rem 24rem;
+  padding: 18rem 22rem;
   border-radius: var(--radius-card);
   background: var(--glass-bg);
   backdrop-filter: blur(34rem) saturate(160%);
   -webkit-backdrop-filter: blur(34rem) saturate(160%);
   border: 1rem solid var(--glass-border);
-  box-shadow: var(--glass-specular), 0 20rem 46rem rgba(0, 0, 0, 0.38);
+  box-shadow: var(--glass-specular), 0 18rem 42rem rgba(0, 0, 0, 0.36);
   display: flex;
   flex-direction: column;
-  gap: 10rem;
+  gap: 8rem;
 }
 
 .settings-dense-head {
@@ -1039,7 +746,7 @@ input:focus-visible,
   align-items: center;
   justify-content: space-between;
   gap: 14rem;
-  padding-bottom: 8rem;
+  padding-bottom: 7rem;
   border-bottom: 1rem solid rgba(255, 255, 255, 0.08);
 }
 
@@ -1051,25 +758,25 @@ input:focus-visible,
 
 .settings-dense-title h2 {
   margin: 0;
-  font-size: 19rem;
+  font-size: 18.5rem;
   font-weight: 500;
   color: #f6f9fd;
 }
 
 .settings-dense-sub {
-  margin: 3rem 0 0;
-  font-size: 12.5rem;
+  margin: 2rem 0 0;
+  font-size: 12rem;
   color: #97a6ba;
 }
 
 .settings-compact-list {
   display: flex;
   flex-direction: column;
-  gap: 8rem;
+  gap: 7rem;
 }
 
 .settings-compact-row {
-  padding: 10rem 16rem;
+  padding: 9rem 14rem;
   border-radius: var(--radius-inner);
   background: rgba(14, 18, 26, 0.56);
   border: 1rem solid rgba(255, 255, 255, 0.07);
@@ -1085,7 +792,7 @@ input:focus-visible,
 
 .settings-compact-main strong {
   display: block;
-  font-size: 15rem;
+  font-size: 14.5rem;
   font-weight: 500;
   color: #f2f6fb;
   margin-bottom: 2rem;
@@ -1093,16 +800,16 @@ input:focus-visible,
 
 .settings-compact-main p {
   margin: 0;
-  font-size: 12.5rem;
+  font-size: 12rem;
   color: #9aa7b8;
-  line-height: 1.35;
+  line-height: 1.32;
 }
 
 .settings-compact-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6rem;
-  margin-top: 5rem;
+  margin-top: 4rem;
 }
 
 .settings-row-actions {
@@ -1115,11 +822,11 @@ input:focus-visible,
 .settings-scope-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8rem;
+  gap: 7rem;
 }
 
 .settings-scope-item {
-  padding: 10rem 14rem;
+  padding: 9rem 14rem;
   border-radius: var(--radius-inner);
   background: rgba(14, 18, 26, 0.56);
   border: 1.5rem solid rgba(255, 255, 255, 0.07);
@@ -1142,7 +849,7 @@ input:focus-visible,
 .store-stage-wrap {
   flex: 1;
   position: relative;
-  padding: 20rem;
+  padding: 18rem;
   border-radius: var(--radius-card);
   overflow: hidden;
   display: flex;
@@ -1158,66 +865,66 @@ input:focus-visible,
 .library-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20rem;
+  gap: 18rem;
 }
 
 .game-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 22rem 18rem;
+  gap: 20rem 18rem;
 }
 
 .store-app-card {
-  padding: 24rem;
+  padding: 22rem;
   border-radius: var(--radius-card);
   background: rgba(24, 29, 39, 0.75);
   border: 1rem solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 14rem;
+  gap: 12rem;
 }
 
 .store-app-top {
   display: flex;
   align-items: center;
-  gap: 15rem;
+  gap: 14rem;
 }
 
 .store-app-top img {
-  width: 58rem;
-  height: 58rem;
+  width: 54rem;
+  height: 54rem;
   border-radius: var(--radius-inner);
   object-fit: cover;
 }
 
 .store-app-top strong {
   display: block;
-  font-size: 19rem;
+  font-size: 18.5rem;
   font-weight: 500;
 }
 
 .store-app-top small {
   display: block;
-  font-size: 13rem;
+  font-size: 12.5rem;
   color: #98a5b6;
   margin-top: 3rem;
 }
 
 .store-app-desc {
-  font-size: 14rem;
+  font-size: 13.5rem;
   color: #b0bac8;
-  line-height: 1.5;
+  line-height: 1.48;
   margin: 0;
 }
 
 .store-app-footer {
   margin-top: auto;
-  padding-top: 12rem;
+  padding-top: 10rem;
   border-top: 1rem solid rgba(255, 255, 255, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 13rem;
+  font-size: 12.5rem;
   color: #95a2b3;
 }
 
@@ -1242,9 +949,9 @@ input:focus-visible,
 }
 
 .game-tile h3 {
-  font-size: 17rem;
+  font-size: 16.5rem;
   font-weight: 500;
-  margin: 12rem 0 3rem;
+  margin: 10rem 0 3rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1252,7 +959,7 @@ input:focus-visible,
 
 .game-tile p {
   margin: 0;
-  font-size: 13rem;
+  font-size: 12.5rem;
   color: #97a3b4;
 }
 
@@ -1315,7 +1022,7 @@ input:focus-visible,
   color: #b7c4d6;
 }
 
-/* ==================== 首次引导全屏覆盖层 & 专注恢复进度锁（统一 30rem 圆角） ==================== */
+/* ==================== 首次引导分步向导（Step 1 → Step 2 → Step 3 单屏单步推进） ==================== */
 .fullscreen-overlay {
   position: fixed;
   inset: 0;
@@ -1323,12 +1030,11 @@ input:focus-visible,
   background:
     radial-gradient(circle at 50% 14%, rgba(0, 67, 156, 0.42), transparent 55%),
     rgba(10, 13, 19, 0.94);
-  backdrop-filter: blur(36rem);
+  backdrop-filter: blur(38rem);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 46rem 120rem 98rem;
-  overflow-y: auto;
+  padding: 46rem 140rem 100rem;
 }
 
 .wizard-header {
@@ -1341,71 +1047,119 @@ input:focus-visible,
 .wizard-brand {
   display: flex;
   align-items: center;
-  gap: 22rem;
+  gap: 20rem;
 }
 
 .wizard-brand img {
-  width: 74rem;
-  height: 74rem;
+  width: 68rem;
+  height: 68rem;
   border-radius: var(--radius-inner);
   box-shadow: 0 12rem 32rem rgba(0, 67, 156, 0.55);
 }
 
 .wizard-brand h1 {
-  margin: 0 0 6rem;
-  font-size: 34rem;
+  margin: 0 0 5rem;
+  font-size: 32rem;
   font-weight: 500;
 }
 
 .wizard-brand p {
   margin: 0;
-  font-size: 16.5rem;
+  font-size: 15.5rem;
   color: #a9b6c8;
 }
 
-.wizard-step-card {
-  padding: 24rem 30rem;
+/* 顶部步骤进度指示条 */
+.wizard-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 10rem;
+  padding: 8rem 12rem;
+  border-radius: var(--radius-pill);
+  background: rgba(20, 26, 38, 0.72);
+  border: 1rem solid rgba(255, 255, 255, 0.12);
+}
+
+.wizard-step-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rem;
+  padding: 8rem 18rem;
+  border-radius: var(--radius-pill);
+  font-size: 14.5rem;
+  color: #93a3b8;
+}
+
+.wizard-step-pill.active {
+  background: #f4f7fb;
+  color: #0e131b;
+  font-weight: 600;
+}
+
+.wizard-step-pill.done {
+  background: rgba(52, 168, 106, 0.22);
+  color: #acefc9;
+}
+
+.wizard-stage-card {
+  flex: 1;
+  margin: 24rem 0;
+  padding: 36rem 42rem;
   border-radius: var(--radius-card);
   background: var(--glass-bg-strong);
   border: 1rem solid var(--glass-border);
-  box-shadow: var(--glass-specular);
+  box-shadow: var(--glass-specular), var(--glass-shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24rem;
 }
 
-.wizard-step-card h2 {
-  margin: 0 0 16rem;
-  font-size: 20rem;
-  font-weight: 500;
-  color: #eef3fa;
+.wizard-stage-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 20rem;
+}
+
+.wizard-stage-head h2 {
+  margin: 0 0 8rem;
+  font-size: 28rem;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.wizard-stage-head p {
+  margin: 0;
+  font-size: 16rem;
+  color: #a4b3c6;
 }
 
 .wizard-locations-grid,
 .rp-cards-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18rem;
+  gap: 22rem;
+  flex: 1;
+  align-items: stretch;
 }
 
 .wizard-loc-card,
-.rp-card,
-.object-tile-card {
-  padding: 22rem;
+.rp-card {
+  padding: 28rem;
   border-radius: var(--radius-card);
-  background: rgba(16, 20, 29, 0.72);
-  border: 1.5rem solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 20, 29, 0.76);
+  border: 1.5rem solid rgba(255, 255, 255, 0.11);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 14rem;
+  gap: 18rem;
 }
 
 .wizard-loc-card.selected,
-.rp-card.selected,
-.object-tile-card.selected {
-  background: linear-gradient(180deg, rgba(24, 98, 224, 0.34), rgba(18, 24, 35, 0.86));
-  border-color: rgba(118, 190, 255, 0.6);
+.rp-card.selected {
+  background: linear-gradient(180deg, rgba(24, 98, 224, 0.36), rgba(18, 24, 35, 0.88));
+  border-color: rgba(118, 190, 255, 0.65);
 }
 
 .rp-card-top,
@@ -1419,25 +1173,32 @@ input:focus-visible,
 .loc-row-title {
   display: flex;
   align-items: center;
-  gap: 10rem;
-  font-size: 18rem;
+  gap: 12rem;
+  font-size: 21rem;
   font-weight: 500;
 }
 
 .rp-card-desc {
-  font-size: 13.5rem;
-  color: #a3b0c2;
-  line-height: 1.45;
+  font-size: 15rem;
+  color: #a9b7ca;
+  line-height: 1.55;
 }
 
 .rp-card-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 10rem;
+  padding-top: 14rem;
   border-top: 1rem solid rgba(255, 255, 255, 0.08);
-  font-size: 13rem;
+  font-size: 14rem;
   color: #93a1b4;
+}
+
+.wizard-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22rem;
+  flex: 1;
 }
 
 .wizard-footer-bar {
@@ -1445,15 +1206,16 @@ input:focus-visible,
   align-items: center;
   justify-content: space-between;
   gap: 24rem;
-  padding: 22rem 30rem;
+  padding: 20rem 30rem;
   border-radius: var(--radius-card);
   background: var(--glass-bg-strong);
   border: 1rem solid rgba(118, 190, 255, 0.28);
 }
 
+/* ==================== 专注恢复进度锁（统一 30rem 圆角） ==================== */
 .restore-lock-scene {
   flex: 1;
-  margin: 6rem var(--page-x) 20rem;
+  margin: 6rem var(--page-x) 64rem;
   border-radius: var(--radius-card);
   padding: 34rem 42rem;
   background:
@@ -1681,12 +1443,9 @@ input:focus-visible,
 /* ==================== 最底部右侧手柄按钮提示栏（确认、返回、备份、恢复） ==================== */
 .dualsense-bar {
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 84rem;
+  right: var(--page-x);
+  bottom: 22rem;
   z-index: 80;
-  padding: 0 var(--page-x);
   pointer-events: none;
   display: flex;
   align-items: center;
@@ -1697,10 +1456,10 @@ input:focus-visible,
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
-  gap: 26rem;
+  gap: 24rem;
   padding: 10rem 22rem;
   border-radius: var(--radius-pill);
-  background: rgba(18, 22, 31, 0.52);
+  background: rgba(18, 22, 31, 0.56);
   backdrop-filter: blur(26rem) saturate(160%);
   -webkit-backdrop-filter: blur(26rem) saturate(160%);
   border: 1rem solid rgba(255, 255, 255, 0.11);
@@ -1711,7 +1470,7 @@ input:focus-visible,
   display: inline-flex;
   align-items: center;
   gap: 9rem;
-  font-size: 16rem;
+  font-size: 15.5rem;
   font-weight: 500;
   color: rgba(241, 245, 249, 0.92);
   white-space: nowrap;
@@ -1722,14 +1481,14 @@ input:focus-visible,
 }
 
 .ds-glyph {
-  width: 27rem;
-  height: 27rem;
+  width: 26rem;
+  height: 26rem;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.12);
   border: 1.5rem solid rgba(255, 255, 255, 0.34);
   display: inline-grid;
   place-items: center;
-  font-size: 13.5rem;
+  font-size: 13rem;
   font-weight: 600;
   color: #f8fafc;
 }
@@ -1739,55 +1498,11 @@ input:focus-visible,
   border-color: #93c5fd;
 }
 
-/* ==================== 底部正中 Prototype Variant Switcher（遵循 UI.md 规范，与产品 UI 视觉区隔） ==================== */
-.prototype-switcher {
-  position: fixed;
-  left: 50%;
-  bottom: 18rem;
-  transform: translateX(-50%);
-  z-index: 120;
-  display: inline-flex;
-  align-items: center;
-  gap: 8rem;
-  height: 46rem;
-  padding: 5rem 8rem;
-  border-radius: var(--radius-pill);
-  background: rgba(15, 12, 28, 0.92);
-  border: 1.5rem solid rgba(196, 181, 253, 0.55);
-  box-shadow: 0 14rem 38rem rgba(0, 0, 0, 0.68);
-  backdrop-filter: blur(22rem);
-}
-
-.prototype-switcher-arrow {
-  width: 34rem;
-  height: 34rem;
-  border-radius: 50%;
-  background: rgba(139, 92, 246, 0.28);
-  color: #f5f3ff;
-  display: grid;
-  place-items: center;
-  font-size: 16rem;
-  font-weight: 600;
-}
-
-.prototype-switcher-arrow:hover {
-  background: rgba(139, 92, 246, 0.55);
-}
-
-.prototype-switcher-label {
-  padding: 0 14rem;
-  font-size: 14rem;
-  font-weight: 600;
-  color: #ede9fe;
-  white-space: nowrap;
-  letter-spacing: 0.2rem;
-}
-
 /* ==================== 左下角独立开发者状态模拟浮窗 ==================== */
 .proto-floating-dock {
   position: fixed;
   left: var(--page-x);
-  bottom: 20rem;
+  bottom: 22rem;
   z-index: 120;
   display: flex;
   flex-direction: column;
@@ -1849,7 +1564,7 @@ input:focus-visible,
 #toast {
   position: fixed;
   right: var(--page-x);
-  top: 96rem;
+  top: 94rem;
   z-index: 130;
   display: flex;
   align-items: center;

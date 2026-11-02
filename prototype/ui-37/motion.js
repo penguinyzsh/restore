@@ -1,4 +1,4 @@
-/* Apple tvOS Liquid Glass × PS5 空间过场与 FLIP 磁贴动效 */
+/* Apple Bento × PS5 空间过场与常驻控制坞 FLIP 动效 (#37) */
 window.PS5Motion = (() => {
   'use strict'
 
@@ -7,10 +7,9 @@ window.PS5Motion = (() => {
   let serial = 0
   const PREFIX = 'ps5-motion:'
   const timing = Object.freeze({
-    tile: 340,
-    scene: 300,
-    cards: 320,
-    lock: 240,
+    tile: 320,
+    scene: 280,
+    lock: 220,
     ease: 'cubic-bezier(0.22, 1, 0.36, 1)',
     fade: 'linear',
   })
@@ -29,14 +28,13 @@ window.PS5Motion = (() => {
     const shell = q('#app .app-shell')
     if (!shell) return { key: 'empty', kind: 'empty', shell: null }
     const navKey = shell.dataset.view || 'home'
-    const variantKey = shell.dataset.variant || 'A'
+    const stepKey = shell.dataset.onboardingStep || ''
     const kind = navKey === 'restore-lock' ? 'lock' : navKey === 'home' ? 'home' : 'subpage'
     return {
-      key: `${variantKey}/${navKey}`,
+      key: `${navKey}/${stepKey}`,
       kind,
       shell,
       navKey,
-      variantKey,
     }
   }
 
@@ -90,7 +88,7 @@ window.PS5Motion = (() => {
     if (!node) return null
     const frames = offset
       ? [
-          { opacity: 0, transform: `translateY(${offset}px) scale(0.988)` },
+          { opacity: 0, transform: `translateY(${offset}px) scale(0.99)` },
           { opacity: 1, transform: 'translateY(0) scale(1)' },
         ]
       : [{ opacity: 0 }, { opacity: 1 }]
@@ -139,15 +137,14 @@ window.PS5Motion = (() => {
     if (previous.key === next.key && reason === 'update') return
     cancel('scene')
     flipDockTiles(previous, next)
-    if (next.kind === 'lock') {
+    if ( q('.wizard-stage-card', next.shell) ) {
+      fade('.wizard-stage-card', 10, 240, px(14))
+    } else if (next.kind === 'lock') {
       fade('.restore-lock-scene', 0, timing.lock, px(16))
     } else if (next.kind === 'home') {
-      fade('.overview-showcase', 20, timing.scene, px(14))
-      if (!previous.tiles?.size || previous.variantKey !== next.variantKey) {
-        fade('.bottom-dock-zone', 55, timing.cards, px(18))
-      }
+      fade('.overview-showcase', 15, timing.scene, px(14))
     } else {
-      fade('.subpage-stage', 15, timing.scene, px(16))
+      fade('.subpage-content-body', 15, timing.scene, px(14))
     }
   }
 
