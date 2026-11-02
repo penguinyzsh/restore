@@ -234,8 +234,8 @@
 
   const urlParams = new URLSearchParams(window.location.search)
   const rawView = urlParams.get('view')
-  const rawLockStyle = urlParams.get('lockStyle') || urlParams.get('style') || 'a'
-  const initialLockStyle = ['a', 'b', 'c'].includes(rawLockStyle.toLowerCase()) ? rawLockStyle.toLowerCase() : 'a'
+  const rawOtherStyle = urlParams.get('otherStyle') || urlParams.get('style') || 'a'
+  const initialOtherStyle = ['a', 'b', 'c'].includes(rawOtherStyle.toLowerCase()) ? rawOtherStyle.toLowerCase() : 'a'
   const initialOnboardingOpen = rawView === 'onboarding' || urlParams.get('onboarding') === '1'
   const initialStep = Math.min(3, Math.max(1, parseInt(urlParams.get('step') || '1', 10) || 1))
   const initialLockMode = urlParams.get('lock')
@@ -243,7 +243,8 @@
 
   const state = {
     view: normalizeView(rawView),
-    lockStyle: initialLockStyle,
+    otherStyle: initialOtherStyle,
+    otherTab: 'locations',
     focusedDockId: 'restore',
     devDockCollapsed: true,
     onboardingOpen: initialOnboardingOpen,
@@ -370,8 +371,13 @@
   function syncUrl() {
     const u = new URL(window.location.href)
     u.searchParams.delete('variant')
+    u.searchParams.delete('lockStyle')
     u.searchParams.set('view', state.onboardingOpen ? 'onboarding' : state.view)
-    u.searchParams.set('lockStyle', state.lockStyle)
+    if (state.view === 'other') {
+      u.searchParams.set('otherStyle', state.otherStyle)
+    } else {
+      u.searchParams.delete('otherStyle')
+    }
     if (state.onboardingOpen) {
       u.searchParams.set('step', String(state.onboardingStep))
     } else {
@@ -596,7 +602,7 @@
           >
             <div class="restore-horiz-top">
               <div class="restore-horiz-left">
-                <div class="restore-step-icon-box" style="background:rgba(255,255,255,0.16); color:#fff;">${ICONS.check}</div>
+                <div class="restore-step-icon-box" style="color:#fff;">${ICONS.check}</div>
                 <div class="restore-horiz-copy">
                   <h2>已选 ${state.selectedObjects.length} / 5 类备份数据</h2>
                   <p>默认全选全部 5 类核心数据，点击此卡片可一键全选所有类别。</p>
@@ -624,7 +630,7 @@
         <section class="restore-horiz-card action-cta-card restore-control-hub-card" aria-label="恢复配置与执行控制台">
           <div class="restore-horiz-top">
             <div class="restore-horiz-left">
-              <div class="restore-step-icon-box" style="background:rgba(255,255,255,0.18); color:#ffffff;">${ICONS.restore}</div>
+              <div class="restore-step-icon-box" style="color:#ffffff;">${ICONS.restore}</div>
               <div class="restore-horiz-copy">
                 <h2>恢复源与执行总控（已选 ${state.selectedObjects.length} / 5 项）</h2>
                 <p>当前：${currentLoc.name} · ${currentRp.title}（${currentRp.size}）</p>
@@ -705,13 +711,12 @@
     `
   }
 
-  /* ==================== 子页 2：「软件」（三套具备真实阻挡且不突兀的方案 A / B / C） ==================== */
+  /* ==================== 子页 2：「软件」（收敛为方案 A：无黑边磨砂贴 + 灵动胶囊锁） ==================== */
   function renderAppsPage() {
-    const ls = state.lockStyle || 'a'
     return `
       <main class="subpage-stage">
-        <div class="subpage-content-body channel-showcase-body lock-style-${ls}">
-          <div class="channel-showcase-stage lock-style-${ls}">
+        <div class="subpage-content-body channel-showcase-body lock-style-a">
+          <div class="channel-showcase-stage lock-style-a">
             <div class="library-grid channel-apps-grid" aria-hidden="true">
               ${STORE_APPS.map(
                 (app) => `
@@ -728,45 +733,17 @@
                     <span>${app.category} · ${app.size}</span>
                     <span class="channel-status-chip">${ICONS.lock}<span>未开放</span></span>
                   </div>
-                  ${
-                    ls === 'c'
-                      ? `
-                      <div class="card-individual-lock-veil">
-                        <span class="card-lock-pill">${ICONS.lock}<span>暂未开放</span></span>
-                      </div>
-                    `
-                      : ''
-                  }
                 </article>
               `,
               ).join('')}
             </div>
 
-            ${
-              ls === 'a'
-                ? `
-                <div class="channel-frosted-shield style-a" role="status" aria-label="软件频道暂未开放">
-                  <div class="shield-compact-pill">
-                    <span class="shield-lock-circle">${ICONS.lock}</span>
-                    <span class="shield-lock-text">软件频道暂未开放</span>
-                  </div>
-                </div>
-              `
-                : ''
-            }
-
-            ${
-              ls === 'b'
-                ? `
-                <div class="channel-frosted-shield style-b" role="status" aria-label="软件频道暂未开放">
-                  <div class="shield-orb-plate">
-                    <div class="shield-orb-ring">${ICONS.lock}</div>
-                    <strong>软件频道暂未开放</strong>
-                  </div>
-                </div>
-              `
-                : ''
-            }
+            <div class="channel-frosted-shield style-a" role="status" aria-label="软件频道暂未开放">
+              <div class="shield-compact-pill">
+                <span class="shield-lock-circle">${ICONS.lock}</span>
+                <span class="shield-lock-text">软件频道暂未开放</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -775,28 +752,18 @@
     `
   }
 
-  /* ==================== 子页 3：「商店」（三套具备真实阻挡且不突兀的方案 A / B / C） ==================== */
+  /* ==================== 子页 3：「商店」（收敛为方案 A：无黑边磨砂贴 + 灵动胶囊锁） ==================== */
   function renderStorePage() {
-    const ls = state.lockStyle || 'a'
     return `
       <main class="subpage-stage">
-        <div class="subpage-content-body channel-showcase-body lock-style-${ls}">
-          <div class="channel-showcase-stage lock-style-${ls}">
+        <div class="subpage-content-body channel-showcase-body lock-style-a">
+          <div class="channel-showcase-stage lock-style-a">
             <div class="game-grid channel-games-grid" aria-hidden="true">
               ${STORE_GAMES.map(
                 (g) => `
                 <article class="game-tile channel-game-tile">
                   <div class="game-cover">
                     <img src="${g.cover}" alt="${g.title}" />
-                    ${
-                      ls === 'c'
-                        ? `
-                        <div class="card-individual-lock-veil">
-                          <span class="card-lock-pill">${ICONS.lock}<span>暂未开放</span></span>
-                        </div>
-                      `
-                        : ''
-                    }
                   </div>
                   <h3>${g.title}</h3>
                   <p>${g.meta}</p>
@@ -805,31 +772,12 @@
               ).join('')}
             </div>
 
-            ${
-              ls === 'a'
-                ? `
-                <div class="channel-frosted-shield style-a" role="status" aria-label="商店频道暂未开放">
-                  <div class="shield-compact-pill">
-                    <span class="shield-lock-circle">${ICONS.lock}</span>
-                    <span class="shield-lock-text">商店频道暂未开放</span>
-                  </div>
-                </div>
-              `
-                : ''
-            }
-
-            ${
-              ls === 'b'
-                ? `
-                <div class="channel-frosted-shield style-b" role="status" aria-label="商店频道暂未开放">
-                  <div class="shield-orb-plate">
-                    <div class="shield-orb-ring">${ICONS.lock}</div>
-                    <strong>商店频道暂未开放</strong>
-                  </div>
-                </div>
-              `
-                : ''
-            }
+            <div class="channel-frosted-shield style-a" role="status" aria-label="商店频道暂未开放">
+              <div class="shield-compact-pill">
+                <span class="shield-lock-circle">${ICONS.lock}</span>
+                <span class="shield-lock-text">商店频道暂未开放</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -838,181 +786,580 @@
     `
   }
 
-  /* ==================== 子页 4：「其他」（2×2 高密度玻璃工作台，统一 30rem 圆角） ==================== */
-  function renderOtherPage() {
-    return `
-      <main class="subpage-stage">
-        <div class="subpage-content-body">
-          <div class="subpage-toolbar">
-            <div class="subpage-toolbar-group">
-              <span class="badge green">${ICONS.check}<span>配置实时生效</span></span>
-              <span style="font-size:15rem; color:#b8c7dc;">备份位置与网络 · 自动备份范围 · 恢复点保护与清理 · 后台守护与首次引导</span>
-            </div>
-            <div class="subpage-toolbar-group">
-              <button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="lan">
-                <span>配置 WebDAV 凭据</span>
-              </button>
-              <button type="button" class="pill sm brand" data-action="open-onboarding">
-                <span>重新打开首次引导</span>
-              </button>
-            </div>
-          </div>
+  /* ==================== 子页 4：「其他」（A / B / C 三套高设计感空间设置方案，统一 30rem 圆角） ==================== */
+  function renderOtherStyleA() {
+    const activeTab = state.otherTab || 'locations'
+    const navItems = [
+      {
+        id: 'locations',
+        icon: 'cloud',
+        title: '存储位置与连接',
+        sub: `已启用 ${state.locations.filter((l) => l.enabled).length} / 3 个位置`,
+      },
+      {
+        id: 'scope',
+        icon: 'save',
+        title: '自动备份内容范围',
+        sub: `已开启 ${state.autoBackupScope.length} / 5 类数据`,
+      },
+      {
+        id: 'protect',
+        icon: 'shield',
+        title: '恢复点保护与清理',
+        sub: `锁定 ${state.restorePoints.filter((r) => r.protected).length} 份 · 智能保底`,
+      },
+      {
+        id: 'daemon',
+        icon: 'settings',
+        title: '后台守护与引导向导',
+        sub: '退游落盘稳定同步',
+      },
+    ]
 
-          <div class="settings-dense-grid">
-            <section class="settings-dense-card">
-              <div class="settings-dense-head">
-                <div>
-                  <div class="settings-dense-title">
-                    <div class="tile-icon">${ICONS.cloud}</div>
-                    <h2>备份位置与网络配置</h2>
-                  </div>
-                  <p class="settings-dense-sub">各位置独立同步互不阻塞，支持手柄软键盘输入连接凭据</p>
-                </div>
-                <span class="badge blue">已启用 ${state.locations.filter((l) => l.enabled).length} / 3</span>
-              </div>
-              <div class="settings-compact-list">
-                ${state.locations
-                  .map(
-                    (loc) => `
-                    <div class="settings-compact-row">
-                      <div class="settings-compact-main">
+    let stageHtml = ''
+    if (activeTab === 'locations') {
+      stageHtml = `
+        <div class="other-a-stage-head">
+          <div>
+            <h2>备份存储位置与网络凭据</h2>
+            <p>各存储位置独立同步互不阻塞，支持随时接入 USB 或通过手柄软键盘配置 WebDAV 凭据。</p>
+          </div>
+          <button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="lan">
+            <span>配置 WebDAV 凭据</span>
+          </button>
+        </div>
+
+        <div class="other-a-loc-grid">
+          ${state.locations
+            .map((loc, idx) => {
+              const ringColors = ['#38BDF8', '#60A5FA', '#818CF8']
+              return `
+                <article class="other-a-loc-card ${loc.enabled ? 'is-enabled' : ''}">
+                  <div class="other-a-loc-top">
+                    <div class="other-a-loc-title">
+                      ${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}
+                      <div>
                         <strong>${loc.name}</strong>
-                        <p>${loc.statusText} · ${loc.freeSpace}</p>
-                        <div class="settings-compact-tags">
-                          <span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已启用' : '已暂停'}</span>
-                          <span class="badge muted">${loc.endpoint}</span>
-                        </div>
-                      </div>
-                      <div class="settings-row-actions">
-                        ${
-                          loc.type === 'webdav'
-                            ? `<button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="${loc.id}">凭据</button>`
-                            : ''
-                        }
-                        <button type="button" class="pill sm ${loc.enabled ? 'secondary' : 'brand'}" data-action="toggle-location" data-loc="${loc.id}">
-                          ${loc.enabled ? '暂停' : '启用'}
-                        </button>
+                        <small>${loc.endpoint}</small>
                       </div>
                     </div>
-                  `,
-                  )
-                  .join('')}
-              </div>
-            </section>
-
-            <section class="settings-dense-card">
-              <div class="settings-dense-head">
-                <div>
-                  <div class="settings-dense-title">
-                    <div class="tile-icon">${ICONS.save}</div>
-                    <h2>自动备份内容范围</h2>
-                  </div>
-                  <p class="settings-dense-sub">关闭游戏或变更配置后自动增量同步所选项目</p>
-                </div>
-                <span class="badge green">已开启 ${state.autoBackupScope.length} / 5</span>
-              </div>
-              <div class="settings-scope-grid">
-                ${FIVE_OBJECTS.map((obj, idx) => {
-                  const on = state.autoBackupScope.includes(obj.id)
-                  return `
                     <button
                       type="button"
-                      class="settings-scope-item ${on ? 'selected' : ''} ${idx === 4 ? 'span-2' : ''}"
-                      data-action="toggle-auto-scope"
-                      data-obj="${obj.id}"
+                      class="apple-switch ${loc.enabled ? 'on' : ''}"
+                      data-action="toggle-location"
+                      data-loc="${loc.id}"
+                      aria-label="切换 ${loc.name}"
                     >
-                      <div class="settings-compact-main">
-                        <strong>${obj.title}</strong>
-                        <p>${obj.countText} · ${obj.size}</p>
-                      </div>
-                      <div class="check-indicator">${ICONS.check}</div>
+                      <span class="apple-switch-knob"></span>
                     </button>
-                  `
-                }).join('')}
-              </div>
-            </section>
+                  </div>
 
-            <section class="settings-dense-card">
-              <div class="settings-dense-head">
-                <div>
-                  <div class="settings-dense-title">
-                    <div class="tile-icon">${ICONS.shield}</div>
-                    <h2>恢复点保护与空间清理</h2>
-                  </div>
-                  <p class="settings-dense-sub">空间不足时自动清理未锁定旧恢复点，保底保留最新完整点</p>
-                </div>
-                <span class="badge blue">智能保底</span>
-              </div>
-              ${
-                state.spaceLowSimulated
-                  ? `
-                <div class="inline-notice-box warn" style="margin-top:0; padding:10rem 16rem;">
-                  <div>
-                    <strong style="display:block; font-size:14.5rem; color:#ffd4d2;">USB 存储设备可用空间不足</strong>
-                    <span style="font-size:12.5rem; color:#e6c3c1;">已自动清理未锁定旧恢复点并保留最新完整点。</span>
-                  </div>
-                  <span class="badge gold">已保底</span>
-                </div>
-              `
-                  : ''
-              }
-              <div class="settings-compact-list">
-                ${state.restorePoints
-                  .map(
-                    (rp) => `
-                    <div class="settings-compact-row">
-                      <div class="settings-compact-main">
-                        <strong>${rp.title}</strong>
-                        <p>${rp.note} · ${rp.size}</p>
-                        <div class="settings-compact-tags">
-                          <span class="badge ${rp.protected ? 'gold' : 'muted'}">${rp.protected ? '已锁定保护' : '可自动清理'}</span>
-                          ${rp.isLatestComplete ? '<span class="badge blue">最新完整点</span>' : ''}
-                        </div>
-                      </div>
-                      <div class="settings-row-actions">
-                        <button type="button" class="pill sm ${rp.protected ? 'secondary' : 'brand'}" data-action="toggle-rp-protect" data-rp="${rp.id}">
-                          ${rp.protected ? '解除保护' : '锁定保护'}
-                        </button>
-                      </div>
+                  <div class="vb-ring-row" style="margin: 6rem 0;">
+                    ${renderRadialGauge(loc.freePercent, ringColors[idx % ringColors.length])}
+                    <div class="vb-ring-copy">
+                      <strong style="font-size:21rem;">${loc.freeOnly} 可用</strong>
+                      <span>总容量 ${loc.totalOnly}</span>
+                      <small>${loc.enabled ? loc.statusText : '已暂停自动同步'}</small>
                     </div>
-                  `,
-                  )
-                  .join('')}
-              </div>
-            </section>
+                  </div>
 
-            <section class="settings-dense-card">
-              <div class="settings-dense-head">
-                <div>
-                  <div class="settings-dense-title">
-                    <div class="tile-icon">${ICONS.settings}</div>
-                    <h2>后台守护服务与触发策略</h2>
+                  <div class="other-a-loc-foot">
+                    <span>最近同步：${loc.lastSync}</span>
+                    ${
+                      loc.type === 'webdav'
+                        ? `<button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="${loc.id}">修改凭据</button>`
+                        : `<span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已就绪' : '已暂停'}</span>`
+                    }
                   </div>
-                  <p class="settings-dense-sub">关闭主界面后常驻后台，在游戏退出且存档落盘稳定后自动同步</p>
-                </div>
-              </div>
-              <div class="settings-compact-list">
-                <div class="settings-compact-row">
-                  <div class="settings-compact-main">
-                    <strong>游戏退出后存档稳定监听</strong>
-                    <p>游戏运行期间零抢占读写，退出游戏后自动创建增量恢复点。</p>
-                  </div>
-                  <div class="settings-row-actions">
-                    <button type="button" class="pill sm secondary" data-action="manual-backup">立即备份</button>
-                  </div>
-                </div>
-                <div class="settings-compact-row">
-                  <div class="settings-compact-main">
-                    <strong>插件与宿主配置即时同步</strong>
-                    <p>插件、自启列表或外置盘扫描路径变更时即时增量同步。</p>
-                  </div>
-                  <div class="settings-row-actions">
-                    <button type="button" class="pill sm secondary" data-action="open-onboarding">引导向导</button>
-                  </div>
-                </div>
-              </div>
-            </section>
+                </article>
+              `
+            })
+            .join('')}
+        </div>
+      `
+    } else if (activeTab === 'scope') {
+      stageHtml = `
+        <div class="other-a-stage-head">
+          <div>
+            <h2>自动备份内容范围</h2>
+            <p>关闭游戏或变更宿主配置后，后台守护服务将自动增量同步以下已勾选的数据类别。</p>
           </div>
+          <span class="badge blue">已开启 ${state.autoBackupScope.length} / 5 类核心数据</span>
+        </div>
+
+        <div class="other-a-scope-grid">
+          ${FIVE_OBJECTS.map((obj) => {
+            const on = state.autoBackupScope.includes(obj.id)
+            return `
+              <button
+                type="button"
+                class="other-a-scope-card ${on ? 'selected' : ''}"
+                data-action="toggle-auto-scope"
+                data-obj="${obj.id}"
+              >
+                <div class="other-a-scope-top">
+                  <div class="other-a-scope-title">
+                    <span class="other-clean-icon">${ICONS[obj.icon]}</span>
+                    <div>
+                      <strong>${obj.title}</strong>
+                      <small>${obj.countText} · ${obj.size}</small>
+                    </div>
+                  </div>
+                  <span class="apple-switch ${on ? 'on' : ''}">
+                    <span class="apple-switch-knob"></span>
+                  </span>
+                </div>
+                <p>${obj.desc}</p>
+              </button>
+            `
+          }).join('')}
+        </div>
+      `
+    } else if (activeTab === 'protect') {
+      stageHtml = `
+        <div class="other-a-stage-head">
+          <div>
+            <h2>恢复点锁定保护与空间自动清理</h2>
+            <p>当存储空间不足时，系统自动清理未锁定的旧恢复点，并始终保底保留最新一份完整恢复点。</p>
+          </div>
+          <span class="badge blue">智能保底已开启</span>
+        </div>
+
+        ${
+          state.spaceLowSimulated
+            ? `
+            <div class="inline-notice-box warn" style="margin:0;">
+              <div>
+                <strong style="display:block; font-size:15rem; color:#ffd4d2;">USB 存储设备可用空间不足</strong>
+                <span style="font-size:13rem; color:#e6c3c1;">已自动清理未锁定旧恢复点并保留最新完整点。</span>
+              </div>
+              <span class="badge gold">已触发保底</span>
+            </div>
+          `
+            : ''
+        }
+
+        <div class="other-a-rp-grid">
+          ${state.restorePoints
+            .map(
+              (rp) => `
+              <article class="other-a-rp-card ${rp.protected ? 'is-protected' : ''}">
+                <div>
+                  <div class="other-a-loc-top">
+                    <strong style="font-size:19rem; color:#f8fafc;">${rp.title}</strong>
+                    ${rp.isLatestComplete ? '<span class="badge blue">最新完整点</span>' : ''}
+                  </div>
+                  <p style="margin:10rem 0; font-size:13.5rem; color:#a8b8ce; line-height:1.5;">${rp.summary}</p>
+                </div>
+                <div class="other-a-loc-foot">
+                  <span>体积 ${rp.size} · ${rp.note}</span>
+                  <button
+                    type="button"
+                    class="pill sm ${rp.protected ? 'brand' : 'secondary'}"
+                    data-action="toggle-rp-protect"
+                    data-rp="${rp.id}"
+                  >
+                    ${rp.protected ? '已锁定保护' : '锁定保护'}
+                  </button>
+                </div>
+              </article>
+            `,
+            )
+            .join('')}
+        </div>
+      `
+    } else {
+      stageHtml = `
+        <div class="other-a-stage-head">
+          <div>
+            <h2>后台守护服务与初始化向导</h2>
+            <p>守护服务在关闭界面后继续常驻运行，游戏运行期间零抢占读写，退游存档落盘稳定后自动增量同步。</p>
+          </div>
+          <button type="button" class="pill sm brand" data-action="open-onboarding">
+            <span>重新打开首次引导</span>
+          </button>
+        </div>
+
+        <div class="other-a-daemon-grid">
+          <article class="other-a-rp-card is-protected">
+            <div>
+              <div class="other-a-loc-top">
+                <div class="other-a-scope-title">
+                  <span class="other-clean-icon">${ICONS.bolt}</span>
+                  <strong>游戏退出后存档稳定监听</strong>
+                </div>
+                <span class="badge blue">零抢占读写</span>
+              </div>
+              <p style="margin:12rem 0 0; font-size:14rem; color:#b2c2d8; line-height:1.55;">
+                实时监测前台游戏生命周期与存档目录写入状态，仅在退出游戏且文件落盘稳定后触发增量备份，绝不干扰游玩帧率。
+              </p>
+            </div>
+            <div class="other-a-loc-foot">
+              <span>上次触发：今天 19:10（《最后生还者 Part I》）</span>
+              <button type="button" class="pill sm primary" data-action="manual-backup">立即手动备份</button>
+            </div>
+          </article>
+
+          <article class="other-a-rp-card">
+            <div>
+              <div class="other-a-loc-top">
+                <div class="other-a-scope-title">
+                  <span class="other-clean-icon">${ICONS.settings}</span>
+                  <strong>插件变更即时同步与向导重置</strong>
+                </div>
+                <span class="badge muted">全自动守护</span>
+              </div>
+              <p style="margin:12rem 0 0; font-size:14rem; color:#b2c2d8; line-height:1.55;">
+                当系统载荷、自启插件列表或外置盘游戏扫描路径发生变更时自动同步；您也可以随时重新进入三步初始化向导。
+              </p>
+            </div>
+            <div class="other-a-loc-foot">
+              <span>支持三步向导随时重配</span>
+              <button type="button" class="pill sm secondary" data-action="open-onboarding">打开三步引导向导</button>
+            </div>
+          </article>
+        </div>
+      `
+    }
+
+    return `
+      <div class="other-style-a-shell">
+        <aside class="other-a-sidebar" role="tablist" aria-label="设置分类导航">
+          ${navItems
+            .map(
+              (item) => `
+              <button
+                type="button"
+                class="other-a-nav-btn ${activeTab === item.id ? 'active' : ''}"
+                data-action="select-other-tab"
+                data-tab="${item.id}"
+              >
+                <span class="other-clean-icon">${ICONS[item.icon]}</span>
+                <div class="other-a-nav-copy">
+                  <strong>${item.title}</strong>
+                  <small>${item.sub}</small>
+                </div>
+              </button>
+            `,
+            )
+            .join('')}
+        </aside>
+
+        <section class="other-a-stage">
+          ${stageHtml}
+        </section>
+      </div>
+    `
+  }
+
+  function renderOtherStyleB() {
+    const ringColors = ['#38BDF8', '#60A5FA', '#818CF8']
+    return `
+      <div class="other-style-b-bento">
+        <!-- 左上 Span-2：三大存储位置环形仪表矩阵 -->
+        <section class="other-b-card span-2">
+          <div class="other-b-head">
+            <div class="other-b-title">
+              <span class="other-clean-icon">${ICONS.cloud}</span>
+              <div>
+                <h2>存储位置与网络凭据</h2>
+                <p>三路存储独立同步互不阻塞 · 点击开关即时启停</p>
+              </div>
+            </div>
+            <button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="lan">
+              <span>WebDAV 凭据</span>
+            </button>
+          </div>
+
+          <div class="other-b-loc-trio">
+            ${state.locations
+              .map(
+                (loc, idx) => `
+                <div class="other-b-loc-tile ${loc.enabled ? 'enabled' : ''}">
+                  <div class="other-b-loc-top">
+                    <strong>${loc.name}</strong>
+                    <button
+                      type="button"
+                      class="apple-switch sm ${loc.enabled ? 'on' : ''}"
+                      data-action="toggle-location"
+                      data-loc="${loc.id}"
+                      aria-label="切换 ${loc.name}"
+                    >
+                      <span class="apple-switch-knob"></span>
+                    </button>
+                  </div>
+                  <div class="other-b-ring-mini">
+                    ${renderRadialGauge(loc.freePercent, ringColors[idx % ringColors.length])}
+                    <div>
+                      <strong>${loc.freeOnly}</strong>
+                      <span>共 ${loc.totalOnly}</span>
+                      ${
+                        loc.type === 'webdav'
+                          ? `<button type="button" class="other-inline-link" data-action="open-webdav-osk" data-loc="${loc.id}">修改凭据</button>`
+                          : `<small>${loc.endpoint}</small>`
+                      }
+                    </div>
+                  </div>
+                </div>
+              `,
+              )
+              .join('')}
+          </div>
+        </section>
+
+        <!-- 右上：后台守护脉搏与快捷操作主控卡 -->
+        <section class="other-b-card other-b-hero-card">
+          <div class="other-b-head">
+            <div class="other-b-title">
+              <span class="other-clean-icon">${ICONS.bolt}</span>
+              <div>
+                <h2>后台守护与快捷总控</h2>
+                <p>退游且存档落盘稳定后自动增量同步</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="other-b-hero-stats">
+            <div>
+              <span>受保护总体积</span>
+              <strong>5.4 GB</strong>
+            </div>
+            <div>
+              <span>自动同步范围</span>
+              <strong>${state.autoBackupScope.length} / 5 项</strong>
+            </div>
+            <div>
+              <span>锁定恢复点</span>
+              <strong>${state.restorePoints.filter((r) => r.protected).length} 份</strong>
+            </div>
+          </div>
+
+          <div class="other-b-hero-actions">
+            <button type="button" class="pill sm primary" data-action="manual-backup">
+              ${ICONS.bolt}<span>立即手动备份</span>
+            </button>
+            <button type="button" class="pill sm secondary" data-action="open-onboarding">
+              <span>首次引导向导</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- 左下：自动备份内容范围（5 枚 Apple 空间磁贴） -->
+        <section class="other-b-card">
+          <div class="other-b-head">
+            <div class="other-b-title">
+              <span class="other-clean-icon">${ICONS.save}</span>
+              <div>
+                <h2>自动备份内容范围</h2>
+                <p>点击磁贴切换是否纳入日常自动同步</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="other-b-scope-pills">
+            ${FIVE_OBJECTS.map((obj) => {
+              const on = state.autoBackupScope.includes(obj.id)
+              return `
+                <button
+                  type="button"
+                  class="other-b-scope-chip ${on ? 'selected' : ''}"
+                  data-action="toggle-auto-scope"
+                  data-obj="${obj.id}"
+                >
+                  <span class="other-clean-icon sm">${ICONS[obj.icon]}</span>
+                  <div class="other-b-chip-copy">
+                    <strong>${obj.title}</strong>
+                    <small>${obj.size}</small>
+                  </div>
+                  <div class="check-indicator">${ICONS.check}</div>
+                </button>
+              `
+            }).join('')}
+          </div>
+        </section>
+
+        <!-- 右下 Span-2：恢复点时间轴保护矩阵 -->
+        <section class="other-b-card span-2">
+          <div class="other-b-head">
+            <div class="other-b-title">
+              <span class="other-clean-icon">${ICONS.shield}</span>
+              <div>
+                <h2>恢复点锁定保护与空间清理</h2>
+                <p>空间不足时自动清理未锁定恢复点，始终保底最新完整点</p>
+              </div>
+            </div>
+            <span class="badge blue">智能保底</span>
+          </div>
+
+          <div class="other-b-rp-trio">
+            ${state.restorePoints
+              .map(
+                (rp) => `
+                <div class="other-b-rp-tile ${rp.protected ? 'protected' : ''}">
+                  <div class="other-b-loc-top">
+                    <strong>${rp.title.replace(' 自动备份', '').replace(' 手动备份', ' 手动')}</strong>
+                    ${rp.isLatestComplete ? '<span class="badge blue">保底</span>' : ''}
+                  </div>
+                  <p>${rp.note} · ${rp.size}</p>
+                  <button
+                    type="button"
+                    class="pill sm ${rp.protected ? 'brand' : 'secondary'}"
+                    data-action="toggle-rp-protect"
+                    data-rp="${rp.id}"
+                  >
+                    ${rp.protected ? '已锁定保护' : '锁定保护'}
+                  </button>
+                </div>
+              `,
+              )
+              .join('')}
+          </div>
+        </section>
+      </div>
+    `
+  }
+
+  function renderOtherStyleC() {
+    return `
+      <div class="other-style-c-columns">
+        <!-- 第 1 列：存储位置与连接 -->
+        <section class="other-c-col-card">
+          <header class="other-c-col-head">
+            <span class="other-clean-icon">${ICONS.cloud}</span>
+            <div>
+              <h2>1. 备份存储位置</h2>
+              <p>多位置独立同步互不阻塞</p>
+            </div>
+          </header>
+
+          <div class="other-c-col-body">
+            ${state.locations
+              .map(
+                (loc) => `
+                <div class="other-c-item-box ${loc.enabled ? 'active' : ''}">
+                  <div class="other-b-loc-top">
+                    <strong>${loc.name}</strong>
+                    <button
+                      type="button"
+                      class="apple-switch sm ${loc.enabled ? 'on' : ''}"
+                      data-action="toggle-location"
+                      data-loc="${loc.id}"
+                    >
+                      <span class="apple-switch-knob"></span>
+                    </button>
+                  </div>
+                  <p>${loc.freeSpace}</p>
+                  <div class="other-c-bar">
+                    <div class="other-c-bar-fill" style="width:${loc.usedPercent}%"></div>
+                  </div>
+                  <div class="other-c-item-foot">
+                    <small>${loc.endpoint}</small>
+                    ${
+                      loc.type === 'webdav'
+                        ? `<button type="button" class="other-inline-link" data-action="open-webdav-osk" data-loc="${loc.id}">配置凭据</button>`
+                        : `<small>${loc.lastSync}</small>`
+                    }
+                  </div>
+                </div>
+              `,
+              )
+              .join('')}
+          </div>
+        </section>
+
+        <!-- 第 2 列：自动备份内容范围 -->
+        <section class="other-c-col-card">
+          <header class="other-c-col-head">
+            <span class="other-clean-icon">${ICONS.save}</span>
+            <div>
+              <h2>2. 自动备份范围</h2>
+              <p>已开启 ${state.autoBackupScope.length} / 5 类核心数据</p>
+            </div>
+          </header>
+
+          <div class="other-c-col-body">
+            ${FIVE_OBJECTS.map((obj) => {
+              const on = state.autoBackupScope.includes(obj.id)
+              return `
+                <button
+                  type="button"
+                  class="other-c-scope-row ${on ? 'selected' : ''}"
+                  data-action="toggle-auto-scope"
+                  data-obj="${obj.id}"
+                >
+                  <span class="other-clean-icon sm">${ICONS[obj.icon]}</span>
+                  <div class="other-c-scope-copy">
+                    <strong>${obj.title}</strong>
+                    <small>${obj.countText} · ${obj.size}</small>
+                  </div>
+                  <div class="check-indicator">${ICONS.check}</div>
+                </button>
+              `
+            }).join('')}
+          </div>
+        </section>
+
+        <!-- 第 3 列：恢复点保护与守护服务 -->
+        <section class="other-c-col-card">
+          <header class="other-c-col-head">
+            <span class="other-clean-icon">${ICONS.shield}</span>
+            <div>
+              <h2>3. 恢复点保护与守护</h2>
+              <p>空间不足自动清理未锁定点</p>
+            </div>
+          </header>
+
+          <div class="other-c-col-body">
+            ${state.restorePoints
+              .map(
+                (rp) => `
+                <div class="other-c-item-box ${rp.protected ? 'active' : ''}">
+                  <div class="other-b-loc-top">
+                    <strong>${rp.title}</strong>
+                    <button
+                      type="button"
+                      class="pill sm ${rp.protected ? 'brand' : 'secondary'}"
+                      data-action="toggle-rp-protect"
+                      data-rp="${rp.id}"
+                    >
+                      ${rp.protected ? '已锁定' : '锁定'}
+                    </button>
+                  </div>
+                  <p>${rp.note} · ${rp.size}</p>
+                </div>
+              `,
+              )
+              .join('')}
+
+            <div class="other-c-daemon-footer">
+              <button type="button" class="pill sm primary" data-action="manual-backup">
+                ${ICONS.bolt}<span>立即备份</span>
+              </button>
+              <button type="button" class="pill sm secondary" data-action="open-onboarding">
+                <span>首次引导向导</span>
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+    `
+  }
+
+  function renderOtherPage() {
+    const os = state.otherStyle || 'a'
+    let contentHtml = ''
+    if (os === 'b') {
+      contentHtml = renderOtherStyleB()
+    } else if (os === 'c') {
+      contentHtml = renderOtherStyleC()
+    } else {
+      contentHtml = renderOtherStyleA()
+    }
+
+    return `
+      <main class="subpage-stage">
+        <div class="subpage-content-body other-showcase-body other-style-${os}">
+          ${contentHtml}
         </div>
 
         ${renderPersistentDock(true)}
@@ -1536,8 +1883,8 @@
 
   /* ==================== 左下角可收起开发者状态调试浮窗 ==================== */
   function renderFloatingDevDock() {
-    const isUpcomingView = state.view === 'apps' || state.view === 'store'
-    if (state.devDockCollapsed && !isUpcomingView) {
+    const isOtherView = state.view === 'other'
+    if (state.devDockCollapsed && !isOtherView) {
       return `
         <aside class="proto-floating-dock" aria-label="开发者原型调试浮窗">
           <div class="proto-dock-row">
@@ -1547,34 +1894,34 @@
       `
     }
 
-    if (state.devDockCollapsed && isUpcomingView) {
+    if (state.devDockCollapsed && isOtherView) {
       return `
-        <aside class="proto-floating-dock" aria-label="未开放频道阻挡样式切换">
+        <aside class="proto-floating-dock" aria-label="设置页设计变体切换">
           <div class="proto-dock-row">
-            <span class="proto-dev-tag">阻挡样式</span>
+            <span class="proto-dev-tag">设置设计</span>
             <button
               type="button"
-              class="proto-dock-btn ${state.lockStyle === 'a' ? 'active' : ''}"
-              data-action="set-lock-style"
+              class="proto-dock-btn ${state.otherStyle === 'a' ? 'active' : ''}"
+              data-action="set-other-style"
               data-style="a"
             >
-              A 无黑边磨砂贴+灵动锁条
+              A 左导右景聚焦舞台
             </button>
             <button
               type="button"
-              class="proto-dock-btn ${state.lockStyle === 'b' ? 'active' : ''}"
-              data-action="set-lock-style"
+              class="proto-dock-btn ${state.otherStyle === 'b' ? 'active' : ''}"
+              data-action="set-other-style"
               data-style="b"
             >
-              B 冰晶悬浮光晕圆锁
+              B 空间控制中心 Bento
             </button>
             <button
               type="button"
-              class="proto-dock-btn ${state.lockStyle === 'c' ? 'active' : ''}"
-              data-action="set-lock-style"
+              class="proto-dock-btn ${state.otherStyle === 'c' ? 'active' : ''}"
+              data-action="set-other-style"
               data-style="c"
             >
-              C 逐卡独立磨砂锁罩
+              C 三大立柱控制台
             </button>
             <button type="button" class="proto-dock-btn" data-action="toggle-dev-dock">更多 DEV</button>
           </div>
@@ -1585,30 +1932,30 @@
     return `
       <aside class="proto-floating-dock expanded" aria-label="开发者原型调试浮窗">
         <div class="proto-dock-row">
-          <span class="proto-dev-tag">阻挡样式</span>
+          <span class="proto-dev-tag">设置设计</span>
           <button
             type="button"
-            class="proto-dock-btn ${state.lockStyle === 'a' ? 'active' : ''}"
-            data-action="set-lock-style"
+            class="proto-dock-btn ${state.otherStyle === 'a' ? 'active' : ''}"
+            data-action="set-other-style"
             data-style="a"
           >
-            方案 A：无黑边磨砂贴+灵动锁条
+            方案 A：左导右景聚焦舞台
           </button>
           <button
             type="button"
-            class="proto-dock-btn ${state.lockStyle === 'b' ? 'active' : ''}"
-            data-action="set-lock-style"
+            class="proto-dock-btn ${state.otherStyle === 'b' ? 'active' : ''}"
+            data-action="set-other-style"
             data-style="b"
           >
-            方案 B：冰晶悬浮光晕圆锁
+            方案 B：空间控制中心 Bento
           </button>
           <button
             type="button"
-            class="proto-dock-btn ${state.lockStyle === 'c' ? 'active' : ''}"
-            data-action="set-lock-style"
+            class="proto-dock-btn ${state.otherStyle === 'c' ? 'active' : ''}"
+            data-action="set-other-style"
             data-style="c"
           >
-            方案 C：逐卡独立磨砂锁罩
+            方案 C：三大立柱控制台
           </button>
         </div>
         <div class="proto-dock-row">
@@ -1776,12 +2123,18 @@
         state.devDockCollapsed = !state.devDockCollapsed
         render('update')
         break
-      case 'set-lock-style': {
+      case 'set-other-style': {
         const s = btn.dataset.style || 'a'
         if (['a', 'b', 'c'].includes(s)) {
-          state.lockStyle = s
+          state.otherStyle = s
           render('update')
         }
+        break
+      }
+      case 'select-other-tab': {
+        const t = btn.dataset.tab || 'locations'
+        state.otherTab = t
+        render('update')
         break
       }
       case 'open-onboarding':

@@ -629,31 +629,29 @@ input:focus-visible,
 }
 
 .restore-hub-selector-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 56rem minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 10rem;
+  gap: 12rem;
 }
 
 .restore-hub-label {
   font-size: 12.5rem;
   font-weight: 500;
   color: rgba(219, 234, 254, 0.85);
-  min-width: 44rem;
 }
 
 .restore-hub-pills {
-  display: flex;
-  align-items: center;
-  gap: 6rem;
-  flex-wrap: nowrap;
-  justify-content: flex-end;
-  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8rem;
+  width: 100%;
 }
 
 .restore-mini-pill {
-  height: 28rem;
-  padding: 0 12rem;
+  width: 100%;
+  height: 29rem;
+  padding: 0 10rem;
   border-radius: var(--radius-pill);
   background: rgba(12, 22, 46, 0.58);
   border: 1rem solid rgba(255, 255, 255, 0.16);
@@ -661,6 +659,10 @@ input:focus-visible,
   font-size: 12.5rem;
   font-weight: 500;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   transition:
     background 160ms ease,
     border-color 160ms ease,
@@ -695,17 +697,18 @@ input:focus-visible,
 .restore-horiz-left {
   display: flex;
   align-items: flex-start;
-  gap: 16rem;
+  gap: 14rem;
   min-width: 0;
   flex: 1;
 }
 
 .restore-step-icon-box {
-  width: 52rem;
-  height: 52rem;
-  border-radius: var(--radius-inner);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1rem solid rgba(255, 255, 255, 0.14);
+  width: 34rem;
+  height: 34rem;
+  margin-top: 2rem;
+  background: transparent;
+  border: none;
+  box-shadow: none;
   display: grid;
   place-items: center;
   color: #8cc8ff;
@@ -713,8 +716,8 @@ input:focus-visible,
 }
 
 .restore-step-icon-box svg {
-  width: 26rem;
-  height: 26rem;
+  width: 28rem;
+  height: 28rem;
 }
 
 .restore-horiz-copy {
@@ -799,130 +802,685 @@ input:focus-visible,
   height: 15rem;
 }
 
-/* ==================== 「其他」页面（2×2 高密度四模块玻璃工作台，统一 30rem 圆角） ==================== */
-.settings-dense-grid {
-  flex: 1;
+/* ==================== 「其他」页面（A / B / C 三套高设计感空间设置方案，统一 30rem 圆角） ==================== */
+.other-showcase-body {
+  align-items: center;
+  justify-content: center;
+  padding: 16rem 56rem 24rem;
+}
+
+.other-clean-icon {
+  width: 32rem;
+  height: 32rem;
+  display: inline-grid;
+  place-items: center;
+  color: #8cc8ff;
+  flex-shrink: 0;
+}
+
+.other-clean-icon svg {
+  width: 26rem;
+  height: 26rem;
+}
+
+.other-clean-icon.sm {
+  width: 24rem;
+  height: 24rem;
+}
+
+.other-clean-icon.sm svg {
+  width: 20rem;
+  height: 20rem;
+}
+
+/* Apple iOS / visionOS 液态拨动开关 */
+.apple-switch {
+  width: 52rem;
+  height: 30rem;
+  padding: 3rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1rem solid rgba(255, 255, 255, 0.22);
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  transition:
+    background 200ms ease,
+    border-color 200ms ease;
+}
+
+.apple-switch.sm {
+  width: 44rem;
+  height: 25rem;
+  padding: 2.5rem;
+}
+
+.apple-switch.on {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border-color: #93c5fd;
+  justify-content: flex-end;
+}
+
+.apple-switch-knob {
+  width: 22rem;
+  height: 22rem;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 3rem 8rem rgba(0, 0, 0, 0.35);
+}
+
+.apple-switch.sm .apple-switch-knob {
+  width: 18rem;
+  height: 18rem;
+}
+
+.other-inline-link {
+  padding: 2rem 10rem;
+  border-radius: var(--radius-pill);
+  background: rgba(59, 130, 246, 0.22);
+  border: 1rem solid rgba(147, 197, 253, 0.4);
+  color: #dbeafe;
+  font-size: 12rem;
+  margin-top: 4rem;
+}
+
+/* ---------- 方案 A：Apple tvOS / PS5 左导右景聚焦舞台 ---------- */
+.other-style-a-shell {
+  width: 100%;
+  max-width: 1460rem;
+  height: 580rem;
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16rem;
+  grid-template-columns: 360rem minmax(0, 1fr);
+  gap: 24rem;
   align-items: stretch;
 }
 
-.settings-dense-card {
-  padding: 18rem 22rem;
+.other-a-sidebar {
+  padding: 18rem;
   border-radius: var(--radius-card);
   background: var(--glass-bg);
-  backdrop-filter: blur(34rem) saturate(160%);
-  -webkit-backdrop-filter: blur(34rem) saturate(160%);
+  backdrop-filter: blur(36rem) saturate(170%);
+  -webkit-backdrop-filter: blur(36rem) saturate(170%);
   border: 1rem solid var(--glass-border);
-  box-shadow: var(--glass-specular), 0 18rem 42rem rgba(0, 0, 0, 0.36);
+  box-shadow: var(--glass-specular), 0 20rem 48rem rgba(0, 0, 0, 0.38);
   display: flex;
   flex-direction: column;
-  gap: 8rem;
+  justify-content: space-between;
+  gap: 12rem;
 }
 
-.settings-dense-head {
+.other-a-nav-btn {
+  flex: 1;
+  padding: 16rem 20rem;
+  border-radius: var(--radius-inner);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5rem solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 16rem;
+  text-align: left;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.other-a-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.other-a-nav-btn.active {
+  background:
+    radial-gradient(circle at 15% 25%, rgba(59, 130, 246, 0.38), transparent 65%),
+    rgba(24, 38, 66, 0.85);
+  border-color: rgba(147, 197, 253, 0.65);
+  box-shadow: inset 0 1rem 0 rgba(255, 255, 255, 0.22);
+}
+
+.other-a-nav-copy strong {
+  display: block;
+  font-size: 18rem;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.other-a-nav-copy small {
+  display: block;
+  margin-top: 4rem;
+  font-size: 13rem;
+  color: #9cb0c9;
+}
+
+.other-a-stage {
+  padding: 28rem 34rem;
+  border-radius: var(--radius-card);
+  background: var(--glass-bg);
+  backdrop-filter: blur(36rem) saturate(170%);
+  -webkit-backdrop-filter: blur(36rem) saturate(170%);
+  border: 1rem solid var(--glass-border);
+  box-shadow: var(--glass-specular), 0 22rem 52rem rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20rem;
+}
+
+.other-a-stage-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rem;
+  padding-bottom: 16rem;
+  border-bottom: 1rem solid rgba(255, 255, 255, 0.09);
+}
+
+.other-a-stage-head h2 {
+  margin: 0 0 6rem;
+  font-size: 25rem;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.other-a-stage-head p {
+  margin: 0;
+  font-size: 14.5rem;
+  color: #a4b5cc;
+}
+
+.other-a-loc-grid,
+.other-a-rp-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18rem;
+  align-items: stretch;
+}
+
+.other-a-loc-card,
+.other-a-rp-card {
+  padding: 22rem 24rem;
+  border-radius: var(--radius-card);
+  background: rgba(14, 20, 32, 0.62);
+  border: 1.5rem solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14rem;
+}
+
+.other-a-loc-card.is-enabled,
+.other-a-rp-card.is-protected {
+  background:
+    radial-gradient(circle at 80% 15%, rgba(56, 189, 248, 0.2), transparent 60%),
+    rgba(18, 28, 46, 0.78);
+  border-color: rgba(125, 195, 255, 0.45);
+}
+
+.other-a-loc-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14rem;
-  padding-bottom: 7rem;
-  border-bottom: 1rem solid rgba(255, 255, 255, 0.08);
-}
-
-.settings-dense-title {
-  display: flex;
-  align-items: center;
   gap: 10rem;
 }
 
-.settings-dense-title h2 {
-  margin: 0;
-  font-size: 18.5rem;
+.other-a-loc-title {
+  display: flex;
+  align-items: center;
+  gap: 12rem;
+  color: #8cc8ff;
+}
+
+.other-a-loc-title svg {
+  width: 26rem;
+  height: 26rem;
+}
+
+.other-a-loc-title strong {
+  display: block;
+  font-size: 18rem;
   font-weight: 500;
-  color: #f6f9fd;
+  color: #f8fafc;
 }
 
-.settings-dense-sub {
-  margin: 2rem 0 0;
-  font-size: 12rem;
-  color: #97a6ba;
+.other-a-loc-title small {
+  display: block;
+  font-size: 12.5rem;
+  color: #95a7bf;
+  margin-top: 2rem;
 }
 
-.settings-compact-list {
+.other-a-loc-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10rem;
+  padding-top: 12rem;
+  border-top: 1rem solid rgba(255, 255, 255, 0.08);
+  font-size: 13rem;
+  color: #9ab0c9;
+}
+
+.other-a-scope-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rem;
+  align-items: stretch;
+}
+
+.other-a-scope-card {
+  padding: 18rem 22rem;
+  border-radius: var(--radius-card);
+  background: rgba(14, 20, 32, 0.6);
+  border: 1.5rem solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 7rem;
+  justify-content: space-between;
+  gap: 8rem;
+  text-align: left;
 }
 
-.settings-compact-row {
-  padding: 9rem 14rem;
-  border-radius: var(--radius-inner);
-  background: rgba(14, 18, 26, 0.56);
-  border: 1rem solid rgba(255, 255, 255, 0.07);
+.other-a-scope-card.selected {
+  background:
+    radial-gradient(circle at 18% 25%, rgba(37, 99, 235, 0.3), transparent 65%),
+    rgba(20, 30, 48, 0.82);
+  border-color: rgba(147, 197, 253, 0.55);
+}
+
+.other-a-scope-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12rem;
 }
 
-.settings-compact-main {
-  min-width: 0;
-}
-
-.settings-compact-main strong {
-  display: block;
-  font-size: 14.5rem;
-  font-weight: 500;
-  color: #f2f6fb;
-  margin-bottom: 2rem;
-}
-
-.settings-compact-main p {
-  margin: 0;
-  font-size: 12rem;
-  color: #9aa7b8;
-  line-height: 1.32;
-}
-
-.settings-compact-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6rem;
-  margin-top: 4rem;
-}
-
-.settings-row-actions {
+.other-a-scope-title {
   display: flex;
   align-items: center;
-  gap: 10rem;
-  flex-shrink: 0;
+  gap: 12rem;
 }
 
-.settings-scope-grid {
+.other-a-scope-title strong {
+  display: block;
+  font-size: 18rem;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.other-a-scope-title small {
+  display: block;
+  font-size: 12.5rem;
+  color: #96a8c0;
+  margin-top: 2rem;
+}
+
+.other-a-scope-card p {
+  margin: 0;
+  font-size: 13rem;
+  color: #a8b8ce;
+  line-height: 1.42;
+}
+
+.other-a-daemon-grid {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 7rem;
+  gap: 20rem;
+  align-items: stretch;
 }
 
-.settings-scope-item {
-  padding: 9rem 14rem;
-  border-radius: var(--radius-inner);
-  background: rgba(14, 18, 26, 0.56);
-  border: 1.5rem solid rgba(255, 255, 255, 0.07);
+/* ---------- 方案 B：Apple Control Center 空间控制中心 Bento ---------- */
+.other-style-b-bento {
+  width: 100%;
+  max-width: 1460rem;
+  height: 580rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 20rem;
+}
+
+.other-b-card {
+  padding: 22rem 26rem;
+  border-radius: var(--radius-card);
+  background: var(--glass-bg);
+  backdrop-filter: blur(36rem) saturate(170%);
+  -webkit-backdrop-filter: blur(36rem) saturate(170%);
+  border: 1rem solid var(--glass-border);
+  box-shadow: var(--glass-specular), 0 20rem 48rem rgba(0, 0, 0, 0.38);
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14rem;
+}
+
+.other-b-card.span-2 {
+  grid-column: span 2;
+}
+
+.other-b-card.other-b-hero-card {
+  background:
+    radial-gradient(circle at 85% 20%, rgba(96, 165, 250, 0.36), transparent 62%),
+    linear-gradient(155deg, rgba(24, 82, 196, 0.78), rgba(12, 28, 68, 0.9));
+  border-color: rgba(147, 197, 253, 0.55);
+}
+
+.other-b-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14rem;
+}
+
+.other-b-title {
+  display: flex;
+  align-items: center;
+  gap: 12rem;
+}
+
+.other-b-title h2 {
+  margin: 0;
+  font-size: 20rem;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.other-b-title p {
+  margin: 3rem 0 0;
+  font-size: 13rem;
+  color: #a8b9d0;
+}
+
+.other-b-loc-trio,
+.other-b-rp-trio {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14rem;
+  align-items: stretch;
+}
+
+.other-b-loc-tile,
+.other-b-rp-tile {
+  padding: 16rem 18rem;
+  border-radius: var(--radius-inner);
+  background: rgba(12, 18, 28, 0.58);
+  border: 1rem solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
   justify-content: space-between;
   gap: 10rem;
 }
 
-.settings-scope-item.selected {
-  background: linear-gradient(180deg, rgba(24, 98, 224, 0.28), rgba(16, 22, 32, 0.72));
-  border-color: rgba(118, 190, 255, 0.5);
+.other-b-loc-tile.enabled,
+.other-b-rp-tile.protected {
+  background: rgba(20, 32, 54, 0.76);
+  border-color: rgba(125, 195, 255, 0.42);
 }
 
-.settings-scope-item.span-2 {
+.other-b-loc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8rem;
+}
+
+.other-b-loc-top strong {
+  font-size: 15.5rem;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.other-b-ring-mini {
+  display: flex;
+  align-items: center;
+  gap: 14rem;
+}
+
+.other-b-ring-mini .vb-radial-svg {
+  width: 68rem;
+  height: 68rem;
+}
+
+.other-b-ring-mini strong {
+  display: block;
+  font-size: 17.5rem;
+  color: #f8fafc;
+}
+
+.other-b-ring-mini span,
+.other-b-ring-mini small {
+  display: block;
+  font-size: 12rem;
+  color: #9cb0c9;
+  margin-top: 2rem;
+}
+
+.other-b-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10rem;
+  padding: 14rem 16rem;
+  border-radius: var(--radius-inner);
+  background: rgba(10, 20, 44, 0.48);
+  border: 1rem solid rgba(255, 255, 255, 0.14);
+}
+
+.other-b-hero-stats span {
+  display: block;
+  font-size: 12rem;
+  color: #bfdbfe;
+}
+
+.other-b-hero-stats strong {
+  display: block;
+  margin-top: 4rem;
+  font-size: 20rem;
+  color: #ffffff;
+}
+
+.other-b-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10rem;
+}
+
+.other-b-scope-pills {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8rem;
+}
+
+.other-b-scope-chip {
+  padding: 8rem 12rem;
+  border-radius: var(--radius-inner);
+  background: rgba(12, 18, 28, 0.56);
+  border: 1rem solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 10rem;
+  text-align: left;
+}
+
+.other-b-scope-chip:last-child {
   grid-column: span 2;
+}
+
+.other-b-scope-chip.selected {
+  background: rgba(26, 62, 128, 0.55);
+  border-color: rgba(147, 197, 253, 0.5);
+}
+
+.other-b-chip-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.other-b-chip-copy strong {
+  display: block;
+  font-size: 13.5rem;
+  font-weight: 500;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.other-b-chip-copy small {
+  display: block;
+  font-size: 11.5rem;
+  color: #9cb0c9;
+}
+
+.other-b-rp-tile p {
+  margin: 0;
+  font-size: 13rem;
+  color: #a4b6ce;
+  line-height: 1.45;
+}
+
+/* ---------- 方案 C：三大立柱控制台（Three-Pillar Glass Deck） ---------- */
+.other-style-c-columns {
+  width: 100%;
+  max-width: 1460rem;
+  height: 580rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22rem;
+  align-items: stretch;
+}
+
+.other-c-col-card {
+  padding: 24rem 26rem;
+  border-radius: var(--radius-card);
+  background: var(--glass-bg);
+  backdrop-filter: blur(36rem) saturate(170%);
+  -webkit-backdrop-filter: blur(36rem) saturate(170%);
+  border: 1rem solid var(--glass-border);
+  box-shadow: var(--glass-specular), 0 20rem 48rem rgba(0, 0, 0, 0.38);
+  display: flex;
+  flex-direction: column;
+  gap: 16rem;
+}
+
+.other-c-col-head {
+  display: flex;
+  align-items: center;
+  gap: 14rem;
+  padding-bottom: 14rem;
+  border-bottom: 1rem solid rgba(255, 255, 255, 0.1);
+}
+
+.other-c-col-head h2 {
+  margin: 0;
+  font-size: 20.5rem;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.other-c-col-head p {
+  margin: 3rem 0 0;
+  font-size: 13rem;
+  color: #9fb2ca;
+}
+
+.other-c-col-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10rem;
+}
+
+.other-c-item-box {
+  padding: 13rem 16rem;
+  border-radius: var(--radius-inner);
+  background: rgba(12, 18, 28, 0.56);
+  border: 1rem solid rgba(255, 255, 255, 0.09);
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+.other-c-item-box.active {
+  background: rgba(20, 34, 58, 0.72);
+  border-color: rgba(125, 195, 255, 0.42);
+}
+
+.other-c-item-box p {
+  margin: 0;
+  font-size: 12.5rem;
+  color: #a6b7ce;
+}
+
+.other-c-bar {
+  height: 6rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.other-c-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, #38bdf8, #3b82f6);
+}
+
+.other-c-item-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12rem;
+  color: #8ea2bc;
+}
+
+.other-c-scope-row {
+  padding: 11rem 16rem;
+  border-radius: var(--radius-inner);
+  background: rgba(12, 18, 28, 0.54);
+  border: 1.5rem solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 12rem;
+  text-align: left;
+}
+
+.other-c-scope-row.selected {
+  background: rgba(24, 52, 104, 0.62);
+  border-color: rgba(147, 197, 253, 0.5);
+}
+
+.other-c-scope-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.other-c-scope-copy strong {
+  display: block;
+  font-size: 15rem;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.other-c-scope-copy small {
+  display: block;
+  margin-top: 2rem;
+  font-size: 12rem;
+  color: #9ab0c9;
+}
+
+.other-c-daemon-footer {
+  padding-top: 10rem;
+  border-top: 1rem solid rgba(255, 255, 255, 0.09);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10rem;
 }
 
 /* ==================== 「软件」与「商店」（三套有真实阻挡且不突兀的方案 A / B / C，统一 30rem 圆角） ==================== */
