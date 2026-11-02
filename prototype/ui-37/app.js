@@ -397,15 +397,9 @@
         </div>
       `
     } else if (state.view !== 'home' && currentDock) {
-      const isUpcomingChannel = state.view === 'apps' || state.view === 'store'
       leftSlot = `
         <div class="header-subview-title">
           <h1>${currentDock.label}</h1>
-          ${
-            isUpcomingChannel && state.lockStyle === 'a'
-              ? `<span class="channel-subtle-pill">${ICONS.lock}<span>即将开放</span></span>`
-              : ''
-          }
         </div>
       `
     }
@@ -711,31 +705,14 @@
     `
   }
 
-  /* ==================== 子页 2：「软件」（三套不突兀预览方案 A / B / C） ==================== */
+  /* ==================== 子页 2：「软件」（三套具备真实阻挡且不突兀的方案 A / B / C） ==================== */
   function renderAppsPage() {
     const ls = state.lockStyle || 'a'
     return `
       <main class="subpage-stage">
         <div class="subpage-content-body channel-showcase-body lock-style-${ls}">
           <div class="channel-showcase-stage lock-style-${ls}">
-            ${
-              ls === 'c'
-                ? `
-                <div class="channel-hero-banner">
-                  <div class="channel-hero-left">
-                    <div class="channel-hero-icon">${ICONS.apps}</div>
-                    <div>
-                      <h2>自制应用与系统载荷精选</h2>
-                      <p>当前为目录预览模式，在线下载与一键部署将在后续版本开放</p>
-                    </div>
-                  </div>
-                  <span class="channel-hero-pill">${ICONS.lock}<span>即将开放</span></span>
-                </div>
-              `
-                : ''
-            }
-
-            <div class="library-grid channel-apps-grid">
+            <div class="library-grid channel-apps-grid" aria-hidden="true">
               ${STORE_APPS.map(
                 (app) => `
                 <article class="store-app-card channel-card">
@@ -749,19 +726,43 @@
                   <p class="store-app-desc">${app.desc}</p>
                   <div class="store-app-footer">
                     <span>${app.category} · ${app.size}</span>
-                    <span class="channel-status-chip">${ICONS.lock}<span>即将推出</span></span>
+                    <span class="channel-status-chip">${ICONS.lock}<span>未开放</span></span>
                   </div>
+                  ${
+                    ls === 'c'
+                      ? `
+                      <div class="card-individual-lock-veil">
+                        <span class="card-lock-pill">${ICONS.lock}<span>暂未开放</span></span>
+                      </div>
+                    `
+                      : ''
+                  }
                 </article>
               `,
               ).join('')}
             </div>
 
             ${
+              ls === 'a'
+                ? `
+                <div class="channel-frosted-shield style-a" role="status" aria-label="软件频道暂未开放">
+                  <div class="shield-compact-pill">
+                    <span class="shield-lock-circle">${ICONS.lock}</span>
+                    <span class="shield-lock-text">软件频道暂未开放</span>
+                  </div>
+                </div>
+              `
+                : ''
+            }
+
+            ${
               ls === 'b'
                 ? `
-                <div class="channel-floating-ribbon" role="status">
-                  <span class="channel-ribbon-icon">${ICONS.lock}</span>
-                  <span>软件频道即将开放 · 当前仅供浏览预览</span>
+                <div class="channel-frosted-shield style-b" role="status" aria-label="软件频道暂未开放">
+                  <div class="shield-orb-plate">
+                    <div class="shield-orb-ring">${ICONS.lock}</div>
+                    <strong>软件频道暂未开放</strong>
+                  </div>
                 </div>
               `
                 : ''
@@ -774,37 +775,28 @@
     `
   }
 
-  /* ==================== 子页 3：「商店」（三套不突兀预览方案 A / B / C） ==================== */
+  /* ==================== 子页 3：「商店」（三套具备真实阻挡且不突兀的方案 A / B / C） ==================== */
   function renderStorePage() {
     const ls = state.lockStyle || 'a'
     return `
       <main class="subpage-stage">
         <div class="subpage-content-body channel-showcase-body lock-style-${ls}">
           <div class="channel-showcase-stage lock-style-${ls}">
-            ${
-              ls === 'c'
-                ? `
-                <div class="channel-hero-banner">
-                  <div class="channel-hero-left">
-                    <div class="channel-hero-icon">${ICONS.bag}</div>
-                    <div>
-                      <h2>云端网盘与主机游戏库</h2>
-                      <p>当前为封面墙预览模式，网盘直连与高速下载将在后续版本开放</p>
-                    </div>
-                  </div>
-                  <span class="channel-hero-pill">${ICONS.lock}<span>即将开放</span></span>
-                </div>
-              `
-                : ''
-            }
-
-            <div class="game-grid channel-games-grid">
+            <div class="game-grid channel-games-grid" aria-hidden="true">
               ${STORE_GAMES.map(
                 (g) => `
                 <article class="game-tile channel-game-tile">
                   <div class="game-cover">
                     <img src="${g.cover}" alt="${g.title}" />
-                    <span class="game-cover-corner-pill">${ICONS.lock}<span>即将推出</span></span>
+                    ${
+                      ls === 'c'
+                        ? `
+                        <div class="card-individual-lock-veil">
+                          <span class="card-lock-pill">${ICONS.lock}<span>暂未开放</span></span>
+                        </div>
+                      `
+                        : ''
+                    }
                   </div>
                   <h3>${g.title}</h3>
                   <p>${g.meta}</p>
@@ -814,11 +806,26 @@
             </div>
 
             ${
+              ls === 'a'
+                ? `
+                <div class="channel-frosted-shield style-a" role="status" aria-label="商店频道暂未开放">
+                  <div class="shield-compact-pill">
+                    <span class="shield-lock-circle">${ICONS.lock}</span>
+                    <span class="shield-lock-text">商店频道暂未开放</span>
+                  </div>
+                </div>
+              `
+                : ''
+            }
+
+            ${
               ls === 'b'
                 ? `
-                <div class="channel-floating-ribbon" role="status">
-                  <span class="channel-ribbon-icon">${ICONS.lock}</span>
-                  <span>商店频道即将开放 · 当前仅供浏览预览</span>
+                <div class="channel-frosted-shield style-b" role="status" aria-label="商店频道暂未开放">
+                  <div class="shield-orb-plate">
+                    <div class="shield-orb-ring">${ICONS.lock}</div>
+                    <strong>商店频道暂未开放</strong>
+                  </div>
                 </div>
               `
                 : ''
@@ -1542,16 +1549,16 @@
 
     if (state.devDockCollapsed && isUpcomingView) {
       return `
-        <aside class="proto-floating-dock" aria-label="未开放频道预览变体切换">
+        <aside class="proto-floating-dock" aria-label="未开放频道阻挡样式切换">
           <div class="proto-dock-row">
-            <span class="proto-dev-tag">未开放样式</span>
+            <span class="proto-dev-tag">阻挡样式</span>
             <button
               type="button"
               class="proto-dock-btn ${state.lockStyle === 'a' ? 'active' : ''}"
               data-action="set-lock-style"
               data-style="a"
             >
-              A 顶栏胶囊+通透卡片
+              A 无黑边磨砂贴+灵动锁条
             </button>
             <button
               type="button"
@@ -1559,7 +1566,7 @@
               data-action="set-lock-style"
               data-style="b"
             >
-              B 底部流光灵动胶囊
+              B 冰晶悬浮光晕圆锁
             </button>
             <button
               type="button"
@@ -1567,7 +1574,7 @@
               data-action="set-lock-style"
               data-style="c"
             >
-              C 顶部 Bento 预告横幅
+              C 逐卡独立磨砂锁罩
             </button>
             <button type="button" class="proto-dock-btn" data-action="toggle-dev-dock">更多 DEV</button>
           </div>
@@ -1578,14 +1585,14 @@
     return `
       <aside class="proto-floating-dock expanded" aria-label="开发者原型调试浮窗">
         <div class="proto-dock-row">
-          <span class="proto-dev-tag">未开放样式</span>
+          <span class="proto-dev-tag">阻挡样式</span>
           <button
             type="button"
             class="proto-dock-btn ${state.lockStyle === 'a' ? 'active' : ''}"
             data-action="set-lock-style"
             data-style="a"
           >
-            方案 A：顶栏胶囊+通透卡片
+            方案 A：无黑边磨砂贴+灵动锁条
           </button>
           <button
             type="button"
@@ -1593,7 +1600,7 @@
             data-action="set-lock-style"
             data-style="b"
           >
-            方案 B：底部流光灵动胶囊
+            方案 B：冰晶悬浮光晕圆锁
           </button>
           <button
             type="button"
@@ -1601,7 +1608,7 @@
             data-action="set-lock-style"
             data-style="c"
           >
-            方案 C：顶部 Bento 预告横幅
+            方案 C：逐卡独立磨砂锁罩
           </button>
         </div>
         <div class="proto-dock-row">

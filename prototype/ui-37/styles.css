@@ -925,43 +925,23 @@ input:focus-visible,
   grid-column: span 2;
 }
 
-/* ==================== 「软件」与「商店」（三套不突兀预览方案 A / B / C，统一 30rem 圆角） ==================== */
-.channel-subtle-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8rem;
-  height: 34rem;
-  padding: 0 16rem;
-  border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1rem solid rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(24rem);
-  font-size: 14rem;
-  font-weight: 500;
-  color: #cfe4ff;
-}
-
-.channel-subtle-pill svg {
-  width: 15rem;
-  height: 15rem;
-  color: #8cc8ff;
-}
-
+/* ==================== 「软件」与「商店」（三套有真实阻挡且不突兀的方案 A / B / C，统一 30rem 圆角） ==================== */
 .channel-showcase-body {
   align-items: center;
   justify-content: center;
-  padding: 16rem 56rem 24rem;
+  padding: 20rem 60rem 28rem;
 }
 
 .channel-showcase-stage {
   width: 100%;
-  max-width: 1500rem;
+  max-width: 1460rem;
   margin: 0 auto;
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 22rem;
+  pointer-events: none;
+  user-select: none;
 }
 
 .library-grid {
@@ -976,7 +956,18 @@ input:focus-visible,
   gap: 22rem 20rem;
 }
 
+/* 方案 A 与 B：底层卡片阵列适度柔焦，没有全画幅黑色大方框，只对卡片本身做冰晶虚化 */
+.channel-showcase-stage.lock-style-a .library-grid,
+.channel-showcase-stage.lock-style-a .game-grid,
+.channel-showcase-stage.lock-style-b .library-grid,
+.channel-showcase-stage.lock-style-b .game-grid {
+  filter: blur(5.5rem) saturate(0.82) brightness(0.76);
+  transform: scale(0.992);
+}
+
 .store-app-card {
+  position: relative;
+  overflow: hidden;
   padding: 22rem 24rem;
   border-radius: var(--radius-card);
   background: var(--glass-bg);
@@ -987,9 +978,6 @@ input:focus-visible,
   display: flex;
   flex-direction: column;
   gap: 12rem;
-  transition:
-    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 220ms ease;
 }
 
 .store-app-top {
@@ -1076,31 +1064,6 @@ input:focus-visible,
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: saturate(0.88) brightness(0.92);
-}
-
-.game-cover-corner-pill {
-  position: absolute;
-  right: 12rem;
-  bottom: 12rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 5rem;
-  height: 26rem;
-  padding: 0 11rem;
-  border-radius: var(--radius-pill);
-  background: rgba(15, 20, 30, 0.76);
-  backdrop-filter: blur(18rem);
-  border: 1rem solid rgba(255, 255, 255, 0.18);
-  font-size: 11.5rem;
-  font-weight: 500;
-  color: #dbeafe;
-}
-
-.game-cover-corner-pill svg {
-  width: 12rem;
-  height: 12rem;
-  color: #93c5fd;
 }
 
 .game-tile h3 {
@@ -1119,121 +1082,162 @@ input:focus-visible,
   color: #97a3b4;
 }
 
-/* 方案 B：底部悬浮流光灵动胶囊条（不遮挡卡片主体、无整块黑框） */
-.channel-floating-ribbon {
-  align-self: center;
-  margin-top: 6rem;
+/* ==================== 阻挡层公用容器（严禁出现生硬大黑框，仅在卡片阵列范围内居中阻挡） ==================== */
+.channel-frosted-shield {
+  position: absolute;
+  inset: -12rem;
+  z-index: 15;
+  border-radius: 36rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+/* 方案 A：无黑框边缘消融柔光罩 + 精致横向灵动胶囊锁 */
+.channel-frosted-shield.style-a {
+  background: radial-gradient(
+    ellipse 72% 68% at 50% 50%,
+    rgba(15, 23, 42, 0.32) 0%,
+    rgba(15, 23, 42, 0.12) 58%,
+    transparent 100%
+  );
+}
+
+.shield-compact-pill {
   display: inline-flex;
   align-items: center;
-  gap: 12rem;
-  height: 48rem;
-  padding: 0 26rem;
+  gap: 16rem;
+  padding: 14rem 32rem 14rem 18rem;
   border-radius: var(--radius-pill);
   background:
-    radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.25), transparent 65%),
-    rgba(20, 27, 40, 0.78);
-  backdrop-filter: blur(32rem) saturate(180%);
-  -webkit-backdrop-filter: blur(32rem) saturate(180%);
-  border: 1rem solid rgba(147, 197, 253, 0.38);
+    radial-gradient(circle at 20% 20%, rgba(96, 165, 250, 0.32), transparent 65%),
+    rgba(22, 30, 46, 0.78);
+  backdrop-filter: blur(40rem) saturate(180%);
+  -webkit-backdrop-filter: blur(40rem) saturate(180%);
+  border: 1.5rem solid rgba(191, 219, 254, 0.38);
   box-shadow:
-    inset 0 1rem 0 rgba(255, 255, 255, 0.24),
-    0 18rem 44rem rgba(0, 0, 0, 0.48);
-  font-size: 15.5rem;
+    inset 0 1.5rem 0 rgba(255, 255, 255, 0.28),
+    0 24rem 56rem rgba(0, 0, 0, 0.48);
+}
+
+.shield-lock-circle {
+  width: 44rem;
+  height: 44rem;
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.42), rgba(29, 78, 216, 0.28));
+  border: 1rem solid rgba(147, 197, 253, 0.52);
+  display: grid;
+  place-items: center;
+  color: #eff6ff;
+}
+
+.shield-lock-circle svg {
+  width: 22rem;
+  height: 22rem;
+}
+
+.shield-lock-text {
+  font-size: 21rem;
+  font-weight: 500;
+  letter-spacing: 0.4rem;
+  color: #f8fafc;
+}
+
+/* 方案 B：冰晶光晕圆章阻挡罩（Apple visionOS 半透明悬浮圆锁 + 径向柔光） */
+.channel-frosted-shield.style-b {
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(30, 64, 175, 0.28) 0%,
+    rgba(15, 23, 42, 0.18) 48%,
+    transparent 85%
+  );
+}
+
+.shield-orb-plate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14rem;
+  padding: 26rem 42rem;
+  border-radius: 38rem;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(147, 197, 253, 0.28), transparent 70%),
+    rgba(255, 255, 255, 0.09);
+  backdrop-filter: blur(42rem) saturate(190%);
+  -webkit-backdrop-filter: blur(42rem) saturate(190%);
+  border: 1.5rem solid rgba(255, 255, 255, 0.26);
+  box-shadow:
+    inset 0 1.5rem 0 rgba(255, 255, 255, 0.35),
+    0 28rem 64rem rgba(4, 12, 28, 0.52);
+}
+
+.shield-orb-ring {
+  width: 68rem;
+  height: 68rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(96, 165, 250, 0.55), rgba(30, 58, 138, 0.65));
+  border: 1.5rem solid rgba(191, 219, 254, 0.65);
+  box-shadow: 0 12rem 30rem rgba(37, 99, 235, 0.45);
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+}
+
+.shield-orb-ring svg {
+  width: 30rem;
+  height: 30rem;
+}
+
+.shield-orb-plate strong {
+  font-size: 20rem;
+  font-weight: 500;
+  letter-spacing: 0.6rem;
+  color: #f8fafc;
+}
+
+/* 方案 C：逐卡独立冰晶磨砂锁（无中央大弹窗，每张卡片自身被 30rem 圆角毛玻璃锁住） */
+.channel-showcase-stage.lock-style-c .store-app-top,
+.channel-showcase-stage.lock-style-c .store-app-desc,
+.channel-showcase-stage.lock-style-c .store-app-footer,
+.channel-showcase-stage.lock-style-c .game-cover img {
+  filter: blur(4rem) saturate(0.78) brightness(0.72);
+}
+
+.card-individual-lock-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  border-radius: var(--radius-card);
+  background: radial-gradient(circle at 50% 45%, rgba(18, 26, 42, 0.42), rgba(12, 18, 30, 0.62));
+  backdrop-filter: blur(8rem) saturate(140%);
+  -webkit-backdrop-filter: blur(8rem) saturate(140%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-lock-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rem;
+  height: 36rem;
+  padding: 0 16rem;
+  border-radius: var(--radius-pill);
+  background: rgba(28, 38, 58, 0.82);
+  border: 1rem solid rgba(191, 219, 254, 0.34);
+  box-shadow:
+    inset 0 1rem 0 rgba(255, 255, 255, 0.22),
+    0 10rem 24rem rgba(0, 0, 0, 0.42);
+  font-size: 13.5rem;
   font-weight: 500;
   color: #f1f5f9;
 }
 
-.channel-ribbon-icon {
-  width: 28rem;
-  height: 28rem;
-  border-radius: 50%;
-  background: rgba(59, 130, 246, 0.28);
-  border: 1rem solid rgba(147, 197, 253, 0.45);
-  display: inline-grid;
-  place-items: center;
-  color: #93c5fd;
-}
-
-.channel-ribbon-icon svg {
+.card-lock-pill svg {
   width: 15rem;
   height: 15rem;
-}
-
-/* 方案 C：顶部 Bento 玻璃预告横幅 + 柔和陈列网格 */
-.channel-hero-banner {
-  padding: 20rem 28rem;
-  border-radius: var(--radius-card);
-  background:
-    radial-gradient(circle at 85% 20%, rgba(56, 189, 248, 0.26), transparent 60%),
-    linear-gradient(145deg, rgba(24, 52, 108, 0.68), rgba(16, 22, 34, 0.82));
-  backdrop-filter: blur(34rem) saturate(170%);
-  -webkit-backdrop-filter: blur(34rem) saturate(170%);
-  border: 1rem solid rgba(147, 197, 253, 0.34);
-  box-shadow: var(--glass-specular), 0 18rem 42rem rgba(0, 0, 0, 0.38);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20rem;
-}
-
-.channel-hero-left {
-  display: flex;
-  align-items: center;
-  gap: 18rem;
-}
-
-.channel-hero-icon {
-  width: 52rem;
-  height: 52rem;
-  border-radius: var(--radius-inner);
-  background: rgba(255, 255, 255, 0.12);
-  border: 1rem solid rgba(255, 255, 255, 0.22);
-  display: grid;
-  place-items: center;
-  color: #bae6fd;
-}
-
-.channel-hero-icon svg {
-  width: 26rem;
-  height: 26rem;
-}
-
-.channel-hero-left h2 {
-  margin: 0 0 4rem;
-  font-size: 21rem;
-  font-weight: 500;
-  color: #f8fafc;
-}
-
-.channel-hero-left p {
-  margin: 0;
-  font-size: 14rem;
-  color: #b5c7de;
-}
-
-.channel-hero-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8rem;
-  height: 38rem;
-  padding: 0 18rem;
-  border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.12);
-  border: 1rem solid rgba(255, 255, 255, 0.24);
-  font-size: 14.5rem;
-  font-weight: 500;
-  color: #f8fafc;
-}
-
-.channel-hero-pill svg {
-  width: 16rem;
-  height: 16rem;
   color: #93c5fd;
-}
-
-.channel-showcase-stage.lock-style-c .library-grid,
-.channel-showcase-stage.lock-style-c .game-grid {
-  opacity: 0.88;
 }
 
 /* ==================== 首次引导分步向导（Step 1 → Step 2 → Step 3 单屏单步推进） ==================== */
