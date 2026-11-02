@@ -480,8 +480,7 @@
           <div class="vb-bento-grid">
             <div class="vb-bento-card span-2">
               <div class="vb-bento-head">
-                <span class="vb-bento-label">${ICONS.ssd}<span>PS5 主机内置存储与受保护数据构成</span></span>
-                <span class="badge blue">ReStore 整机概览</span>
+                <span class="vb-bento-label">${ICONS.ssd}<span>ReStore 整机概览</span></span>
               </div>
               <div style="display:flex; align-items:baseline; justify-content:space-between; gap:20rem;">
                 <div class="vb-bento-big">${state.hostStorage.free} 可用 <span style="font-size:19rem; font-weight:400; color:#9fb0c6;">/ 共 ${state.hostStorage.total}</span></div>
@@ -504,7 +503,6 @@
             <div class="vb-bento-card">
               <div class="vb-bento-head">
                 <span class="vb-bento-label">${ICONS.shield}<span>守护服务与最新恢复点</span></span>
-                <span class="badge green">运行正常</span>
               </div>
               <div>
                 <div class="vb-bento-big" style="font-size:31rem;">${latestRp.title.replace(' 自动备份', '')}</div>
@@ -520,12 +518,10 @@
 
             ${state.locations
               .map((loc, idx) => {
-                const dotClass = !loc.enabled ? 'paused' : loc.status === 'syncing' ? 'syncing' : ''
                 return `
                   <div class="vb-bento-card">
                     <div class="vb-bento-head">
                       <span class="vb-bento-label">${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}<span>${loc.name}</span></span>
-                      <i class="status-dot-inline ${dotClass}"></i>
                     </div>
                     <div class="vb-ring-row">
                       ${renderRadialGauge(loc.freePercent, ringColors[idx % ringColors.length])}
