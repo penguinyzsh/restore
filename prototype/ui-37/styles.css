@@ -552,6 +552,12 @@ input:focus-visible,
   gap: 16rem;
 }
 
+.subpage-content-body.restore-centered-body {
+  align-items: center;
+  justify-content: center;
+  padding: 20rem 60rem 28rem;
+}
+
 .subpage-toolbar {
   display: flex;
   align-items: center;
@@ -567,18 +573,20 @@ input:focus-visible,
   flex-wrap: wrap;
 }
 
-/* 恢复页：一行两个、三行即可的横向 Bento 卡片网格（从上到下） */
+/* 恢复页：一行两个、三行即可的横向 Bento 卡片网格（四周充足留白） */
 .restore-two-by-three-grid {
-  flex: 1;
+  width: 100%;
+  max-width: 1460rem;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: repeat(3, minmax(0, 1fr));
-  gap: 16rem;
+  grid-template-rows: repeat(3, 184rem);
+  gap: 20rem 24rem;
   align-items: stretch;
 }
 
 .restore-horiz-card {
-  padding: 20rem 26rem;
+  padding: 18rem 24rem;
   border-radius: var(--radius-card);
   background: var(--glass-bg);
   backdrop-filter: blur(34rem) saturate(165%);
@@ -588,7 +596,7 @@ input:focus-visible,
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 12rem;
+  gap: 10rem;
 }
 
 .restore-horiz-card.selected {
@@ -603,6 +611,78 @@ input:focus-visible,
     radial-gradient(circle at 80% 25%, rgba(96, 165, 250, 0.42), transparent 60%),
     linear-gradient(145deg, rgba(24, 92, 214, 0.86), rgba(9, 34, 86, 0.92));
   border-color: rgba(147, 197, 253, 0.65);
+}
+
+.restore-hub-cta-group {
+  display: flex;
+  align-items: center;
+  gap: 8rem;
+  flex-shrink: 0;
+}
+
+.restore-hub-selectors {
+  display: flex;
+  flex-direction: column;
+  gap: 7rem;
+  padding-top: 9rem;
+  border-top: 1rem solid rgba(255, 255, 255, 0.14);
+}
+
+.restore-hub-selector-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10rem;
+}
+
+.restore-hub-label {
+  font-size: 12.5rem;
+  font-weight: 500;
+  color: rgba(219, 234, 254, 0.85);
+  min-width: 44rem;
+}
+
+.restore-hub-pills {
+  display: flex;
+  align-items: center;
+  gap: 6rem;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+.restore-mini-pill {
+  height: 28rem;
+  padding: 0 12rem;
+  border-radius: var(--radius-pill);
+  background: rgba(12, 22, 46, 0.58);
+  border: 1rem solid rgba(255, 255, 255, 0.16);
+  color: #dbeafe;
+  font-size: 12.5rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.restore-mini-pill:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.restore-mini-pill.active-loc {
+  background: #2563eb;
+  border-color: #93c5fd;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.restore-mini-pill.active-rp {
+  background: #f8fafc;
+  border-color: #ffffff;
+  color: #0b1324;
+  font-weight: 600;
 }
 
 .restore-horiz-top {

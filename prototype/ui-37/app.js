@@ -617,80 +617,82 @@
     return `
       <div class="restore-two-by-three-grid">
         ${fiveCardsHtml}
-        <button
-          type="button"
-          class="restore-horiz-card action-cta-card"
-          data-action="start-lock-demo"
-          data-mode="normal"
-        >
+        <section class="restore-horiz-card action-cta-card restore-control-hub-card" aria-label="恢复配置与执行控制台">
           <div class="restore-horiz-top">
             <div class="restore-horiz-left">
               <div class="restore-step-icon-box" style="background:rgba(255,255,255,0.18); color:#ffffff;">${ICONS.restore}</div>
               <div class="restore-horiz-copy">
-                <h2>开始整机恢复（已选 ${state.selectedObjects.length} / 5 项）</h2>
-                <p>来源：${currentLoc.name} · ${currentRp.title}，按第 1～5 步依赖顺序自动还原。</p>
+                <h2>恢复源与执行总控（已选 ${state.selectedObjects.length} / 5 项）</h2>
+                <p>当前：${currentLoc.name} · ${currentRp.title}（${currentRp.size}）</p>
               </div>
             </div>
-            <span class="pill sm primary">${ICONS.restore}<span>立即恢复</span></span>
-          </div>
-          <div class="restore-horiz-foot">
-            <div class="restore-horiz-tags">
-              <span class="badge green">断点续做保护</span>
-              <span class="badge blue">冲突自动检测</span>
+            <div class="restore-hub-cta-group">
+              ${
+                state.selectedObjects.length < 5
+                  ? `<button type="button" class="pill sm secondary" data-action="select-all-objects">全选 5 项</button>`
+                  : ''
+              }
+              <button
+                type="button"
+                class="pill sm primary"
+                data-action="start-lock-demo"
+                data-mode="normal"
+              >
+                ${ICONS.restore}<span>立即恢复</span>
+              </button>
             </div>
-            <div class="restore-horiz-stat">
-              <span>已选体积</span>
-              <strong>${currentRp.size}</strong>
+          </div>
+
+          <div class="restore-hub-selectors">
+            <div class="restore-hub-selector-row">
+              <span class="restore-hub-label">位置</span>
+              <div class="restore-hub-pills">
+                ${state.locations
+                  .map(
+                    (loc) => `
+                    <button
+                      type="button"
+                      class="restore-mini-pill ${state.selectedLocationId === loc.id ? 'active-loc' : ''}"
+                      data-action="select-location"
+                      data-loc="${loc.id}"
+                    >
+                      ${loc.name.replace(' 存储设备', '')}
+                    </button>
+                  `,
+                  )
+                  .join('')}
+              </div>
+            </div>
+            <div class="restore-hub-selector-row">
+              <span class="restore-hub-label">时间点</span>
+              <div class="restore-hub-pills">
+                ${state.restorePoints
+                  .map(
+                    (rp) => `
+                    <button
+                      type="button"
+                      class="restore-mini-pill ${state.selectedRestorePointId === rp.id ? 'active-rp' : ''}"
+                      data-action="select-rp"
+                      data-rp="${rp.id}"
+                    >
+                      ${rp.title.replace(' 自动备份', '').replace(' 手动备份', ' 手动')}
+                    </button>
+                  `,
+                  )
+                  .join('')}
+              </div>
             </div>
           </div>
-        </button>
+        </section>
       </div>
     `
   }
 
-  /* ==================== 子页 1：「恢复」（顶部位置/恢复点药丸 + 一行两个、三行即可的横向 Bento 卡片） ==================== */
+  /* ==================== 子页 1：「恢复」（去除顶部冗余工具条，收敛为居中留白 2×3 卡片矩阵） ==================== */
   function renderRestorePage() {
     return `
       <main class="subpage-stage">
-        <div class="subpage-content-body">
-          <div class="subpage-toolbar">
-            <div class="subpage-toolbar-group">
-              <span style="font-size:15rem; color:#9fb0c6;">备份位置：</span>
-              ${state.locations
-                .map(
-                  (loc) => `
-                  <button
-                    type="button"
-                    class="pill sm ${state.selectedLocationId === loc.id ? 'brand' : 'secondary'}"
-                    data-action="select-location"
-                    data-loc="${loc.id}"
-                  >
-                    <span>${loc.name}</span>
-                  </button>
-                `,
-                )
-                .join('')}
-              <span style="font-size:15rem; color:#9fb0c6; margin-left:10rem;">恢复点：</span>
-              ${state.restorePoints
-                .map(
-                  (rp) => `
-                  <button
-                    type="button"
-                    class="pill sm ${state.selectedRestorePointId === rp.id ? 'primary' : 'secondary'}"
-                    data-action="select-rp"
-                    data-rp="${rp.id}"
-                  >
-                    <span>${rp.title}</span>
-                  </button>
-                `,
-                )
-                .join('')}
-            </div>
-            <button type="button" class="pill sm secondary" data-action="select-all-objects">
-              <span>全选全部 5 项</span>
-            </button>
-          </div>
-
+        <div class="subpage-content-body restore-centered-body">
           ${renderTwoByThreeObjectsGrid(true)}
         </div>
 
@@ -704,15 +706,6 @@
     return `
       <main class="subpage-stage">
         <div class="subpage-content-body">
-          <div class="subpage-toolbar">
-            <div class="subpage-toolbar-group">
-              <span class="badge muted">全部</span>
-              <span class="badge muted">独立应用</span>
-              <span class="badge muted">扩展插件</span>
-              <span class="badge muted">系统载荷</span>
-            </div>
-          </div>
-
           <div class="store-stage-wrap is-locked">
             <div class="store-underlying-canvas" aria-hidden="true">
               <div class="library-grid">
@@ -741,7 +734,6 @@
               <div class="store-lock-glass-card">
                 <div class="store-lock-icon-badge">${ICONS.lock}</div>
                 <h2>软件频道暂未开放</h2>
-                <p>自制应用、系统载荷与扩展插件在线获取功能将在后续版本推出。</p>
               </div>
             </div>
           </div>
@@ -757,14 +749,6 @@
     return `
       <main class="subpage-stage">
         <div class="subpage-content-body">
-          <div class="subpage-toolbar">
-            <div class="subpage-toolbar-group">
-              <span class="badge muted">全部来源</span>
-              <span class="badge muted">百度网盘</span>
-              <span class="badge muted">夸克网盘</span>
-            </div>
-          </div>
-
           <div class="store-stage-wrap is-locked">
             <div class="store-underlying-canvas" aria-hidden="true">
               <div class="game-grid">
@@ -786,7 +770,6 @@
               <div class="store-lock-glass-card">
                 <div class="store-lock-icon-badge">${ICONS.lock}</div>
                 <h2>商店频道暂未开放</h2>
-                <p>网盘连接与游戏库在线下载功能将在后续版本推出。</p>
               </div>
             </div>
           </div>
@@ -949,7 +932,6 @@
                   </div>
                   <p class="settings-dense-sub">关闭主界面后常驻后台，在游戏退出且存档落盘稳定后自动同步</p>
                 </div>
-                <span class="badge green">常驻运行中</span>
               </div>
               <div class="settings-compact-list">
                 <div class="settings-compact-row">
