@@ -234,6 +234,8 @@
 
   const urlParams = new URLSearchParams(window.location.search)
   const rawView = urlParams.get('view')
+  const rawLockStyle = urlParams.get('lockStyle') || urlParams.get('style') || 'a'
+  const initialLockStyle = ['a', 'b', 'c'].includes(rawLockStyle.toLowerCase()) ? rawLockStyle.toLowerCase() : 'a'
   const initialOnboardingOpen = rawView === 'onboarding' || urlParams.get('onboarding') === '1'
   const initialStep = Math.min(3, Math.max(1, parseInt(urlParams.get('step') || '1', 10) || 1))
   const initialLockMode = urlParams.get('lock')
@@ -241,6 +243,7 @@
 
   const state = {
     view: normalizeView(rawView),
+    lockStyle: initialLockStyle,
     focusedDockId: 'restore',
     devDockCollapsed: true,
     onboardingOpen: initialOnboardingOpen,
@@ -368,6 +371,7 @@
     const u = new URL(window.location.href)
     u.searchParams.delete('variant')
     u.searchParams.set('view', state.onboardingOpen ? 'onboarding' : state.view)
+    u.searchParams.set('lockStyle', state.lockStyle)
     if (state.onboardingOpen) {
       u.searchParams.set('step', String(state.onboardingStep))
     } else {
@@ -393,9 +397,15 @@
         </div>
       `
     } else if (state.view !== 'home' && currentDock) {
+      const isUpcomingChannel = state.view === 'apps' || state.view === 'store'
       leftSlot = `
         <div class="header-subview-title">
           <h1>${currentDock.label}</h1>
+          ${
+            isUpcomingChannel && state.lockStyle === 'a'
+              ? `<span class="channel-subtle-pill">${ICONS.lock}<span>即将开放</span></span>`
+              : ''
+          }
         </div>
       `
     }
@@ -701,41 +711,61 @@
     `
   }
 
-  /* ==================== 子页 2：「软件」（底层卡片 + 30rem 液态玻璃预览锁遮罩） ==================== */
+  /* ==================== 子页 2：「软件」（三套不突兀预览方案 A / B / C） ==================== */
   function renderAppsPage() {
+    const ls = state.lockStyle || 'a'
     return `
       <main class="subpage-stage">
-        <div class="subpage-content-body">
-          <div class="store-stage-wrap is-locked">
-            <div class="store-underlying-canvas" aria-hidden="true">
-              <div class="library-grid">
-                ${STORE_APPS.map(
-                  (app) => `
-                  <article class="store-app-card">
-                    <div class="store-app-top">
-                      <img src="${app.art}" alt="${app.name}" />
-                      <div>
-                        <strong>${app.name}</strong>
-                        <small>${app.version}</small>
-                      </div>
+        <div class="subpage-content-body channel-showcase-body lock-style-${ls}">
+          <div class="channel-showcase-stage lock-style-${ls}">
+            ${
+              ls === 'c'
+                ? `
+                <div class="channel-hero-banner">
+                  <div class="channel-hero-left">
+                    <div class="channel-hero-icon">${ICONS.apps}</div>
+                    <div>
+                      <h2>自制应用与系统载荷精选</h2>
+                      <p>当前为目录预览模式，在线下载与一键部署将在后续版本开放</p>
                     </div>
-                    <p class="store-app-desc">${app.desc}</p>
-                    <div class="store-app-footer">
-                      <span>${app.category} · ${app.size}</span>
-                      <span class="badge muted">获取</span>
+                  </div>
+                  <span class="channel-hero-pill">${ICONS.lock}<span>即将开放</span></span>
+                </div>
+              `
+                : ''
+            }
+
+            <div class="library-grid channel-apps-grid">
+              ${STORE_APPS.map(
+                (app) => `
+                <article class="store-app-card channel-card">
+                  <div class="store-app-top">
+                    <img src="${app.art}" alt="${app.name}" />
+                    <div>
+                      <strong>${app.name}</strong>
+                      <small>${app.version}</small>
                     </div>
-                  </article>
-                `,
-                ).join('')}
-              </div>
+                  </div>
+                  <p class="store-app-desc">${app.desc}</p>
+                  <div class="store-app-footer">
+                    <span>${app.category} · ${app.size}</span>
+                    <span class="channel-status-chip">${ICONS.lock}<span>即将推出</span></span>
+                  </div>
+                </article>
+              `,
+              ).join('')}
             </div>
 
-            <div class="store-preview-lock-overlay">
-              <div class="store-lock-glass-card">
-                <div class="store-lock-icon-badge">${ICONS.lock}</div>
-                <h2>软件频道暂未开放</h2>
-              </div>
-            </div>
+            ${
+              ls === 'b'
+                ? `
+                <div class="channel-floating-ribbon" role="status">
+                  <span class="channel-ribbon-icon">${ICONS.lock}</span>
+                  <span>软件频道即将开放 · 当前仅供浏览预览</span>
+                </div>
+              `
+                : ''
+            }
           </div>
         </div>
 
@@ -744,34 +774,55 @@
     `
   }
 
-  /* ==================== 子页 3：「商店」（底层封面网格 + 30rem 液态玻璃预览锁遮罩） ==================== */
+  /* ==================== 子页 3：「商店」（三套不突兀预览方案 A / B / C） ==================== */
   function renderStorePage() {
+    const ls = state.lockStyle || 'a'
     return `
       <main class="subpage-stage">
-        <div class="subpage-content-body">
-          <div class="store-stage-wrap is-locked">
-            <div class="store-underlying-canvas" aria-hidden="true">
-              <div class="game-grid">
-                ${STORE_GAMES.map(
-                  (g) => `
-                  <article class="game-tile">
-                    <div class="game-cover">
-                      <img src="${g.cover}" alt="${g.title}" />
+        <div class="subpage-content-body channel-showcase-body lock-style-${ls}">
+          <div class="channel-showcase-stage lock-style-${ls}">
+            ${
+              ls === 'c'
+                ? `
+                <div class="channel-hero-banner">
+                  <div class="channel-hero-left">
+                    <div class="channel-hero-icon">${ICONS.bag}</div>
+                    <div>
+                      <h2>云端网盘与主机游戏库</h2>
+                      <p>当前为封面墙预览模式，网盘直连与高速下载将在后续版本开放</p>
                     </div>
-                    <h3>${g.title}</h3>
-                    <p>${g.meta}</p>
-                  </article>
-                `,
-                ).join('')}
-              </div>
+                  </div>
+                  <span class="channel-hero-pill">${ICONS.lock}<span>即将开放</span></span>
+                </div>
+              `
+                : ''
+            }
+
+            <div class="game-grid channel-games-grid">
+              ${STORE_GAMES.map(
+                (g) => `
+                <article class="game-tile channel-game-tile">
+                  <div class="game-cover">
+                    <img src="${g.cover}" alt="${g.title}" />
+                    <span class="game-cover-corner-pill">${ICONS.lock}<span>即将推出</span></span>
+                  </div>
+                  <h3>${g.title}</h3>
+                  <p>${g.meta}</p>
+                </article>
+              `,
+              ).join('')}
             </div>
 
-            <div class="store-preview-lock-overlay">
-              <div class="store-lock-glass-card">
-                <div class="store-lock-icon-badge">${ICONS.lock}</div>
-                <h2>商店频道暂未开放</h2>
-              </div>
-            </div>
+            ${
+              ls === 'b'
+                ? `
+                <div class="channel-floating-ribbon" role="status">
+                  <span class="channel-ribbon-icon">${ICONS.lock}</span>
+                  <span>商店频道即将开放 · 当前仅供浏览预览</span>
+                </div>
+              `
+                : ''
+            }
           </div>
         </div>
 
@@ -1478,7 +1529,8 @@
 
   /* ==================== 左下角可收起开发者状态调试浮窗 ==================== */
   function renderFloatingDevDock() {
-    if (state.devDockCollapsed) {
+    const isUpcomingView = state.view === 'apps' || state.view === 'store'
+    if (state.devDockCollapsed && !isUpcomingView) {
       return `
         <aside class="proto-floating-dock" aria-label="开发者原型调试浮窗">
           <div class="proto-dock-row">
@@ -1487,8 +1539,71 @@
         </aside>
       `
     }
+
+    if (state.devDockCollapsed && isUpcomingView) {
+      return `
+        <aside class="proto-floating-dock" aria-label="未开放频道预览变体切换">
+          <div class="proto-dock-row">
+            <span class="proto-dev-tag">未开放样式</span>
+            <button
+              type="button"
+              class="proto-dock-btn ${state.lockStyle === 'a' ? 'active' : ''}"
+              data-action="set-lock-style"
+              data-style="a"
+            >
+              A 顶栏胶囊+通透卡片
+            </button>
+            <button
+              type="button"
+              class="proto-dock-btn ${state.lockStyle === 'b' ? 'active' : ''}"
+              data-action="set-lock-style"
+              data-style="b"
+            >
+              B 底部流光灵动胶囊
+            </button>
+            <button
+              type="button"
+              class="proto-dock-btn ${state.lockStyle === 'c' ? 'active' : ''}"
+              data-action="set-lock-style"
+              data-style="c"
+            >
+              C 顶部 Bento 预告横幅
+            </button>
+            <button type="button" class="proto-dock-btn" data-action="toggle-dev-dock">更多 DEV</button>
+          </div>
+        </aside>
+      `
+    }
+
     return `
       <aside class="proto-floating-dock expanded" aria-label="开发者原型调试浮窗">
+        <div class="proto-dock-row">
+          <span class="proto-dev-tag">未开放样式</span>
+          <button
+            type="button"
+            class="proto-dock-btn ${state.lockStyle === 'a' ? 'active' : ''}"
+            data-action="set-lock-style"
+            data-style="a"
+          >
+            方案 A：顶栏胶囊+通透卡片
+          </button>
+          <button
+            type="button"
+            class="proto-dock-btn ${state.lockStyle === 'b' ? 'active' : ''}"
+            data-action="set-lock-style"
+            data-style="b"
+          >
+            方案 B：底部流光灵动胶囊
+          </button>
+          <button
+            type="button"
+            class="proto-dock-btn ${state.lockStyle === 'c' ? 'active' : ''}"
+            data-action="set-lock-style"
+            data-style="c"
+          >
+            方案 C：顶部 Bento 预告横幅
+          </button>
+        </div>
         <div class="proto-dock-row">
           <span class="proto-dev-tag">PROTOTYPE DEV</span>
           <button
@@ -1654,6 +1769,14 @@
         state.devDockCollapsed = !state.devDockCollapsed
         render('update')
         break
+      case 'set-lock-style': {
+        const s = btn.dataset.style || 'a'
+        if (['a', 'b', 'c'].includes(s)) {
+          state.lockStyle = s
+          render('update')
+        }
+        break
+      }
       case 'open-onboarding':
         state.onboardingOpen = true
         state.onboardingStep = 1

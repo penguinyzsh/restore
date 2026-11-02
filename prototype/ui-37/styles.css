@@ -925,43 +925,71 @@ input:focus-visible,
   grid-column: span 2;
 }
 
-/* ==================== 「软件」与「商店」（底层卡片 + 液态毛玻璃锁定遮罩，统一 30rem 圆角） ==================== */
-.store-stage-wrap {
-  flex: 1;
+/* ==================== 「软件」与「商店」（三套不突兀预览方案 A / B / C，统一 30rem 圆角） ==================== */
+.channel-subtle-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rem;
+  height: 34rem;
+  padding: 0 16rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rem solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(24rem);
+  font-size: 14rem;
+  font-weight: 500;
+  color: #cfe4ff;
+}
+
+.channel-subtle-pill svg {
+  width: 15rem;
+  height: 15rem;
+  color: #8cc8ff;
+}
+
+.channel-showcase-body {
+  align-items: center;
+  justify-content: center;
+  padding: 16rem 56rem 24rem;
+}
+
+.channel-showcase-stage {
+  width: 100%;
+  max-width: 1500rem;
+  margin: 0 auto;
   position: relative;
-  padding: 18rem;
-  border-radius: var(--radius-card);
-  overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-
-.store-stage-wrap.is-locked .store-underlying-canvas {
-  filter: grayscale(0.35) brightness(0.68);
-  pointer-events: none;
+  gap: 22rem;
 }
 
 .library-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18rem;
+  gap: 20rem;
 }
 
 .game-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 20rem 18rem;
+  gap: 22rem 20rem;
 }
 
 .store-app-card {
-  padding: 22rem;
+  padding: 22rem 24rem;
   border-radius: var(--radius-card);
-  background: rgba(24, 29, 39, 0.75);
-  border: 1rem solid rgba(255, 255, 255, 0.1);
+  background: var(--glass-bg);
+  backdrop-filter: blur(34rem) saturate(165%);
+  -webkit-backdrop-filter: blur(34rem) saturate(165%);
+  border: 1rem solid var(--glass-border);
+  box-shadow: var(--glass-specular), 0 18rem 42rem rgba(0, 0, 0, 0.36);
   display: flex;
   flex-direction: column;
   gap: 12rem;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms ease;
 }
 
 .store-app-top {
@@ -981,6 +1009,7 @@ input:focus-visible,
   display: block;
   font-size: 18.5rem;
   font-weight: 500;
+  color: #f8fafc;
 }
 
 .store-app-top small {
@@ -1008,6 +1037,26 @@ input:focus-visible,
   color: #95a2b3;
 }
 
+.channel-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6rem;
+  height: 26rem;
+  padding: 0 11rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1rem solid rgba(255, 255, 255, 0.14);
+  font-size: 12rem;
+  font-weight: 500;
+  color: #bfd6f6;
+}
+
+.channel-status-chip svg {
+  width: 13rem;
+  height: 13rem;
+  color: #8cc8ff;
+}
+
 .game-tile {
   display: flex;
   flex-direction: column;
@@ -1019,22 +1068,49 @@ input:focus-visible,
   border-radius: var(--radius-card);
   overflow: hidden;
   background: #1d222b;
-  border: 1rem solid rgba(255, 255, 255, 0.1);
+  border: 1rem solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16rem 36rem rgba(0, 0, 0, 0.38);
 }
 
 .game-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  filter: saturate(0.88) brightness(0.92);
+}
+
+.game-cover-corner-pill {
+  position: absolute;
+  right: 12rem;
+  bottom: 12rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 5rem;
+  height: 26rem;
+  padding: 0 11rem;
+  border-radius: var(--radius-pill);
+  background: rgba(15, 20, 30, 0.76);
+  backdrop-filter: blur(18rem);
+  border: 1rem solid rgba(255, 255, 255, 0.18);
+  font-size: 11.5rem;
+  font-weight: 500;
+  color: #dbeafe;
+}
+
+.game-cover-corner-pill svg {
+  width: 12rem;
+  height: 12rem;
+  color: #93c5fd;
 }
 
 .game-tile h3 {
   font-size: 16.5rem;
   font-weight: 500;
-  margin: 10rem 0 3rem;
+  margin: 12rem 0 4rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #f1f5f9;
 }
 
 .game-tile p {
@@ -1043,63 +1119,121 @@ input:focus-visible,
   color: #97a3b4;
 }
 
-.store-preview-lock-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 12;
-  border-radius: var(--radius-card);
-  background: radial-gradient(circle at 50% 45%, rgba(12, 16, 24, 0.56), rgba(9, 12, 18, 0.38));
-  backdrop-filter: blur(10rem);
-  display: flex;
+/* 方案 B：底部悬浮流光灵动胶囊条（不遮挡卡片主体、无整块黑框） */
+.channel-floating-ribbon {
+  align-self: center;
+  margin-top: 6rem;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 28rem;
+  gap: 12rem;
+  height: 48rem;
+  padding: 0 26rem;
+  border-radius: var(--radius-pill);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.25), transparent 65%),
+    rgba(20, 27, 40, 0.78);
+  backdrop-filter: blur(32rem) saturate(180%);
+  -webkit-backdrop-filter: blur(32rem) saturate(180%);
+  border: 1rem solid rgba(147, 197, 253, 0.38);
+  box-shadow:
+    inset 0 1rem 0 rgba(255, 255, 255, 0.24),
+    0 18rem 44rem rgba(0, 0, 0, 0.48);
+  font-size: 15.5rem;
+  font-weight: 500;
+  color: #f1f5f9;
 }
 
-.store-lock-glass-card {
-  max-width: 540rem;
-  width: 100%;
-  padding: 36rem 42rem;
-  border-radius: var(--radius-card);
-  background: rgba(24, 30, 42, 0.78);
-  backdrop-filter: blur(36rem) saturate(170%);
-  border: 1.5rem solid rgba(255, 255, 255, 0.18);
-  box-shadow: var(--glass-specular), 0 30rem 70rem rgba(0, 0, 0, 0.65);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14rem;
+.channel-ribbon-icon {
+  width: 28rem;
+  height: 28rem;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.28);
+  border: 1rem solid rgba(147, 197, 253, 0.45);
+  display: inline-grid;
+  place-items: center;
+  color: #93c5fd;
 }
 
-.store-lock-icon-badge {
-  width: 60rem;
-  height: 60rem;
+.channel-ribbon-icon svg {
+  width: 15rem;
+  height: 15rem;
+}
+
+/* 方案 C：顶部 Bento 玻璃预告横幅 + 柔和陈列网格 */
+.channel-hero-banner {
+  padding: 20rem 28rem;
+  border-radius: var(--radius-card);
+  background:
+    radial-gradient(circle at 85% 20%, rgba(56, 189, 248, 0.26), transparent 60%),
+    linear-gradient(145deg, rgba(24, 52, 108, 0.68), rgba(16, 22, 34, 0.82));
+  backdrop-filter: blur(34rem) saturate(170%);
+  -webkit-backdrop-filter: blur(34rem) saturate(170%);
+  border: 1rem solid rgba(147, 197, 253, 0.34);
+  box-shadow: var(--glass-specular), 0 18rem 42rem rgba(0, 0, 0, 0.38);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rem;
+}
+
+.channel-hero-left {
+  display: flex;
+  align-items: center;
+  gap: 18rem;
+}
+
+.channel-hero-icon {
+  width: 52rem;
+  height: 52rem;
   border-radius: var(--radius-inner);
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.12);
   border: 1rem solid rgba(255, 255, 255, 0.22);
   display: grid;
   place-items: center;
-  color: #e2ecfa;
+  color: #bae6fd;
 }
 
-.store-lock-icon-badge svg {
-  width: 28rem;
-  height: 28rem;
+.channel-hero-icon svg {
+  width: 26rem;
+  height: 26rem;
 }
 
-.store-lock-glass-card h2 {
-  margin: 4rem 0 0;
-  font-size: 27rem;
+.channel-hero-left h2 {
+  margin: 0 0 4rem;
+  font-size: 21rem;
   font-weight: 500;
   color: #f8fafc;
 }
 
-.store-lock-glass-card p {
+.channel-hero-left p {
   margin: 0;
-  font-size: 15.5rem;
-  line-height: 1.55;
-  color: #b7c4d6;
+  font-size: 14rem;
+  color: #b5c7de;
+}
+
+.channel-hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rem;
+  height: 38rem;
+  padding: 0 18rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1rem solid rgba(255, 255, 255, 0.24);
+  font-size: 14.5rem;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.channel-hero-pill svg {
+  width: 16rem;
+  height: 16rem;
+  color: #93c5fd;
+}
+
+.channel-showcase-stage.lock-style-c .library-grid,
+.channel-showcase-stage.lock-style-c .game-grid {
+  opacity: 0.88;
 }
 
 /* ==================== 首次引导分步向导（Step 1 → Step 2 → Step 3 单屏单步推进） ==================== */
