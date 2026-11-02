@@ -55,31 +55,30 @@
     apps: `
       <svg class="dock-emblem" viewBox="0 0 88 88" fill="none" aria-hidden="true">
         <defs>
-          <linearGradient id="emb-app-top" x1="20" y1="16" x2="68" y2="48" gradientUnits="userSpaceOnUse">
+          <linearGradient id="emb-app-cyan" x1="46" y1="14" x2="74" y2="42" gradientUnits="userSpaceOnUse">
             <stop offset="0%" stop-color="#67E8F9"/>
-            <stop offset="100%" stop-color="#38BDF8"/>
-          </linearGradient>
-          <linearGradient id="emb-app-mid" x1="18" y1="36" x2="70" y2="62" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#34D399"/>
-            <stop offset="100%" stop-color="#0EA5E9"/>
+            <stop offset="100%" stop-color="#2563EB"/>
           </linearGradient>
         </defs>
-        <path d="M44 50L72 35.5L44 21L16 35.5L44 50Z" fill="url(#emb-app-top)"/>
-        <path d="M16 46.5L44 61L72 46.5" stroke="url(#emb-app-mid)" stroke-width="6.2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M16 58L44 72.5L72 58" stroke="#E2E8F0" stroke-opacity="0.78" stroke-width="6.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="17" y="18" width="23" height="23" rx="7" fill="#FFFFFF" fill-opacity="0.92"/>
+        <rect x="17" y="47" width="23" height="23" rx="7" fill="#93C5FD" fill-opacity="0.85"/>
+        <rect x="46" y="47" width="23" height="23" rx="7" fill="#FFFFFF" fill-opacity="0.65"/>
+        <rect x="57.5" y="14.5" width="21" height="21" rx="6.5" transform="rotate(45 57.5 14.5)" fill="url(#emb-app-cyan)"/>
       </svg>
     `,
     store: `
       <svg class="dock-emblem" viewBox="0 0 88 88" fill="none" aria-hidden="true">
         <defs>
-          <linearGradient id="emb-bag-body" x1="22" y1="28" x2="66" y2="74" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.96"/>
-            <stop offset="100%" stop-color="#C7D2FE" stop-opacity="0.82"/>
+          <linearGradient id="emb-bag-body" x1="20" y1="28" x2="68" y2="74" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.97"/>
+            <stop offset="100%" stop-color="#C7D2FE" stop-opacity="0.86"/>
           </linearGradient>
         </defs>
-        <path d="M32.5 31V26.5C32.5 20.1 37.6 15 44 15C50.4 15 55.5 20.1 55.5 26.5V31" stroke="#FFFFFF" stroke-width="5.8" stroke-linecap="round"/>
-        <rect x="20" y="29" width="48" height="43" rx="13" fill="url(#emb-bag-body)"/>
-        <path d="M44 41L47.1 47.6L54.4 48.5L49 53.6L50.4 60.8L44 57.3L37.6 60.8L39 53.6L33.6 48.5L40.9 47.6L44 41Z" fill="#2563EB"/>
+        <path d="M24 31H64L68.5 68.5C69.1 72.5 66 76 62 76H26C22 76 18.9 72.5 19.5 68.5L24 31Z" fill="url(#emb-bag-body)"/>
+        <path d="M33.5 35V25C33.5 19.2 38.2 14.5 44 14.5C49.8 14.5 54.5 19.2 54.5 25V35" stroke="#93C5FD" stroke-width="5.4" stroke-linecap="round"/>
+        <circle cx="33.5" cy="36" r="3.2" fill="#1E3A8A"/>
+        <circle cx="54.5" cy="36" r="3.2" fill="#1E3A8A"/>
+        <path d="M44 45.5L51.5 58.5H36.5L44 45.5Z" stroke="#1D4ED8" stroke-width="3.6" stroke-linejoin="round"/>
       </svg>
     `,
     other: `
@@ -442,12 +441,14 @@
   function renderFourIconCards() {
     return DOCK_ITEMS.map((item) => {
       const isRouteActive = state.view === item.id && !state.lockScene.active
+      const isHomeFocused = state.view === 'home' && !state.lockScene.active && !state.onboardingOpen && !state.modal && state.focusedDockId === item.id
       return `
         <button
           type="button"
           class="dock-icon-card ${isRouteActive ? 'is-active-route' : ''}"
           data-action="open-dock-item"
           data-dock-id="${item.id}"
+          ${isHomeFocused ? 'data-pad-focus="true"' : ''}
           aria-label="${item.label}"
           title="${item.label}"
         >

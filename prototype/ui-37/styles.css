@@ -871,20 +871,20 @@ input:focus-visible,
 
 /* 四个底部纯 ICON 卡片内部的定制立体图标尺寸 */
 .dock-emblem {
-  width: 86rem;
-  height: 86rem;
-  filter: drop-shadow(0 12rem 22rem rgba(0, 0, 0, 0.38));
+  width: 104rem;
+  height: 104rem;
+  filter: drop-shadow(0 14rem 24rem rgba(0, 0, 0, 0.42));
   transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .vb-dock-shell .dock-emblem {
-  width: 68rem;
-  height: 68rem;
+  width: 78rem;
+  height: 78rem;
 }
 
 .vb-dock-shell.is-compact .dock-emblem {
-  width: 46rem;
-  height: 46rem;
+  width: 50rem;
+  height: 50rem;
 }
 
 .dock-icon-card:hover .dock-emblem,
