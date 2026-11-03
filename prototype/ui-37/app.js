@@ -203,6 +203,30 @@
       size: '160 KB',
       desc: '开机自动校准系统时钟，确保存档时间与备份记录准确一致。',
     },
+    {
+      name: 'Itemzflow 管理器',
+      version: 'v1.08 · 桌面启动器',
+      category: '独立应用',
+      art: './assets/etahen-icon.jpg',
+      size: '64.2 MB',
+      desc: '自制应用与游戏封面管理器，支持虚拟盘挂载与自定义排序。',
+    },
+    {
+      name: 'klog 实时日志服务',
+      version: 'v0.14 · 调试工具',
+      category: '扩展插件',
+      art: './assets/Cryptogenic.png',
+      size: '142 KB',
+      desc: '通过局域网套接字实时输出系统内核与载荷运行日志。',
+    },
+    {
+      name: 'WebSrv 本地服务',
+      version: 'v0.9.4 · 网页宿主',
+      category: '系统载荷',
+      art: './assets/idlesauce.png',
+      size: '520 KB',
+      desc: '在主机本地提供轻量级 HTTP 静态托管与离线载荷分发入口。',
+    },
   ]
 
   const STORE_GAMES = [
@@ -212,6 +236,12 @@
     { id: 'gow', title: '战神：诸神黄昏', meta: '动作角色扮演 · 84.2 GB', cover: './assets/games/god-of-war-ragnarok/cover.png' },
     { id: 'horizon', title: '地平线：西之绝境', meta: '开放世界 · 79.5 GB', cover: './assets/games/horizon-forbidden-west/cover.png' },
     { id: 'spiderman2', title: '漫威蜘蛛侠 2', meta: '动作冒险 · 68.0 GB', cover: './assets/games/marvels-spider-man-2/cover.png' },
+    { id: 'astro-playroom', title: '无线控制器指南', meta: '平台动作 · 10.9 GB', cover: './assets/games/astro-bot/screenshot-1.jpg' },
+    { id: 'gow-valhalla', title: '战神：英灵殿 DLC', meta: '动作肉鸽 · 16.4 GB', cover: './assets/games/god-of-war-ragnarok/screenshot-1.jpg' },
+    { id: 'horizon-burning', title: '地平线：炙炎海岸', meta: '开放世界 · 24.8 GB', cover: './assets/games/horizon-forbidden-west/screenshot-1.jpg' },
+    { id: 'returnal-tower', title: '死亡回归：西西弗斯之塔', meta: '无尽挑战 · 18.2 GB', cover: './assets/games/returnal/screenshot-1.jpg' },
+    { id: 'ratchet-arena', title: '瑞奇与叮当：星际竞技场', meta: '动作射击 · 21.5 GB', cover: './assets/games/ratchet-and-clank-rift-apart/screenshot-1.jpg' },
+    { id: 'spiderman-miles', title: '漫威蜘蛛侠：迈尔斯', meta: '动作冒险 · 49.6 GB', cover: './assets/games/marvels-spider-man-2/screenshot-1.jpg' },
   ]
 
   function normalizeView(v) {
@@ -704,7 +734,7 @@
     `
   }
 
-  /* ==================== 子页 2：「软件」（收敛为方案 A：无黑边磨砂贴 + 灵动胶囊锁） ==================== */
+  /* ==================== 子页 2：「软件」（收敛为方案 A：无黑边磨砂贴 + 灵动胶囊锁 + 多页翻页阵列） ==================== */
   function renderAppsPage() {
     return `
       <main class="subpage-stage">
@@ -731,6 +761,17 @@
               ).join('')}
             </div>
 
+            <div class="channel-pagination-bar" aria-hidden="true">
+              <span class="channel-page-summary">共 27 款开源软件与系统载荷 · 第 1 / 3 页</span>
+              <div class="channel-page-controls">
+                <span class="channel-page-pill disabled">上一页</span>
+                <span class="channel-page-num active">1</span>
+                <span class="channel-page-num">2</span>
+                <span class="channel-page-num">3</span>
+                <span class="channel-page-pill">下一页</span>
+              </div>
+            </div>
+
             <div class="channel-frosted-shield style-a" role="status" aria-label="软件频道暂未开放">
               <div class="shield-compact-pill">
                 <span class="shield-lock-circle">${ICONS.lock}</span>
@@ -745,7 +786,7 @@
     `
   }
 
-  /* ==================== 子页 3：「商店」（收敛为方案 A：无黑边磨砂贴 + 灵动胶囊锁） ==================== */
+  /* ==================== 子页 3：「商店」（收敛为方案 A：无黑边磨砂贴 + 灵动胶囊锁 + 多页翻页阵列） ==================== */
   function renderStorePage() {
     return `
       <main class="subpage-stage">
@@ -763,6 +804,17 @@
                 </article>
               `,
               ).join('')}
+            </div>
+
+            <div class="channel-pagination-bar" aria-hidden="true">
+              <span class="channel-page-summary">共 36 款网盘游戏资源 · 第 1 / 3 页</span>
+              <div class="channel-page-controls">
+                <span class="channel-page-pill disabled">上一页</span>
+                <span class="channel-page-num active">1</span>
+                <span class="channel-page-num">2</span>
+                <span class="channel-page-num">3</span>
+                <span class="channel-page-pill">下一页</span>
+              </div>
             </div>
 
             <div class="channel-frosted-shield style-a" role="status" aria-label="商店频道暂未开放">
@@ -1389,8 +1441,8 @@
                 ? `
               <div class="inline-notice-box warn">
                 <div>
-                  <strong style="display:block; font-size:16.5rem; color:#ffd4d2; margin-bottom:4rem;">请先保存并关闭正在运行的《最后生还者 Part I》</strong>
-                  <span style="font-size:14rem; color:#e6c3c1;">为避免覆盖正在游玩的进度，系统已暂停该游戏存档写入，其余无冲突项目正继续恢复。</span>
+                  <strong style="display:block; font-size:16.5rem; color:#f8fafc; margin-bottom:4rem;">请先保存并关闭正在运行的《最后生还者 Part I》</strong>
+                  <span style="font-size:14rem; color:#a9b8ce;">为避免覆盖正在游玩的进度，系统已暂停该游戏存档写入，其余无冲突项目正继续恢复。</span>
                 </div>
                 <button type="button" class="pill sm primary" data-action="resolve-conflict-continue">已关闭游戏，继续恢复</button>
               </div>

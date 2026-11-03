@@ -1135,7 +1135,7 @@ input:focus-visible,
 .channel-showcase-body {
   align-items: center;
   justify-content: center;
-  padding: 20rem 60rem 28rem;
+  padding: 8rem 60rem 16rem;
 }
 
 .channel-showcase-stage {
@@ -1146,6 +1146,7 @@ input:focus-visible,
   display: flex;
   flex-direction: column;
   justify-content: center;
+  gap: 16rem;
   pointer-events: none;
   user-select: none;
 }
@@ -1153,26 +1154,78 @@ input:focus-visible,
 .library-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20rem;
+  gap: 14rem 18rem;
 }
 
 .game-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 22rem 20rem;
+  gap: 16rem 18rem;
 }
 
-/* 底层卡片阵列适度柔焦，没有全画幅黑色大方框，只对卡片本身做冰晶虚化 */
+/* 底层卡片阵列与翻页条适度柔焦，没有全画幅黑色大方框，只对内容本身做冰晶虚化 */
 .channel-showcase-stage.lock-style-a .library-grid,
-.channel-showcase-stage.lock-style-a .game-grid {
+.channel-showcase-stage.lock-style-a .game-grid,
+.channel-showcase-stage.lock-style-a .channel-pagination-bar {
   filter: blur(5.5rem) saturate(0.82) brightness(0.76);
   transform: scale(0.992);
+}
+
+.channel-pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10rem 22rem;
+  border-radius: var(--radius-pill);
+  background: rgba(18, 26, 40, 0.62);
+  border: 1rem solid rgba(255, 255, 255, 0.12);
+}
+
+.channel-page-summary {
+  font-size: 13.5rem;
+  color: #9cb0c9;
+}
+
+.channel-page-controls {
+  display: flex;
+  align-items: center;
+  gap: 8rem;
+}
+
+.channel-page-pill,
+.channel-page-num {
+  height: 30rem;
+  padding: 0 14rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rem solid rgba(255, 255, 255, 0.14);
+  font-size: 13rem;
+  font-weight: 500;
+  color: #dce7f5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.channel-page-num {
+  width: 30rem;
+  padding: 0;
+}
+
+.channel-page-num.active {
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+  border-color: rgba(147, 197, 253, 0.68);
+  color: #ffffff;
+}
+
+.channel-page-pill.disabled {
+  opacity: 0.45;
 }
 
 .store-app-card {
   position: relative;
   overflow: hidden;
-  padding: 22rem 24rem;
+  padding: 15rem 20rem;
   border-radius: var(--radius-card);
   background: var(--glass-bg);
   backdrop-filter: blur(34rem) saturate(165%);
@@ -1181,51 +1234,51 @@ input:focus-visible,
   box-shadow: var(--glass-specular), 0 18rem 42rem rgba(0, 0, 0, 0.36);
   display: flex;
   flex-direction: column;
-  gap: 12rem;
+  gap: 8rem;
 }
 
 .store-app-top {
   display: flex;
   align-items: center;
-  gap: 14rem;
+  gap: 12rem;
 }
 
 .store-app-top img {
-  width: 54rem;
-  height: 54rem;
-  border-radius: var(--radius-inner);
+  width: 44rem;
+  height: 44rem;
+  border-radius: 14rem;
   object-fit: cover;
 }
 
 .store-app-top strong {
   display: block;
-  font-size: 18.5rem;
+  font-size: 17rem;
   font-weight: 500;
   color: #f8fafc;
 }
 
 .store-app-top small {
   display: block;
-  font-size: 12.5rem;
+  font-size: 12rem;
   color: #98a5b6;
-  margin-top: 3rem;
+  margin-top: 2rem;
 }
 
 .store-app-desc {
-  font-size: 13.5rem;
+  font-size: 12.5rem;
   color: #b0bac8;
-  line-height: 1.48;
+  line-height: 1.42;
   margin: 0;
 }
 
 .store-app-footer {
   margin-top: auto;
-  padding-top: 10rem;
+  padding-top: 8rem;
   border-top: 1rem solid rgba(255, 255, 255, 0.08);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 12.5rem;
+  font-size: 12rem;
   color: #95a2b3;
 }
 
@@ -1233,19 +1286,19 @@ input:focus-visible,
   display: inline-flex;
   align-items: center;
   gap: 6rem;
-  height: 26rem;
-  padding: 0 11rem;
+  height: 24rem;
+  padding: 0 10rem;
   border-radius: var(--radius-pill);
   background: rgba(255, 255, 255, 0.07);
   border: 1rem solid rgba(255, 255, 255, 0.14);
-  font-size: 12rem;
+  font-size: 11.5rem;
   font-weight: 500;
   color: #bfd6f6;
 }
 
 .channel-status-chip svg {
-  width: 13rem;
-  height: 13rem;
+  width: 12rem;
+  height: 12rem;
   color: #8cc8ff;
 }
 
@@ -1257,11 +1310,11 @@ input:focus-visible,
 .game-cover {
   position: relative;
   aspect-ratio: 1;
-  border-radius: var(--radius-card);
+  border-radius: 24rem;
   overflow: hidden;
   background: #1d222b;
   border: 1rem solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 16rem 36rem rgba(0, 0, 0, 0.38);
+  box-shadow: 0 14rem 30rem rgba(0, 0, 0, 0.36);
 }
 
 .game-cover img {
@@ -1271,9 +1324,9 @@ input:focus-visible,
 }
 
 .game-tile h3 {
-  font-size: 16.5rem;
+  font-size: 15rem;
   font-weight: 500;
-  margin: 12rem 0 4rem;
+  margin: 8rem 0 2rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1282,7 +1335,7 @@ input:focus-visible,
 
 .game-tile p {
   margin: 0;
-  font-size: 12.5rem;
+  font-size: 12rem;
   color: #97a3b4;
 }
 
@@ -1559,23 +1612,25 @@ input:focus-visible,
   align-items: center;
   justify-content: space-between;
   gap: 20rem;
-  padding: 18rem 26rem;
-  border-radius: var(--radius-card);
-  background: linear-gradient(90deg, rgba(245, 196, 105, 0.16), rgba(0, 67, 156, 0.2));
-  border: 1rem solid rgba(245, 196, 105, 0.38);
+  padding: 4rem 0 18rem;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1rem solid rgba(255, 255, 255, 0.09);
 }
 
 .gentle-warning-left {
   display: flex;
   align-items: center;
-  gap: 16rem;
+  gap: 14rem;
 }
 
 .gentle-warning-icon {
-  width: 46rem;
-  height: 46rem;
-  border-radius: var(--radius-inner);
-  background: rgba(245, 196, 105, 0.2);
+  width: 30rem;
+  height: 30rem;
+  border-radius: 0;
+  background: transparent;
+  border: none;
   color: var(--apple-amber);
   display: grid;
   place-items: center;
@@ -1585,13 +1640,13 @@ input:focus-visible,
   display: block;
   font-size: 20rem;
   font-weight: 500;
-  color: #fff3d6;
+  color: #f8fafc;
 }
 
 .gentle-warning-left p {
   margin: 4rem 0 0;
   font-size: 14.5rem;
-  color: #d6e0ee;
+  color: #a9b8ce;
 }
 
 .lock-progress-hero {
@@ -1631,20 +1686,21 @@ input:focus-visible,
 }
 
 .inline-notice-box {
-  margin-top: 16rem;
-  padding: 16rem 22rem;
-  border-radius: var(--radius-inner);
+  margin-top: 18rem;
+  padding: 18rem 0 0;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16rem;
-  background: rgba(110, 195, 255, 0.13);
-  border: 1rem solid rgba(110, 195, 255, 0.34);
+  background: transparent;
+  border: none;
+  border-top: 1rem solid rgba(255, 255, 255, 0.09);
 }
 
 .inline-notice-box.warn {
-  background: rgba(244, 137, 132, 0.14);
-  border-color: rgba(244, 137, 132, 0.4);
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.09);
 }
 
 .settings-row-list {
