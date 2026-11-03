@@ -145,55 +145,16 @@
     return `${hours}:${minutes} ${period}`
   }
 
-  /* ==================== 三套 BDD 交互与视觉变体（?variant=A|B|C） ====================
-     - Variant A（默认）：tvOS 极速跟随流（子页导航落焦即切 + 全站多选统一圆形打勾 + 初始落焦直达主按钮）
-     - Variant B：PS5 显式确认流（全站导航按 ✕ 才切 + 恢复/引导用圆勾、设置页用液态拨杆 + 初始落焦左上首卡 + PS5 棱光边框）
-     - Variant C：大屏直觉一体流（全站导航与单选胶囊落焦即切 + 全站多选统一「✓ 已纳入 / ○ 未纳入」文字状态徽章 + VisionOS 柔光浮层）
+  /* ==================== 已锁定的全站统一 BDD 交互与视觉规范（方案 A：tvOS 极速跟随 + 全站统一圆勾） ====================
+     1. 全局焦点路由：各页面初始焦点直达主行动点；状态刷新保留焦点；◯ 返回按栈逐层后退并精确还原底坞/触发器焦点；恢复执行中拦截返回。
+     2. 导航轨 / Tab 栏切换：主页底坞按 ✕ 确认展开子页；进入子页后，其他页左侧 4 项分类轨与子页底部紧凑控制坞均采用「落焦即切页（Selection Follows Focus）」。
+     3. 全站 4 处多选开关卡片（恢复页 5 项、引导页位置卡 & 范围卡、其他页位置卡 & 自动备份范围卡）：统一为「整张大卡片落焦 + 按 ✕ 切换 + 右上角统一圆形打勾 .check-indicator」。
+     4. 单选切换器：位置胶囊、时间点胶囊、恢复点大卡片与向导步骤胶囊统一按 ✕ 单选互斥切换。
+     5. 恢复页 2×3 原地三态流转与主次按钮：按钮消失（全选 5 项、一键重试）时焦点自动顺移至相邻主按钮。
+     6. WebDAV 软键盘弹窗：顶部 3 个输入字段（服务器地址 / 账号 / 密码）支持手柄方向键落焦并按 ✕ 切换当前输入目标，软键盘按 ✕ 连续输入。
   */
-  const BDD_VARIANTS = {
-    A: {
-      key: 'A',
-      name: '方案 A · tvOS 极速跟随 + 全站统一圆勾',
-      shortName: 'A · tvOS 跟随 + 统一圆勾',
-      navMode: 'subpage-follow', // 主页按 ✕ 进子页；子页内底坞 & 左侧栏落焦即切
-      initialFocusMode: 'primary-cta', // 进恢复页/引导页直达右下主按钮
-      toggleIndicator: 'circle-all', // 全站 4 处多选卡全部统一为右上角圆形打勾
-      radioFollowFocus: false,
-      styleTheme: 'tvos-glow',
-      summary: '子页内 Tab 落焦即切 · 全站 4 处多选卡统一圆形打勾 · 进页面直达主行动点',
-    },
-    B: {
-      key: 'B',
-      name: '方案 B · PS5 显式确认 + 圆勾/拨杆区分',
-      shortName: 'B · PS5 确认 + 拨杆区分',
-      navMode: 'explicit-press', // 全站所有 Tab 移动仅高亮，按 ✕ 才切换
-      initialFocusMode: 'first-card', // 进恢复页/引导页默认落焦左上第 1 张卡片
-      toggleIndicator: 'contextual', // 恢复/引导用圆形打勾，其他设置页用 Apple 拨杆
-      radioFollowFocus: false,
-      styleTheme: 'ps5-edge',
-      summary: '全站 Tab 必须按 ✕ 才切换 · 恢复用圆勾/设置用拨杆 · 进页面落焦左上第 1 张卡',
-    },
-    C: {
-      key: 'C',
-      name: '方案 C · 全跟随直觉 + 大屏文字状态胶囊',
-      shortName: 'C · 全跟随 + 文字状态胶囊',
-      navMode: 'all-follow', // 底坞、左侧栏、单选胶囊全部落焦即切换
-      initialFocusMode: 'primary-cta', // 进恢复页/引导页直达主按钮
-      toggleIndicator: 'pill-badge', // 全站 4 处多选卡统一右上角「✓ 已纳入 / ● 已启用」状态胶囊
-      radioFollowFocus: true,
-      styleTheme: 'vision-soft',
-      summary: '全站导航与单选胶囊落焦即切 · 多选卡统一文字状态胶囊 · VisionOS 柔光浮起',
-    },
-  }
-
-  function normalizeVariant(v) {
-    const up = String(v || 'A').toUpperCase()
-    return BDD_VARIANTS[up] ? up : 'A'
-  }
-
   const urlParams = new URLSearchParams(window.location.search)
   const rawView = urlParams.get('view')
-  const initialVariant = normalizeVariant(urlParams.get('variant'))
   const initialOnboardingOpen = rawView === 'onboarding' || urlParams.get('onboarding') === '1'
   const initialStep = Math.min(3, Math.max(1, parseInt(urlParams.get('step') || '1', 10) || 1))
   const initialLockMode = urlParams.get('lock')
@@ -204,12 +165,10 @@
     initialModal === 'restore-result'
 
   const state = {
-    variant: initialVariant,
     view: hasInitialLock ? 'restore' : normalizeView(rawView),
     otherTab: 'locations',
     focusedDockId: hasInitialLock ? 'restore' : normalizeView(rawView) === 'other' ? 'other' : 'restore',
     devDockCollapsed: true,
-    bddHudExpanded: true,
     pendingFocusSelector: null,
     lastTriggerSelector: null,
     onboardingOpen: initialOnboardingOpen,
@@ -333,33 +292,16 @@
     toastTimer = setTimeout(() => el.classList.remove('show'), 2600)
   }
 
-  function getActiveVariant() {
-    return BDD_VARIANTS[state.variant] || BDD_VARIANTS.A
-  }
-
-  /* 全站 4 处「多选开关卡片」的统一右上角状态指示器（随 Variant A/B/C 自动切换） */
-  function renderToggleIndicator(isOn, contextType = 'selection') {
-    const v = getActiveVariant()
-    if (v.toggleIndicator === 'pill-badge') {
-      const onLabel = contextType === 'location' ? '● 已启用' : '✓ 已纳入'
-      const offLabel = contextType === 'location' ? '○ 已暂停' : '○ 未纳入'
-      return `<span class="bdd-toggle-pill ${isOn ? 'is-on' : 'is-off'}">${isOn ? onLabel : offLabel}</span>`
-    }
-    if (v.toggleIndicator === 'contextual' && (contextType === 'location' || contextType === 'scope')) {
-      return `
-        <span class="apple-switch ${isOn ? 'on' : ''}" aria-hidden="true">
-          <span class="apple-switch-knob"></span>
-        </span>
-      `
-    }
+  /* 全站 4 处「多选开关卡片」统一右上角状态指示器（方案 A：统一为 Apple 圆形打勾 .check-indicator） */
+  function renderToggleIndicator() {
     return `<div class="check-indicator" aria-hidden="true">${ICONS.check}</div>`
   }
 
   function syncUrl() {
     const u = new URL(window.location.href)
+    u.searchParams.delete('variant')
     u.searchParams.delete('lockStyle')
     u.searchParams.delete('otherStyle')
-    u.searchParams.set('variant', state.variant)
     u.searchParams.set('view', state.onboardingOpen ? 'onboarding' : state.view)
     if (state.onboardingOpen) {
       u.searchParams.set('step', String(state.onboardingStep))
@@ -1575,119 +1517,6 @@
     `
   }
 
-  /* ==================== 顶部居中 BDD 变体切换器与实时路径监视器（Prototype Switcher + Live BDD HUD） ==================== */
-  function describeCurrentBddContext(focusedEl) {
-    let whereText = '主页 · 底部控制坞'
-    if (state.modal === 'webdav-osk') {
-      whereText = '弹窗层 · WebDAV 软键盘'
-    } else if (state.onboardingOpen) {
-      whereText = `首次引导 · 第 ${state.onboardingStep} 步`
-    } else if (state.view === 'restore') {
-      if (state.lockScene.active) {
-        whereText = state.lockScene.mode === 'done' ? '恢复页 · 2×3 完成汇总态' : '恢复页 · 2×3 原地执行态'
-      } else {
-        whereText = '恢复页 · 2×3 矩阵常态'
-      }
-    } else if (state.view === 'other') {
-      const tabNames = {
-        locations: '存储位置与连接',
-        scope: '自动备份范围',
-        protect: '恢复点保护',
-        daemon: '后台守护与向导',
-      }
-      whereText = `其他页 · ${tabNames[state.otherTab] || '设置'}`
-    }
-
-    const label =
-      focusedEl?.dataset?.bddLabel ||
-      focusedEl?.getAttribute?.('aria-label') ||
-      focusedEl?.textContent?.trim()?.slice(0, 18) ||
-      '当前首项'
-
-    const v = getActiveVariant()
-    let actionHint = '按 ✕ 触发当前控件'
-    const act = focusedEl?.dataset?.action
-    if (act === 'open-dock-item') {
-      actionHint =
-        state.view === 'home'
-          ? '按 ←/→ 移动焦点，按 ✕ 进入子页'
-          : v.navMode === 'explicit-press'
-            ? '按 ✕ 切换至此子页（再按收起回主页）'
-            : '落焦已自动切页（按 ↑ 入内容区，按 ✕ 回主页）'
-    } else if (act === 'select-other-tab') {
-      actionHint =
-        v.navMode === 'explicit-press'
-          ? '按 ↑/↓ 仅移动白框，按 ✕ 确认切换右侧舞台'
-          : '按 ↑/↓ 落焦即切换右侧舞台，按 → 进入右侧卡片'
-    } else if (act === 'toggle-object' || act === 'toggle-auto-scope' || act === 'toggle-location') {
-      actionHint = '整卡落焦 · 按 ✕ 直接切换选中/启用态'
-    } else if (act === 'select-location' || act === 'select-rp') {
-      actionHint = v.radioFollowFocus ? '落焦已自动单选切换' : '按 ✕ 单选切换此项'
-    }
-
-    return { whereText, label, actionHint }
-  }
-
-  function renderBddVariantSwitcher() {
-    const v = getActiveVariant()
-    return `
-      <aside class="bdd-prototype-switcher" aria-label="BDD 交互与样式方案切换器">
-        <div class="bdd-switcher-top">
-          <button type="button" class="bdd-cycle-btn" data-action="cycle-variant" data-dir="-1" title="上一套方案 ([ 键)">◀</button>
-          <div class="bdd-variant-tabs">
-            ${Object.values(BDD_VARIANTS)
-              .map(
-                (item) => `
-                <button
-                  type="button"
-                  class="bdd-variant-pill ${state.variant === item.key ? 'active' : ''}"
-                  data-action="select-variant"
-                  data-variant="${item.key}"
-                >
-                  <span>${item.shortName}</span>
-                </button>
-              `,
-              )
-              .join('')}
-          </div>
-          <button type="button" class="bdd-cycle-btn" data-action="cycle-variant" data-dir="1" title="下一套方案 (] 键)">▶</button>
-          <button type="button" class="bdd-hud-toggle" data-action="toggle-bdd-hud">
-            ${state.bddHudExpanded ? '收起说明' : '展开 BDD'}
-          </button>
-        </div>
-        ${
-          state.bddHudExpanded
-            ? `
-            <div class="bdd-live-hud" id="bdd-live-hud">
-              <div class="bdd-hud-rule">
-                <span class="bdd-tag">当前方案规则</span>
-                <span>${v.summary}</span>
-              </div>
-              <div class="bdd-hud-trace" id="bdd-hud-trace">
-                <span><strong>Given</strong> <em>主页 · 底部控制坞</em></span>
-                <span>→ <strong>Focused</strong> <em>恢复</em></span>
-                <span>→ <strong>When/Then</strong> <em>按 ✕ 进入子页</em></span>
-              </div>
-            </div>
-          `
-            : ''
-        }
-      </aside>
-    `
-  }
-
-  function updateBddHudTrace() {
-    const traceEl = document.getElementById('bdd-hud-trace')
-    if (!traceEl) return
-    const focused = document.querySelector('[data-pad-focus="true"]')
-    const { whereText, label, actionHint } = describeCurrentBddContext(focused)
-    traceEl.innerHTML = `
-      <span><strong>Given</strong> <em>【${whereText}】</em></span>
-      <span>→ <strong>Focused</strong> <em>「${label}」</em></span>
-      <span>→ <strong>Rule</strong> <em>${actionHint}</em></span>
-    `
-  }
-
   /* ==================== 左下角可收起开发者状态调试浮窗 ==================== */
   function renderFloatingDevDock() {
     if (state.devDockCollapsed) {
@@ -1769,21 +1598,12 @@
     return renderHomePage()
   }
 
-  /* ==================== 计算各页面/弹窗的默认初始落焦选择器 ==================== */
+  /* ==================== 计算各页面/弹窗的默认初始落焦选择器（方案 A：直达主按钮） ==================== */
   function getDefaultFocusSelector() {
-    const v = getActiveVariant()
     if (state.modal === 'webdav-osk') {
       return '.modal .osk-key[data-key="http://"]'
     }
     if (state.onboardingOpen) {
-      if (v.initialFocusMode === 'first-card') {
-        if (state.onboardingStep === 1) return '.fullscreen-overlay .wizard-loc-card[data-loc]'
-        if (state.onboardingStep === 2) {
-          return state.onboardingHasRp
-            ? '.fullscreen-overlay .rp-card[data-rp]'
-            : '.fullscreen-overlay .restore-horiz-card[data-obj]'
-        }
-      }
       return '.fullscreen-overlay .wizard-footer-bar .pill.primary'
     }
     if (state.view === 'restore' || state.lockScene.active) {
@@ -1797,9 +1617,7 @@
           ? '[data-action="resolve-conflict-continue"]'
           : '[data-action="open-restore-result-modal"]'
       }
-      return v.initialFocusMode === 'first-card'
-        ? '.restore-horiz-card[data-obj="elf"]'
-        : '.restore-control-hub-card [data-action="start-lock-demo"]'
+      return '.restore-control-hub-card [data-action="start-lock-demo"]'
     }
     if (state.view === 'other') {
       return `.other-a-nav-btn[data-tab="${state.otherTab || 'locations'}"]`
@@ -1843,13 +1661,11 @@
     app.innerHTML = `
       <div
         class="app-shell"
-        data-variant="${state.variant}"
         data-view="${state.view}"
         data-focus-dock="${state.focusedDockId}"
         data-onboarding-step="${state.onboardingOpen ? state.onboardingStep : ''}"
       >
         <div class="console-wallpaper" aria-hidden="true"></div>
-        ${renderBddVariantSwitcher()}
         ${renderHeader()}
         ${renderMainScene()}
         ${renderOnboardingOverlay()}
@@ -1869,7 +1685,6 @@
       window.PS5Motion.animate(previous, reason)
     }
     syncUrl()
-    updateBddHudTrace()
   }
 
   function triggerQuickBackup() {
@@ -1915,16 +1730,6 @@
     }
   }
 
-  function cycleVariant(delta) {
-    const keys = Object.keys(BDD_VARIANTS)
-    const idx = keys.indexOf(state.variant)
-    const nextIdx = (idx + delta + keys.length) % keys.length
-    state.variant = keys[nextIdx]
-    const v = getActiveVariant()
-    showToast(`已切换至 ${v.name}`)
-    render('update')
-  }
-
   document.addEventListener('focusin', (e) => {
     const dockCard = e.target?.closest?.('.dock-icon-card[data-dock-id]')
     if (dockCard) {
@@ -1932,7 +1737,6 @@
       const shell = document.querySelector('#app .app-shell')
       if (shell) shell.dataset.focusDock = state.focusedDockId
     }
-    updateBddHudTrace()
   })
 
   document.addEventListener('mouseover', (e) => {
@@ -1951,9 +1755,6 @@
 
     if (
       !btn.classList.contains('ds-prompt') &&
-      !btn.classList.contains('bdd-variant-pill') &&
-      !btn.classList.contains('bdd-cycle-btn') &&
-      !btn.classList.contains('bdd-hud-toggle') &&
       !btn.classList.contains('proto-dock-btn') &&
       !btn.classList.contains('proto-dev-tag')
     ) {
@@ -1962,24 +1763,6 @@
     }
 
     switch (action) {
-      case 'select-variant': {
-        const targetVar = normalizeVariant(btn.dataset.variant)
-        if (state.variant !== targetVar) {
-          state.variant = targetVar
-          showToast(`已切换至 ${getActiveVariant().name}`)
-          render('update')
-        }
-        break
-      }
-      case 'cycle-variant': {
-        const dir = parseInt(btn.dataset.dir || '1', 10)
-        cycleVariant(dir)
-        break
-      }
-      case 'toggle-bdd-hud':
-        state.bddHudExpanded = !state.bddHudExpanded
-        render('update')
-        break
       case 'open-dock-item': {
         if (state.lockScene.active && state.lockScene.mode !== 'done') {
           showToast('正在恢复数据，请先完成当前恢复任务')
@@ -2265,14 +2048,13 @@
     }
   })
 
-  /* 当方向键落焦到新元素时，根据当前 Variant 的 BDD 规则决定是否触发 Selection Follows Focus */
+  /* 当方向键落焦到子页导航轨时，执行 Selection Follows Focus（落焦即切页） */
   function handleFocusEnteredElement(el) {
     if (!el || !el.dataset) return
-    const v = getActiveVariant()
     const act = el.dataset.action
 
-    // 1. 其他页左侧四项导航轨
-    if (act === 'select-other-tab' && (v.navMode === 'subpage-follow' || v.navMode === 'all-follow')) {
+    // 1. 其他页左侧四项导航轨：上下移动焦点立即切换右侧设置舞台
+    if (act === 'select-other-tab') {
       const targetTab = el.dataset.tab
       if (targetTab && state.otherTab !== targetTab) {
         state.otherTab = targetTab
@@ -2282,46 +2064,16 @@
       }
     }
 
-    // 2. 子页底部紧凑控制坞（恢复 ↔ 其他）
-    if (
-      act === 'open-dock-item' &&
-      state.view !== 'home' &&
-      !state.lockScene.active &&
-      (v.navMode === 'subpage-follow' || v.navMode === 'all-follow')
-    ) {
+    // 2. 子页底部紧凑控制坞（恢复 ↔ 其他）：在子页内移到底坞左右切换时立即切页
+    if (act === 'open-dock-item' && state.view !== 'home' && !state.lockScene.active) {
       const targetDock = el.dataset.dockId
       if (targetDock && state.view !== targetDock) {
         state.focusedDockId = targetDock
         state.view = targetDock
         state.pendingFocusSelector = `.dock-icon-card[data-dock-id="${targetDock}"]`
         render('route')
-        return
       }
     }
-
-    // 3. 方案 C（all-follow）：连单选胶囊、恢复点卡片、软键盘目标输入框也落焦即切换
-    if (v.radioFollowFocus) {
-      if (act === 'select-location' && el.dataset.loc && state.selectedLocationId !== el.dataset.loc) {
-        state.selectedLocationId = el.dataset.loc
-        state.pendingFocusSelector = `[data-action="select-location"][data-loc="${el.dataset.loc}"]`
-        render('update')
-        return
-      }
-      if (act === 'select-rp' && el.dataset.rp && state.selectedRestorePointId !== el.dataset.rp) {
-        state.selectedRestorePointId = el.dataset.rp
-        state.pendingFocusSelector = `[data-action="select-rp"][data-rp="${el.dataset.rp}"]`
-        render('update')
-        return
-      }
-      if (act === 'select-osk-field' && el.dataset.field && state.oskForm.activeField !== el.dataset.field) {
-        state.oskForm.activeField = el.dataset.field
-        state.pendingFocusSelector = `.modal [data-action="select-osk-field"][data-field="${el.dataset.field}"]`
-        render('update')
-        return
-      }
-    }
-
-    updateBddHudTrace()
   }
 
   function moveFocusSpatially(dir) {
@@ -2333,7 +2085,7 @@
 
     const candidates = [
       ...(scopeRoot || document).querySelectorAll(
-        'button:not([disabled]):not(.proto-dock-btn):not(.proto-dev-tag):not(.ds-prompt):not(.bdd-variant-pill):not(.bdd-cycle-btn):not(.bdd-hud-toggle), [role="button"][tabindex="0"], input:not([disabled])',
+        'button:not([disabled]):not(.proto-dock-btn):not(.proto-dev-tag):not(.ds-prompt), [role="button"][tabindex="0"], input:not([disabled])',
       ),
     ].filter((el) => {
       const r = el.getBoundingClientRect()
@@ -2398,13 +2150,7 @@
       return
     }
 
-    if (e.key === '[') {
-      e.preventDefault()
-      cycleVariant(-1)
-    } else if (e.key === ']') {
-      e.preventDefault()
-      cycleVariant(1)
-    } else if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === 'Enter' || e.key === ' ') {
       const focused = document.querySelector('[data-pad-focus="true"]')
       if (focused) {
         e.preventDefault()
