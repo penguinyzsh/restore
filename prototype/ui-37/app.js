@@ -269,8 +269,10 @@
   const initialLockMode = urlParams.get('lock')
   const initialModal = urlParams.get('modal')
 
+  const hasInitialLock = ['normal', 'conflict', 'resumed'].includes(initialLockMode)
+
   const state = {
-    view: normalizeView(rawView),
+    view: hasInitialLock ? 'restore' : normalizeView(rawView),
     otherTab: 'locations',
     focusedDockId: 'restore',
     devDockCollapsed: true,
@@ -290,8 +292,8 @@
       daemonText: '守护服务常驻运行中',
     },
     lockScene: {
-      active: ['normal', 'conflict', 'resumed'].includes(initialLockMode),
-      mode: ['normal', 'conflict', 'resumed'].includes(initialLockMode) ? initialLockMode : 'normal',
+      active: hasInitialLock,
+      mode: hasInitialLock ? initialLockMode : 'normal',
       progress: initialLockMode === 'resumed' ? 76 : 68,
       currentDetail: '正在还原《最后生还者 Part I》游戏存档（第 14 / 19 款）',
     },
@@ -419,13 +421,7 @@
     const currentDock = DOCK_ITEMS.find((d) => d.id === state.view)
     let leftSlot = '<div></div>'
 
-    if (state.lockScene.active) {
-      leftSlot = `
-        <div class="header-subview-title">
-          <h1>正在恢复数据</h1>
-        </div>
-      `
-    } else if (state.view !== 'home' && currentDock) {
+    if (state.view !== 'home' && currentDock) {
       leftSlot = `
         <div class="header-subview-title">
           <h1>${currentDock.label}</h1>
@@ -447,10 +443,9 @@
   /* ==================== 底部四个纯 ICON 卡片渲染器（卡片内严格只有 ICON，零文字） ==================== */
   function renderFourIconCards() {
     return DOCK_ITEMS.map((item) => {
-      const isRouteActive = state.view === item.id && !state.lockScene.active
+      const isRouteActive = state.view === item.id
       const isHomeFocused =
         state.view === 'home' &&
-        !state.lockScene.active &&
         !state.onboardingOpen &&
         !state.modal &&
         state.focusedDockId === item.id
@@ -580,9 +575,66 @@
   function renderTwoByThreeObjectsGrid(includeActionCard = true) {
     const currentLoc = state.locations.find((l) => l.id === state.selectedLocationId) || state.locations[0]
     const currentRp = state.restorePoints.find((r) => r.id === state.selectedRestorePointId) || state.restorePoints[0]
+    const isRestoring = includeActionCard && state.lockScene.active
+    const mode = state.lockScene.mode
 
     const fiveCardsHtml = FIVE_OBJECTS.map((obj) => {
       const selected = state.selectedObjects.includes(obj.id)
+
+      if (isRestoring) {
+        const isDone = obj.order < 3
+        const isActive = obj.order === 3
+        const stageClass = isDone ? 'stage-done' : isActive ? 'stage-active' : 'stage-pending'
+        let statusBadge = ''
+        let rightStat = `<strong>${obj.size}</strong>`
+        let subText = obj.desc
+
+        if (isDone) {
+          statusBadge = `<span class="badge green">第 ${obj.order} 步 · 已完成</span>`
+          rightStat = `<span class="stage-done-label">100% · ${obj.size}</span>`
+        } else if (isActive) {
+          if (mode === 'conflict') {
+            statusBadge = `<span class="badge gold">第 3 步 · 等待关闭冲突游戏 (14/19)</span>`
+            subText = '检测到《最后生还者 Part I》正在运行，请先保存并关闭该游戏以继续写入存档。'
+          } else if (mode === 'resumed') {
+            statusBadge = `<span class="badge blue">第 3 步 · 断点续做中 (15/19)</span>`
+            subText = '已自动核验中断前进度，正从第 15 款游戏存档继续恢复。'
+          } else {
+            statusBadge = `<span class="badge blue">第 3 步 · 正在恢复 (14/19)</span>`
+            subText = state.lockScene.currentDetail
+          }
+          rightStat = `<strong class="stage-active-pct">${state.lockScene.progress}%</strong>`
+        } else {
+          statusBadge = `<span class="badge muted">第 ${obj.order} 步 · 等待恢复</span>`
+        }
+
+        return `
+          <div class="restore-horiz-card ${selected ? 'selected' : ''} ${stageClass}">
+            <div class="restore-horiz-top">
+              <div class="restore-horiz-left">
+                <div class="restore-step-icon-box">${ICONS[obj.icon]}</div>
+                <div class="restore-horiz-copy">
+                  <h2>${obj.title}</h2>
+                  <p>${subText}</p>
+                </div>
+              </div>
+              <div class="check-indicator ${isDone ? 'done' : isActive ? 'active-pulse' : ''}">
+                ${isDone ? ICONS.check : `<span style="font-size:13rem;font-weight:700;">${obj.order}</span>`}
+              </div>
+            </div>
+            <div class="restore-horiz-foot">
+              <div class="restore-horiz-tags">
+                ${statusBadge}
+                <span class="badge muted">${obj.countText}</span>
+              </div>
+              <div class="restore-horiz-stat">
+                ${rightStat}
+              </div>
+            </div>
+          </div>
+        `
+      }
+
       return `
         <button
           type="button"
@@ -643,6 +695,53 @@
               </div>
             </div>
           </button>
+        </div>
+      `
+    }
+
+    if (isRestoring) {
+      const hubTitle =
+        mode === 'conflict'
+          ? '检测到《最后生还者 Part I》正在运行'
+          : mode === 'resumed'
+            ? '已从中断位置继续恢复剩余项目'
+            : '正在按顺序恢复整机数据（第 3 / 5 步）'
+
+      return `
+        <div class="restore-two-by-three-grid">
+          ${fiveCardsHtml}
+          <section class="restore-horiz-card action-cta-card restore-control-hub-card is-restoring-hub" aria-live="polite" aria-label="实时恢复进度总控">
+            <div class="restore-horiz-top">
+              <div class="restore-horiz-left">
+                <div class="restore-step-icon-box" style="color:#ffffff;">${ICONS.restore}</div>
+                <div class="restore-horiz-copy">
+                  <h2>${hubTitle}</h2>
+                  <p>来源：${currentLoc.name} · ${currentRp.title}（剩余约 45 秒）</p>
+                </div>
+              </div>
+              <div class="restore-hub-cta-group">
+                ${
+                  mode === 'conflict'
+                    ? `<button type="button" class="pill sm primary" data-action="resolve-conflict-continue">已关闭游戏，继续恢复</button>`
+                    : `<button type="button" class="pill sm primary" data-action="open-restore-result-modal">完成汇总</button>`
+                }
+              </div>
+            </div>
+
+            <div class="restore-inline-progress-zone">
+              <div class="restore-inline-bar-row">
+                <div class="progress-bar-track inline-hub-track">
+                  <div class="progress-bar-fill" style="width:${state.lockScene.progress}%"></div>
+                </div>
+                <strong class="inline-hub-percent">${state.lockScene.progress}%</strong>
+              </div>
+
+              <div class="restore-inline-warning-bottom">
+                <span class="inline-warn-icon">${ICONS.warn}</span>
+                <span>正在恢复数据，请勿启动游戏或关闭主机 · 全部项目完成后将自动解锁并汇总结果</span>
+              </div>
+            </div>
+          </section>
         </div>
       `
     }
@@ -1397,124 +1496,6 @@
     `
   }
 
-  /* ==================== 全屏专注恢复进度锁 ==================== */
-  function renderRestoreLockScene() {
-    const mode = state.lockScene.mode
-    return `
-      <section class="restore-lock-scene" aria-live="polite">
-        <div class="lock-top-group">
-          <div class="gentle-warning-banner">
-            <div class="gentle-warning-left">
-              <div class="gentle-warning-icon">${ICONS.warn}</div>
-              <div>
-                <strong>正在恢复数据，请勿启动游戏或关闭主机</strong>
-                <p>全部项目恢复完成后将自动解锁界面并汇总结果。</p>
-              </div>
-            </div>
-            <span class="badge green">来源：USB 存储设备 · 今天 19:10 自动备份</span>
-          </div>
-
-          <div class="lock-stages-strip" aria-label="恢复阶段进度">
-            <div class="lock-stage-item is-done">
-              <span class="lock-stage-index">${ICONS.check}</span>
-              <div class="lock-stage-text">
-                <strong>1. 系统插件与载荷</strong>
-                <small>已完成 (12/12)</small>
-              </div>
-            </div>
-            <div class="lock-stage-line is-done"></div>
-            <div class="lock-stage-item is-done">
-              <span class="lock-stage-index">${ICONS.check}</span>
-              <div class="lock-stage-text">
-                <strong>2. 游戏桌面展示</strong>
-                <small>已完成 (14/14)</small>
-              </div>
-            </div>
-            <div class="lock-stage-line is-done"></div>
-            <div class="lock-stage-item is-active">
-              <span class="lock-stage-index">3</span>
-              <div class="lock-stage-text">
-                <strong>3. 全游戏通用存档</strong>
-                <small>进行中 (14/19)</small>
-              </div>
-            </div>
-            <div class="lock-stage-line"></div>
-            <div class="lock-stage-item is-pending">
-              <span class="lock-stage-index">4</span>
-              <div class="lock-stage-text">
-                <strong>4. 系统设置与媒体图库</strong>
-                <small>等待中</small>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="lock-progress-hero">
-          <div class="lock-main-progress">
-            <div class="lock-title-row">
-              <div>
-                <h2 style="font-size:38rem; font-weight:400; margin:0 0 10rem;">
-                  ${
-                    mode === 'conflict'
-                      ? '检测到《最后生还者 Part I》正在运行，已优先恢复其余项目'
-                      : mode === 'resumed'
-                        ? '已从上次中断位置继续恢复剩余项目'
-                        : '正在恢复全游戏通用存档'
-                  }
-                </h2>
-                <p style="font-size:17.5rem; color:#b2c0d4; margin:0;">
-                  ${state.lockScene.currentDetail}
-                </p>
-              </div>
-              <div class="progress-big-number">${state.lockScene.progress}%</div>
-            </div>
-
-            <div class="progress-bar-track">
-              <div class="progress-bar-fill" style="width:${state.lockScene.progress}%"></div>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size:15rem; color:#9fb0c6;">
-              <span>已完成：插件与载荷 (12/12) · 游戏桌面展示 (14/14) · 游戏存档 (14/19)</span>
-              <span>剩余约 45 秒</span>
-            </div>
-
-            ${
-              mode === 'conflict'
-                ? `
-              <div class="inline-notice-box warn">
-                <div>
-                  <strong style="display:block; font-size:17rem; color:#f8fafc; margin-bottom:4rem;">请先保存并关闭正在运行的《最后生还者 Part I》</strong>
-                  <span style="font-size:14.5rem; color:#a9b8ce;">为避免覆盖正在游玩的进度，系统已暂停该游戏存档写入，其余无冲突项目正继续恢复。</span>
-                </div>
-                <button type="button" class="pill sm primary" data-action="resolve-conflict-continue">已关闭游戏，继续恢复</button>
-              </div>
-            `
-                : ''
-            }
-
-            ${
-              mode === 'resumed'
-                ? `
-              <div class="inline-notice-box">
-                <div>
-                  <strong style="display:block; font-size:17rem; color:#cfe6ff; margin-bottom:4rem;">已自动核验中断前进度并继续执行</strong>
-                  <span style="font-size:14.5rem; color:#b8cde6;">重启前已完成的系统插件与桌面图标无需重复恢复，当前直接从第 15 款游戏存档继续。</span>
-                </div>
-                <span class="badge green">断点续做</span>
-              </div>
-            `
-                : ''
-            }
-          </div>
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:16rem; border-top:1rem solid rgba(255,255,255,0.09);">
-          <span style="font-size:14.5rem; color:#9fb0c6;">若中途断电或重启，重新打开 ReStore 后将自动从断点处继续恢复。</span>
-          <button type="button" class="pill primary sm" data-action="open-restore-result-modal">查看恢复完成汇总</button>
-        </div>
-      </section>
-    `
-  }
-
   function renderModal() {
     if (state.modal === 'webdav-osk') {
       const loc = state.locations.find((l) => l.id === state.editingLocationId) || state.locations[1]
@@ -1719,8 +1700,7 @@
   }
 
   function renderMainScene() {
-    if (state.lockScene.active) return renderRestoreLockScene()
-    if (state.view === 'restore') return renderRestorePage()
+    if (state.view === 'restore' || state.lockScene.active) return renderRestorePage()
     if (state.view === 'apps') return renderAppsPage()
     if (state.view === 'store') return renderStorePage()
     if (state.view === 'other') return renderOtherPage()
@@ -1735,7 +1715,7 @@
     app.innerHTML = `
       <div
         class="app-shell"
-        data-view="${state.lockScene.active ? 'restore-lock' : state.view}"
+        data-view="${state.view}"
         data-focus-dock="${state.focusedDockId}"
         data-onboarding-step="${state.onboardingOpen ? state.onboardingStep : ''}"
       >
@@ -1937,6 +1917,7 @@
           state.lockScene.active = false
         } else {
           state.onboardingOpen = false
+          state.view = 'restore'
           state.lockScene.active = true
           state.lockScene.mode = targetMode
           state.lockScene.progress = targetMode === 'resumed' ? 76 : 68
