@@ -1064,17 +1064,16 @@
     `
   }
 
-  /* ==================== 子页 4：「搜索」（左输入法面板 + 右上搜索与筛选栏 + 右下游戏商店卡片结果与左右翻页） ==================== */
+  /* ==================== 子页 4：「搜索」（左无框悬浮输入法 + 右上搜索栏与单按钮筛选 + 右下游戏商店卡片结果） ==================== */
   function renderSearchPage() {
     const imeKeys = [
       'A', 'B', 'C', 'D', 'E', 'F',
       'G', 'H', 'I', 'J', 'K', 'L',
       'M', 'N', 'O', 'P', 'Q', 'R',
       'S', 'T', 'U', 'V', 'W', 'X',
-      'Y', 'Z', '1', '2', '3', '4',
-      '5', '6', '7', '8', '9', '0',
+      'Y', 'Z', '0', '1', '2', '3',
+      '4', '5', '6', '7', '8', '9',
     ]
-    const hotWords = ['战神', '漫威蜘蛛侠', '地平线', 'etaHEN', '死亡回归', '瑞奇与叮当']
     const resultGames = STORE_GAMES.slice(0, 8)
 
     return `
@@ -1082,11 +1081,11 @@
         <div class="subpage-content-body channel-showcase-body lock-style-a">
           <div class="channel-showcase-stage lock-style-a">
             <div class="search-split-layout" aria-hidden="true">
-              <aside class="search-left-ime" aria-label="手柄搜索输入法面板">
-                <div class="search-ime-head">
-                  <span class="ime-mode-pill active">拼音 / 首字母</span>
-                  <span class="ime-mode-pill">全键盘</span>
-                  <span class="ime-mode-pill">热词</span>
+              <aside class="search-left-ime" aria-label="手柄搜索输入法">
+                <div class="ime-mode-tabs">
+                  <span class="ime-seg active">首字母</span>
+                  <span class="ime-seg">全拼</span>
+                  <span class="ime-seg">123</span>
                 </div>
 
                 <div class="search-ime-grid">
@@ -1099,40 +1098,36 @@
                 </div>
 
                 <div class="search-ime-actions">
-                  <span class="search-ime-action-btn">空格</span>
-                  <span class="search-ime-action-btn">退格</span>
-                  <span class="search-ime-action-btn">清空</span>
+                  <span class="ime-action-key">空格</span>
+                  <span class="ime-action-key">⌫ 退格</span>
+                  <span class="ime-action-key">清空</span>
                 </div>
 
-                <div class="search-ime-hot">
-                  <span class="search-hot-label">猜你想搜</span>
-                  <div class="search-hot-tags">
-                    ${hotWords.map((w) => `<span class="search-hot-chip">${w}</span>`).join('')}
+                <div class="ime-hot-section">
+                  <span class="ime-hot-title">热门搜索</span>
+                  <div class="search-ime-suggest">
+                    <span class="ime-suggest-item">${ICONS.search}<span>战神：诸神黄昏</span></span>
+                    <span class="ime-suggest-item">${ICONS.search}<span>漫威蜘蛛侠 2</span></span>
+                    <span class="ime-suggest-item">${ICONS.search}<span>etaHEN 2.5B</span></span>
+                    <span class="ime-suggest-item">${ICONS.search}<span>最后生还者 Part I</span></span>
                   </div>
                 </div>
               </aside>
 
-              <section class="search-right-stage" aria-label="搜索栏、筛选器与结果列表">
-                <div class="search-right-header">
-                  <div class="search-query-row">
+              <section class="search-right-stage" aria-label="搜索栏、筛选按钮与结果列表">
+                <div class="search-top-bar">
+                  <div class="search-field-pill">
                     <div class="search-input-box">
                       ${ICONS.search}
-                      <span class="search-query-text">ZS · 战神 / 动作冒险</span>
+                      <span class="search-query-text">ZS · 战神</span>
                       <span class="search-cursor"></span>
                     </div>
-                    <span class="search-result-count">共找到 16 款匹配资源</span>
+                    <span class="search-result-count">16 款结果</span>
                   </div>
 
-                  <div class="search-filter-row">
-                    <div class="search-filter-pills">
-                      <span class="search-filter-chip active">全部 (16)</span>
-                      <span class="search-filter-chip">游戏商店 (12)</span>
-                      <span class="search-filter-chip">开源软件 (4)</span>
-                      <span class="search-filter-chip">动作冒险</span>
-                      <span class="search-filter-chip">角色扮演</span>
-                      <span class="search-filter-chip">系统插件</span>
-                    </div>
-                    <span class="search-sort-pill">筛选：热度优先 ▾</span>
+                  <div class="search-filter-single-btn">
+                    ${ICONS.other}
+                    <span>筛选</span>
                   </div>
                 </div>
 
@@ -1918,9 +1913,7 @@
         data-focus-dock="${state.focusedDockId}"
         data-onboarding-step="${state.onboardingOpen ? state.onboardingStep : ''}"
       >
-        <div class="console-wallpaper" aria-hidden="true">
-          <video src="./assets/ps5-showcase-excerpt.mp4" autoplay muted loop playsinline></video>
-        </div>
+        <div class="console-wallpaper" aria-hidden="true"></div>
         ${renderHeader()}
         ${renderMainScene()}
         ${renderOnboardingOverlay()}

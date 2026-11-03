@@ -1315,19 +1315,21 @@ input:focus-visible,
   height: 30rem;
 }
 
-/* ==================== 「搜索」页双栏布局（左输入法面板 + 右上搜索筛选栏 + 右下商店式结果卡片） ==================== */
+/* ==================== 「搜索」页双栏布局（左输入法面板 + 右上搜索栏与单按钮筛选 + 右下商店式结果卡片） ==================== */
 .search-split-layout {
   flex: 1;
   min-height: 0;
   width: 100%;
   display: grid;
-  grid-template-columns: 460rem minmax(0, 1fr);
-  gap: 28rem;
+  grid-template-columns: 440rem minmax(0, 1fr);
+  gap: 32rem;
   align-items: stretch;
 }
 
 .search-left-ime {
-  padding: 24rem 26rem;
+  height: 100%;
+  min-height: 0;
+  padding: 20rem 22rem;
   border-radius: var(--radius-card);
   background: var(--glass-bg);
   backdrop-filter: blur(34rem) saturate(165%);
@@ -1336,31 +1338,33 @@ input:focus-visible,
   box-shadow: var(--glass-specular), 0 18rem 42rem rgba(0, 0, 0, 0.36);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 16rem;
+  justify-content: flex-start;
+  gap: 14rem;
 }
 
-.search-ime-head {
+.ime-mode-tabs {
+  height: 46rem;
+  flex-shrink: 0;
+  padding: 5rem;
+  border-radius: var(--radius-pill);
+  background: rgba(12, 20, 36, 0.72);
+  border: 1rem solid rgba(255, 255, 255, 0.14);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8rem;
-  padding: 6rem;
-  border-radius: var(--radius-pill);
-  background: rgba(12, 20, 36, 0.65);
-  border: 1rem solid rgba(255, 255, 255, 0.12);
+  gap: 6rem;
 }
 
-.ime-mode-pill {
-  height: 34rem;
+.ime-seg {
+  height: 100%;
   border-radius: var(--radius-pill);
-  font-size: 13.5rem;
+  font-size: 14rem;
   font-weight: 500;
-  color: #9cb0c9;
+  color: #a8b9d0;
   display: grid;
   place-items: center;
 }
 
-.ime-mode-pill.active {
+.ime-seg.active {
   background: linear-gradient(180deg, #2563eb, #1d4ed8);
   color: #ffffff;
   font-weight: 600;
@@ -1372,25 +1376,30 @@ input:focus-visible,
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   grid-template-rows: repeat(6, minmax(0, 1fr));
-  gap: 8rem;
+  gap: 9rem;
 }
 
 .search-ime-key {
-  border-radius: 14rem;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1rem solid rgba(255, 255, 255, 0.14);
-  font-size: 17rem;
+  border-radius: 15rem;
+  background: linear-gradient(160deg, rgba(38, 50, 76, 0.78), rgba(18, 26, 44, 0.88));
+  border: 1rem solid rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1rem 0 rgba(255, 255, 255, 0.18);
+  font-size: 17.5rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: #f8fafc;
   display: grid;
   place-items: center;
 }
 
 .search-ime-key.is-focused {
-  background: #2563eb;
-  border-color: #93c5fd;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(147, 197, 253, 0.45), transparent 65%),
+    linear-gradient(160deg, #2563eb, #1d4ed8);
+  border-color: #bfdbfe;
   color: #ffffff;
-  box-shadow: 0 0 0 2rem rgba(147, 197, 253, 0.45);
+  box-shadow:
+    0 0 0 2rem rgba(96, 165, 250, 0.5),
+    0 10rem 22rem rgba(37, 99, 235, 0.42);
 }
 
 .search-ime-actions {
@@ -1399,10 +1408,10 @@ input:focus-visible,
   gap: 10rem;
 }
 
-.search-ime-action-btn {
-  height: 40rem;
+.ime-action-key {
+  height: 44rem;
   border-radius: 14rem;
-  background: rgba(15, 25, 45, 0.72);
+  background: rgba(16, 26, 46, 0.78);
   border: 1rem solid rgba(255, 255, 255, 0.16);
   font-size: 14rem;
   font-weight: 500;
@@ -1411,7 +1420,7 @@ input:focus-visible,
   place-items: center;
 }
 
-.search-ime-hot {
+.ime-hot-section {
   padding-top: 12rem;
   border-top: 1rem solid rgba(255, 255, 255, 0.1);
   display: flex;
@@ -1419,20 +1428,21 @@ input:focus-visible,
   gap: 10rem;
 }
 
-.search-hot-label {
+.ime-hot-title {
   font-size: 13rem;
+  font-weight: 500;
   color: #94a6be;
 }
 
-.search-hot-tags {
-  display: flex;
-  flex-wrap: wrap;
+.search-ime-suggest {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8rem;
 }
 
-.search-hot-chip {
-  height: 30rem;
-  padding: 0 12rem;
+.ime-suggest-item {
+  height: 38rem;
+  padding: 0 14rem;
   border-radius: var(--radius-pill);
   background: rgba(255, 255, 255, 0.07);
   border: 1rem solid rgba(255, 255, 255, 0.13);
@@ -1440,40 +1450,55 @@ input:focus-visible,
   color: #cbd5e1;
   display: inline-flex;
   align-items: center;
+  gap: 8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ime-suggest-item svg {
+  width: 14rem;
+  height: 14rem;
+  color: #60a5fa;
+  flex-shrink: 0;
 }
 
 .search-right-stage {
+  height: 100%;
   min-width: 0;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 18rem;
+  gap: 20rem;
 }
 
-.search-right-header {
+.search-top-bar {
   flex-shrink: 0;
-  padding: 18rem 24rem;
-  border-radius: var(--radius-card);
-  background: var(--glass-bg);
-  border: 1.5rem solid var(--glass-border);
   display: flex;
-  flex-direction: column;
-  gap: 14rem;
+  align-items: center;
+  gap: 16rem;
 }
 
-.search-query-row {
+.search-field-pill {
+  flex: 1;
+  height: 62rem;
+  padding: 0 24rem;
+  border-radius: var(--radius-pill);
+  background: rgba(18, 28, 46, 0.76);
+  border: 1.5rem solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1rem 0 rgba(255, 255, 255, 0.2),
+    0 16rem 36rem rgba(0, 0, 0, 0.32);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16rem;
-  padding-bottom: 12rem;
-  border-bottom: 1rem solid rgba(255, 255, 255, 0.1);
 }
 
 .search-input-box {
   display: flex;
   align-items: center;
-  gap: 12rem;
+  gap: 14rem;
   font-size: 20rem;
   font-weight: 500;
   color: #f8fafc;
@@ -1493,54 +1518,35 @@ input:focus-visible,
 }
 
 .search-result-count {
-  font-size: 14rem;
+  font-size: 14.5rem;
   color: #9cb0c9;
 }
 
-.search-filter-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14rem;
-}
-
-.search-filter-pills {
-  display: flex;
-  align-items: center;
-  gap: 10rem;
-  flex-wrap: wrap;
-}
-
-.search-filter-chip {
-  height: 32rem;
-  padding: 0 15rem;
+.search-filter-single-btn {
+  height: 62rem;
+  padding: 0 28rem;
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1rem solid rgba(255, 255, 255, 0.14);
-  font-size: 13.5rem;
+  background:
+    radial-gradient(circle at 25% 25%, rgba(96, 165, 250, 0.28), transparent 65%),
+    rgba(22, 34, 56, 0.84);
+  border: 1.5rem solid rgba(147, 197, 253, 0.38);
+  box-shadow:
+    inset 0 1rem 0 rgba(255, 255, 255, 0.24),
+    0 16rem 36rem rgba(0, 0, 0, 0.34);
+  font-size: 17rem;
   font-weight: 500;
-  color: #cbd5e1;
+  color: #f8fafc;
   display: inline-flex;
   align-items: center;
-}
-
-.search-filter-chip.active {
-  background: linear-gradient(180deg, #2563eb, #1d4ed8);
-  border-color: rgba(147, 197, 253, 0.65);
-  color: #ffffff;
-}
-
-.search-sort-pill {
-  height: 32rem;
-  padding: 0 15rem;
-  border-radius: var(--radius-pill);
-  background: rgba(15, 23, 42, 0.65);
-  border: 1rem solid rgba(255, 255, 255, 0.16);
-  font-size: 13.5rem;
-  color: #dbeafe;
-  display: inline-flex;
-  align-items: center;
+  gap: 12rem;
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.search-filter-single-btn svg {
+  width: 22rem;
+  height: 22rem;
+  color: #93c5fd;
 }
 
 .library-grid {
@@ -1570,11 +1576,11 @@ input:focus-visible,
   gap: 16rem 20rem;
 }
 
-/* 底层卡片阵列与左右翻页按钮适度柔焦，没有全画幅黑色大方框，只对内容本身做冰晶虚化 */
+/* 关闭模糊与遮挡胶囊，便于清晰核对页面结构与细节 */
 .channel-showcase-stage.lock-style-a .channel-pager-row,
 .channel-showcase-stage.lock-style-a .search-split-layout {
-  filter: blur(5.5rem) saturate(0.82) brightness(0.76);
-  transform: scale(0.996);
+  filter: none;
+  transform: none;
 }
 
 .store-app-card {
@@ -1699,14 +1705,7 @@ input:focus-visible,
 
 /* ==================== 阻挡层容器（无黑框边缘消融柔光罩 + 精致横向灵动胶囊锁） ==================== */
 .channel-frosted-shield {
-  position: absolute;
-  inset: -12rem;
-  z-index: 15;
-  border-radius: 36rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: auto;
+  display: none;
 }
 
 .channel-frosted-shield.style-a {
