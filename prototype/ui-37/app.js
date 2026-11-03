@@ -1064,47 +1064,104 @@
     `
   }
 
-  /* ==================== 子页 4：「搜索」（置于商店与其他之间：搜索栏 + 混合结果阵列 + 左右两侧翻页） ==================== */
+  /* ==================== 子页 4：「搜索」（左输入法面板 + 右上搜索与筛选栏 + 右下游戏商店卡片结果与左右翻页） ==================== */
   function renderSearchPage() {
+    const imeKeys = [
+      'A', 'B', 'C', 'D', 'E', 'F',
+      'G', 'H', 'I', 'J', 'K', 'L',
+      'M', 'N', 'O', 'P', 'Q', 'R',
+      'S', 'T', 'U', 'V', 'W', 'X',
+      'Y', 'Z', '1', '2', '3', '4',
+      '5', '6', '7', '8', '9', '0',
+    ]
+    const hotWords = ['战神', '漫威蜘蛛侠', '地平线', 'etaHEN', '死亡回归', '瑞奇与叮当']
+    const resultGames = STORE_GAMES.slice(0, 8)
+
     return `
       <main class="subpage-stage">
         <div class="subpage-content-body channel-showcase-body lock-style-a">
           <div class="channel-showcase-stage lock-style-a">
-            <div class="search-bar-strip" aria-hidden="true">
-              <div class="search-input-box">
-                ${ICONS.search}
-                <span>搜索开源软件、系统载荷或网盘游戏名称...</span>
-              </div>
-              <div class="search-filter-pills">
-                <span class="badge blue">全部结果</span>
-                <span class="badge muted">游戏资源</span>
-                <span class="badge muted">开源软件</span>
-                <span class="badge muted">已备份存档</span>
-              </div>
-            </div>
+            <div class="search-split-layout" aria-hidden="true">
+              <aside class="search-left-ime" aria-label="手柄搜索输入法面板">
+                <div class="search-ime-head">
+                  <span class="ime-mode-pill active">拼音 / 首字母</span>
+                  <span class="ime-mode-pill">全键盘</span>
+                  <span class="ime-mode-pill">热词</span>
+                </div>
 
-            <div class="channel-pager-row" aria-hidden="true">
-              <div class="channel-side-pager prev disabled" aria-label="上一页">
-                <span class="side-pager-arrow">${ICONS.chevronLeft}</span>
-              </div>
+                <div class="search-ime-grid">
+                  ${imeKeys
+                    .map(
+                      (k, idx) =>
+                        `<span class="search-ime-key ${idx === 25 ? 'is-focused' : ''}">${k}</span>`,
+                    )
+                    .join('')}
+                </div>
 
-              <div class="game-grid channel-games-grid">
-                ${STORE_GAMES.map(
-                  (g) => `
-                  <article class="game-tile channel-game-tile">
-                    <div class="game-cover">
-                      <img src="${g.cover}" alt="${g.title}" />
+                <div class="search-ime-actions">
+                  <span class="search-ime-action-btn">空格</span>
+                  <span class="search-ime-action-btn">退格</span>
+                  <span class="search-ime-action-btn">清空</span>
+                </div>
+
+                <div class="search-ime-hot">
+                  <span class="search-hot-label">猜你想搜</span>
+                  <div class="search-hot-tags">
+                    ${hotWords.map((w) => `<span class="search-hot-chip">${w}</span>`).join('')}
+                  </div>
+                </div>
+              </aside>
+
+              <section class="search-right-stage" aria-label="搜索栏、筛选器与结果列表">
+                <div class="search-right-header">
+                  <div class="search-query-row">
+                    <div class="search-input-box">
+                      ${ICONS.search}
+                      <span class="search-query-text">ZS · 战神 / 动作冒险</span>
+                      <span class="search-cursor"></span>
                     </div>
-                    <h3>${g.title}</h3>
-                    <p>${g.meta}</p>
-                  </article>
-                `,
-                ).join('')}
-              </div>
+                    <span class="search-result-count">共找到 16 款匹配资源</span>
+                  </div>
 
-              <div class="channel-side-pager next" aria-label="下一页">
-                <span class="side-pager-arrow">${ICONS.chevronRight}</span>
-              </div>
+                  <div class="search-filter-row">
+                    <div class="search-filter-pills">
+                      <span class="search-filter-chip active">全部 (16)</span>
+                      <span class="search-filter-chip">游戏商店 (12)</span>
+                      <span class="search-filter-chip">开源软件 (4)</span>
+                      <span class="search-filter-chip">动作冒险</span>
+                      <span class="search-filter-chip">角色扮演</span>
+                      <span class="search-filter-chip">系统插件</span>
+                    </div>
+                    <span class="search-sort-pill">筛选：热度优先 ▾</span>
+                  </div>
+                </div>
+
+                <div class="channel-pager-row search-results-pager-row">
+                  <div class="channel-side-pager prev disabled" aria-label="上一页">
+                    <span class="side-pager-arrow">${ICONS.chevronLeft}</span>
+                  </div>
+
+                  <div class="game-grid search-games-grid">
+                    ${resultGames
+                      .map(
+                        (g) => `
+                        <article class="game-tile channel-game-tile">
+                          <div class="game-cover">
+                            <img src="${g.cover}" alt="${g.title}" />
+                          </div>
+                          <h3>${g.title}</h3>
+                          <p>${g.meta}</p>
+                        </article>
+                      `,
+                      )
+                      .join('')}
+                  </div>
+
+                  <div class="channel-side-pager next" aria-label="下一页">
+                    <span class="side-pager-arrow">${ICONS.chevronRight}</span>
+                  </div>
+                </div>
+              </section>
             </div>
 
             <div class="channel-frosted-shield style-a" role="status" aria-label="搜索频道暂未开放">

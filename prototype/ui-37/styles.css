@@ -1315,36 +1315,232 @@ input:focus-visible,
   height: 30rem;
 }
 
-.search-bar-strip {
+/* ==================== 「搜索」页双栏布局（左输入法面板 + 右上搜索筛选栏 + 右下商店式结果卡片） ==================== */
+.search-split-layout {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 460rem minmax(0, 1fr);
+  gap: 28rem;
+  align-items: stretch;
+}
+
+.search-left-ime {
+  padding: 24rem 26rem;
+  border-radius: var(--radius-card);
+  background: var(--glass-bg);
+  backdrop-filter: blur(34rem) saturate(165%);
+  -webkit-backdrop-filter: blur(34rem) saturate(165%);
+  border: 1.5rem solid var(--glass-border);
+  box-shadow: var(--glass-specular), 0 18rem 42rem rgba(0, 0, 0, 0.36);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16rem;
+}
+
+.search-ime-head {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8rem;
+  padding: 6rem;
+  border-radius: var(--radius-pill);
+  background: rgba(12, 20, 36, 0.65);
+  border: 1rem solid rgba(255, 255, 255, 0.12);
+}
+
+.ime-mode-pill {
+  height: 34rem;
+  border-radius: var(--radius-pill);
+  font-size: 13.5rem;
+  font-weight: 500;
+  color: #9cb0c9;
+  display: grid;
+  place-items: center;
+}
+
+.ime-mode-pill.active {
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.search-ime-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+  gap: 8rem;
+}
+
+.search-ime-key {
+  border-radius: 14rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rem solid rgba(255, 255, 255, 0.14);
+  font-size: 17rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  display: grid;
+  place-items: center;
+}
+
+.search-ime-key.is-focused {
+  background: #2563eb;
+  border-color: #93c5fd;
+  color: #ffffff;
+  box-shadow: 0 0 0 2rem rgba(147, 197, 253, 0.45);
+}
+
+.search-ime-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10rem;
+}
+
+.search-ime-action-btn {
+  height: 40rem;
+  border-radius: 14rem;
+  background: rgba(15, 25, 45, 0.72);
+  border: 1rem solid rgba(255, 255, 255, 0.16);
+  font-size: 14rem;
+  font-weight: 500;
+  color: #dbeafe;
+  display: grid;
+  place-items: center;
+}
+
+.search-ime-hot {
+  padding-top: 12rem;
+  border-top: 1rem solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10rem;
+}
+
+.search-hot-label {
+  font-size: 13rem;
+  color: #94a6be;
+}
+
+.search-hot-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rem;
+}
+
+.search-hot-chip {
+  height: 30rem;
+  padding: 0 12rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1rem solid rgba(255, 255, 255, 0.13);
+  font-size: 13rem;
+  color: #cbd5e1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.search-right-stage {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18rem;
+}
+
+.search-right-header {
   flex-shrink: 0;
+  padding: 18rem 24rem;
+  border-radius: var(--radius-card);
+  background: var(--glass-bg);
+  border: 1.5rem solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  gap: 14rem;
+}
+
+.search-query-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20rem;
-  padding: 14rem 24rem;
-  border-radius: var(--radius-pill);
-  background: rgba(18, 26, 40, 0.68);
-  border: 1.5rem solid rgba(255, 255, 255, 0.14);
+  gap: 16rem;
+  padding-bottom: 12rem;
+  border-bottom: 1rem solid rgba(255, 255, 255, 0.1);
 }
 
 .search-input-box {
   display: flex;
   align-items: center;
   gap: 12rem;
-  font-size: 16rem;
-  color: #b8c7dc;
+  font-size: 20rem;
+  font-weight: 500;
+  color: #f8fafc;
 }
 
 .search-input-box svg {
-  width: 22rem;
+  width: 24rem;
+  height: 24rem;
+  color: #60a5fa;
+}
+
+.search-cursor {
+  width: 2.5rem;
   height: 22rem;
-  color: #8cc8ff;
+  background: #60a5fa;
+  border-radius: 2rem;
+}
+
+.search-result-count {
+  font-size: 14rem;
+  color: #9cb0c9;
+}
+
+.search-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14rem;
 }
 
 .search-filter-pills {
   display: flex;
   align-items: center;
   gap: 10rem;
+  flex-wrap: wrap;
+}
+
+.search-filter-chip {
+  height: 32rem;
+  padding: 0 15rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1rem solid rgba(255, 255, 255, 0.14);
+  font-size: 13.5rem;
+  font-weight: 500;
+  color: #cbd5e1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.search-filter-chip.active {
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+  border-color: rgba(147, 197, 253, 0.65);
+  color: #ffffff;
+}
+
+.search-sort-pill {
+  height: 32rem;
+  padding: 0 15rem;
+  border-radius: var(--radius-pill);
+  background: rgba(15, 23, 42, 0.65);
+  border: 1rem solid rgba(255, 255, 255, 0.16);
+  font-size: 13.5rem;
+  color: #dbeafe;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
 }
 
 .library-grid {
@@ -1368,9 +1564,15 @@ input:focus-visible,
   align-items: stretch;
 }
 
+.game-grid.search-games-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 16rem 20rem;
+}
+
 /* 底层卡片阵列与左右翻页按钮适度柔焦，没有全画幅黑色大方框，只对内容本身做冰晶虚化 */
 .channel-showcase-stage.lock-style-a .channel-pager-row,
-.channel-showcase-stage.lock-style-a .search-bar-strip {
+.channel-showcase-stage.lock-style-a .search-split-layout {
   filter: blur(5.5rem) saturate(0.82) brightness(0.76);
   transform: scale(0.996);
 }
