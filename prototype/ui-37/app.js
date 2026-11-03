@@ -835,13 +835,15 @@
 
   /* ==================== 子页 2：「软件」（收敛为方案 A：无黑边磨砂贴 + 灵动胶囊锁 + 多页翻页阵列） ==================== */
   function renderAppsPage() {
+    const pageApps = STORE_APPS.slice(0, 6)
     return `
       <main class="subpage-stage">
         <div class="subpage-content-body channel-showcase-body lock-style-a">
           <div class="channel-showcase-stage lock-style-a">
             <div class="library-grid channel-apps-grid" aria-hidden="true">
-              ${STORE_APPS.map(
-                (app) => `
+              ${pageApps
+                .map(
+                  (app) => `
                 <article class="store-app-card channel-card">
                   <div class="store-app-top">
                     <img src="${app.art}" alt="${app.name}" />
@@ -857,16 +859,18 @@
                   </div>
                 </article>
               `,
-              ).join('')}
+                )
+                .join('')}
             </div>
 
             <div class="channel-pagination-bar" aria-hidden="true">
-              <span class="channel-page-summary">共 27 款开源软件与系统载荷 · 第 1 / 3 页</span>
+              <span class="channel-page-summary">共 24 款开源软件与系统载荷 · 第 1 / 4 页</span>
               <div class="channel-page-controls">
                 <span class="channel-page-pill disabled">上一页</span>
                 <span class="channel-page-num active">1</span>
                 <span class="channel-page-num">2</span>
                 <span class="channel-page-num">3</span>
+                <span class="channel-page-num">4</span>
                 <span class="channel-page-pill">下一页</span>
               </div>
             </div>
