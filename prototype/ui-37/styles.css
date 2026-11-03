@@ -1269,7 +1269,7 @@ input:focus-visible,
   flex-direction: column;
   justify-content: space-between;
   gap: 16rem;
-  pointer-events: none;
+  pointer-events: auto;
   user-select: none;
 }
 
@@ -1299,8 +1299,16 @@ input:focus-visible,
   flex-shrink: 0;
 }
 
+.channel-side-pager:not(.disabled):hover {
+  background:
+    radial-gradient(circle at 50% 25%, rgba(96, 165, 250, 0.48), transparent 70%),
+    rgba(30, 48, 78, 0.94);
+  border-color: rgba(191, 219, 254, 0.72);
+}
+
 .channel-side-pager.disabled {
-  opacity: 0.78;
+  opacity: 0.38;
+  cursor: default;
 }
 
 .side-pager-arrow {
@@ -1599,6 +1607,15 @@ input:focus-visible,
   gap: 10rem;
 }
 
+.store-app-card:hover {
+  border-color: rgba(147, 197, 253, 0.45);
+  background: rgba(24, 34, 52, 0.78);
+}
+
+.store-app-card.is-installed {
+  border-color: rgba(92, 214, 141, 0.35);
+}
+
 .store-app-top {
   display: flex;
   align-items: center;
@@ -1668,6 +1685,35 @@ input:focus-visible,
   display: flex;
   flex-direction: column;
   min-height: 0;
+  border-radius: 26rem;
+}
+
+.game-tile:hover .game-cover {
+  border-color: rgba(147, 197, 253, 0.58);
+}
+
+.game-cover-badge {
+  position: absolute;
+  top: 12rem;
+  right: 12rem;
+  height: 28rem;
+  padding: 0 11rem;
+  border-radius: var(--radius-pill);
+  background: rgba(16, 185, 129, 0.88);
+  backdrop-filter: blur(12rem);
+  border: 1rem solid rgba(167, 243, 208, 0.75);
+  color: #ffffff;
+  font-size: 12.5rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5rem;
+  box-shadow: 0 8rem 20rem rgba(0, 0, 0, 0.45);
+}
+
+.game-cover-badge svg {
+  width: 13rem;
+  height: 13rem;
 }
 
 .game-cover {

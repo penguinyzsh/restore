@@ -125,9 +125,9 @@
   /* 五个底部纯图标卡片（顺序：恢复、软件、商店、搜索、其他） */
   const DOCK_ITEMS = [
     { id: 'restore', label: '恢复' },
-    { id: 'apps', label: '软件', lockedPreview: true },
-    { id: 'store', label: '商店', lockedPreview: true },
-    { id: 'search', label: '搜索', lockedPreview: true },
+    { id: 'apps', label: '软件' },
+    { id: 'store', label: '商店' },
+    { id: 'search', label: '搜索' },
     { id: 'other', label: '其他' },
   ]
 
@@ -182,6 +182,7 @@
 
   const STORE_APPS = [
     {
+      id: 'etahen',
       name: 'etaHEN',
       version: 'v2.0B · 系统宿主',
       category: '系统载荷',
@@ -190,6 +191,7 @@
       desc: '集成式自制宿主服务，提供插件加载、远程传输与工具箱管理。',
     },
     {
+      id: 'shadowmount',
       name: 'ShadowMountPlus',
       version: 'v1.4.2 · 挂载服务',
       category: '系统载荷',
@@ -198,6 +200,7 @@
       desc: '自动扫描外置存储中的游戏目录与镜像文件，并挂载至主界面。',
     },
     {
+      id: 'ezremote',
       name: 'ezRemote Client',
       version: 'v2.17 · 文件管理',
       category: '独立应用',
@@ -206,6 +209,7 @@
       desc: '支持局域网与网盘文件访问、压缩包解压与软件包安装。',
     },
     {
+      id: 'ftpsrv',
       name: 'FTP 服务插件',
       version: 'v1.2.0 · 随宿主自启',
       category: '扩展插件',
@@ -214,6 +218,7 @@
       desc: '后台高速文件传输服务，支持全天候无线管理主机存储。',
     },
     {
+      id: 'elfldr',
       name: 'ELF 后台加载器',
       version: 'v0.19 · 守护服务',
       category: '系统载荷',
@@ -222,6 +227,7 @@
       desc: '支持在关闭入口应用后持续稳定运行后台服务。',
     },
     {
+      id: 'ntpsync',
       name: 'NTP 时间同步插件',
       version: 'v1.1.0 · 随宿主自启',
       category: '扩展插件',
@@ -230,6 +236,7 @@
       desc: '开机自动校准系统时钟，确保存档时间与备份记录准确一致。',
     },
     {
+      id: 'itemzflow',
       name: 'Itemzflow 管理器',
       version: 'v1.08 · 桌面启动器',
       category: '独立应用',
@@ -238,6 +245,7 @@
       desc: '自制应用与游戏封面管理器，支持虚拟盘挂载与自定义排序。',
     },
     {
+      id: 'klogsrv',
       name: 'klog 实时日志服务',
       version: 'v0.14 · 调试工具',
       category: '扩展插件',
@@ -246,6 +254,7 @@
       desc: '通过局域网套接字实时输出系统内核与载荷运行日志。',
     },
     {
+      id: 'websrv',
       name: 'WebSrv 本地服务',
       version: 'v0.9.4 · 网页宿主',
       category: '系统载荷',
@@ -253,21 +262,52 @@
       size: '520 KB',
       desc: '在主机本地提供轻量级 HTTP 静态托管与离线载荷分发入口。',
     },
+    {
+      id: 'prosperostore',
+      name: 'Prospero 仓库同步器',
+      version: 'v1.3.1 · 源管理',
+      category: '独立应用',
+      art: './assets/restore-logo.png',
+      size: '12.4 MB',
+      desc: '自动拉取 GitHub Releases 开源发布源并校验安装包签名。',
+    },
+    {
+      id: 'savelink',
+      name: 'SaveMounter 存档桥',
+      version: 'v1.1.4 · 存档工具',
+      category: '扩展插件',
+      art: './assets/ps5-payload-dev.png',
+      size: '310 KB',
+      desc: '支持解锁挂载任意用户存档目录并自动对齐离线账户 ID。',
+    },
+    {
+      id: 'cheathub',
+      name: 'GoldCheats 金手指库',
+      version: 'v2.4.0 · 游戏辅助',
+      category: '扩展插件',
+      art: './assets/etahen-icon.jpg',
+      size: '8.7 MB',
+      desc: '离线同步热门游戏金手指补丁与帧率解锁配置。',
+    },
   ]
 
   const STORE_GAMES = [
-    { id: 'astro-bot', title: '宇宙机器人', meta: '动作冒险 · 36.4 GB', cover: './assets/games/astro-bot/cover.png' },
-    { id: 'ratchet', title: '瑞奇与叮当：时空跳转', meta: '动作射击 · 33.8 GB', cover: './assets/games/ratchet-and-clank-rift-apart/cover.png' },
-    { id: 'returnal', title: '死亡回归', meta: '科幻射击 · 52.1 GB', cover: './assets/games/returnal/cover.png' },
-    { id: 'gow', title: '战神：诸神黄昏', meta: '动作角色扮演 · 84.2 GB', cover: './assets/games/god-of-war-ragnarok/cover.png' },
-    { id: 'horizon', title: '地平线：西之绝境', meta: '开放世界 · 79.5 GB', cover: './assets/games/horizon-forbidden-west/cover.png' },
-    { id: 'spiderman2', title: '漫威蜘蛛侠 2', meta: '动作冒险 · 68.0 GB', cover: './assets/games/marvels-spider-man-2/cover.png' },
-    { id: 'astro-playroom', title: '无线控制器指南', meta: '平台动作 · 10.9 GB', cover: './assets/games/astro-bot/screenshot-1.jpg' },
-    { id: 'gow-valhalla', title: '战神：英灵殿 DLC', meta: '动作肉鸽 · 16.4 GB', cover: './assets/games/god-of-war-ragnarok/screenshot-1.jpg' },
-    { id: 'horizon-burning', title: '地平线：炙炎海岸', meta: '开放世界 · 24.8 GB', cover: './assets/games/horizon-forbidden-west/screenshot-1.jpg' },
-    { id: 'returnal-tower', title: '死亡回归：西西弗斯之塔', meta: '无尽挑战 · 18.2 GB', cover: './assets/games/returnal/screenshot-1.jpg' },
-    { id: 'ratchet-arena', title: '瑞奇与叮当：星际竞技场', meta: '动作射击 · 21.5 GB', cover: './assets/games/ratchet-and-clank-rift-apart/screenshot-1.jpg' },
-    { id: 'spiderman-miles', title: '漫威蜘蛛侠：迈尔斯', meta: '动作冒险 · 49.6 GB', cover: './assets/games/marvels-spider-man-2/screenshot-1.jpg' },
+    { id: 'astro-bot', title: '宇宙机器人', initials: 'YZJQR', genre: 'action', meta: '动作冒险 · 36.4 GB', cover: './assets/games/astro-bot/cover.png' },
+    { id: 'ratchet', title: '瑞奇与叮当：时空跳转', initials: 'RQYDD', genre: 'shoot', meta: '动作射击 · 33.8 GB', cover: './assets/games/ratchet-and-clank-rift-apart/cover.png' },
+    { id: 'returnal', title: '死亡回归', initials: 'SWHG', genre: 'shoot', meta: '科幻射击 · 52.1 GB', cover: './assets/games/returnal/cover.png' },
+    { id: 'gow', title: '战神：诸神黄昏', initials: 'ZSZSHH', genre: 'action', meta: '动作角色扮演 · 84.2 GB', cover: './assets/games/god-of-war-ragnarok/cover.png' },
+    { id: 'horizon', title: '地平线：西之绝境', initials: 'DPXXZJJ', genre: 'rpg', meta: '开放世界 · 79.5 GB', cover: './assets/games/horizon-forbidden-west/cover.png' },
+    { id: 'spiderman2', title: '漫威蜘蛛侠 2', initials: 'MWZZX2', genre: 'action', meta: '动作冒险 · 68.0 GB', cover: './assets/games/marvels-spider-man-2/cover.png' },
+    { id: 'astro-playroom', title: '无线控制器指南', initials: 'WXKZQZN', genre: 'action', meta: '平台动作 · 10.9 GB', cover: './assets/games/astro-bot/screenshot-1.jpg' },
+    { id: 'gow-valhalla', title: '战神：英灵殿 DLC', initials: 'ZSYLD', genre: 'action', meta: '动作肉鸽 · 16.4 GB', cover: './assets/games/god-of-war-ragnarok/screenshot-1.jpg' },
+    { id: 'horizon-burning', title: '地平线：炙炎海岸', initials: 'DPXZYHA', genre: 'rpg', meta: '开放世界 · 24.8 GB', cover: './assets/games/horizon-forbidden-west/screenshot-1.jpg' },
+    { id: 'returnal-tower', title: '死亡回归：西西弗斯之塔', initials: 'SWHG', genre: 'shoot', meta: '无尽挑战 · 18.2 GB', cover: './assets/games/returnal/screenshot-1.jpg' },
+    { id: 'ratchet-arena', title: '瑞奇与叮当：星际竞技场', initials: 'RQYDD', genre: 'shoot', meta: '动作射击 · 21.5 GB', cover: './assets/games/ratchet-and-clank-rift-apart/screenshot-1.jpg' },
+    { id: 'spiderman-miles', title: '漫威蜘蛛侠：迈尔斯', initials: 'MWZZXMES', genre: 'action', meta: '动作冒险 · 49.6 GB', cover: './assets/games/marvels-spider-man-2/screenshot-1.jpg' },
+    { id: 'astro-speedrun', title: '宇宙机器人：星际竞速篇', initials: 'YZJQR', genre: 'action', meta: '平台挑战 · 14.2 GB', cover: './assets/games/astro-bot/cover.png' },
+    { id: 'gow-ngplus', title: '战神：诸神黄昏 新游戏+', initials: 'ZSZSHH', genre: 'action', meta: '动作角色扮演 · 86.0 GB', cover: './assets/games/god-of-war-ragnarok/cover.png' },
+    { id: 'horizon-complete', title: '地平线：西之绝境 完整版', initials: 'DPXXZJJ', genre: 'rpg', meta: '开放世界 · 98.4 GB', cover: './assets/games/horizon-forbidden-west/cover.png' },
+    { id: 'spiderman2-deluxe', title: '漫威蜘蛛侠 2 豪华版', initials: 'MWZZX2', genre: 'action', meta: '动作冒险 · 71.5 GB', cover: './assets/games/marvels-spider-man-2/cover.png' },
   ]
 
   function normalizeView(v) {
@@ -305,6 +345,16 @@
     otherTab: 'locations',
     focusedDockId: 'restore',
     devDockCollapsed: true,
+    appsPage: 1,
+    installedApps: ['etahen', 'shadowmount', 'ftpsrv', 'elfldr', 'ntpsync'],
+    storePage: 1,
+    queuedGames: ['gow', 'astro-bot'],
+    searchState: {
+      imeMode: 'initial',
+      query: 'ZS',
+      filter: 'all',
+      page: 1,
+    },
     onboardingOpen: initialOnboardingOpen,
     onboardingStep: initialStep,
     onboardingHasRp: urlParams.get('branch') !== 'empty-rp',
@@ -966,23 +1016,39 @@
     `
   }
 
-  /* ==================== 子页 2：「软件」（收敛为方案 A：无黑边磨砂贴 + 灵动胶囊锁 + 左右两侧翻页） ==================== */
+  /* ==================== 子页 2：「软件」（3×3 卡片网格 + 左右两侧翻页 + 卡片点击安装/切换交互） ==================== */
   function renderAppsPage() {
-    const pageApps = STORE_APPS.slice(0, 9)
+    const pageSize = 9
+    const totalPages = Math.max(1, Math.ceil(STORE_APPS.length / pageSize))
+    const currentPage = Math.min(totalPages, Math.max(1, state.appsPage || 1))
+    const pageApps = STORE_APPS.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+
     return `
       <main class="subpage-stage">
         <div class="subpage-content-body channel-showcase-body lock-style-a">
           <div class="channel-showcase-stage lock-style-a">
-            <div class="channel-pager-row" aria-hidden="true">
-              <div class="channel-side-pager prev disabled" aria-label="上一页">
+            <div class="channel-pager-row">
+              <button
+                type="button"
+                class="channel-side-pager prev ${currentPage <= 1 ? 'disabled' : ''}"
+                data-action="apps-page-prev"
+                ${currentPage <= 1 ? 'disabled' : ''}
+                aria-label="上一页"
+              >
                 <span class="side-pager-arrow">${ICONS.chevronLeft}</span>
-              </div>
+              </button>
 
               <div class="library-grid channel-apps-grid">
                 ${pageApps
-                  .map(
-                    (app) => `
-                  <article class="store-app-card channel-card">
+                  .map((app) => {
+                    const installed = state.installedApps.includes(app.id)
+                    return `
+                  <button
+                    type="button"
+                    class="store-app-card channel-card ${installed ? 'is-installed' : ''}"
+                    data-action="toggle-app-install"
+                    data-app-id="${app.id}"
+                  >
                     <div class="store-app-top">
                       <img src="${app.art}" alt="${app.name}" />
                       <div>
@@ -993,24 +1059,25 @@
                     <p class="store-app-desc">${app.desc}</p>
                     <div class="store-app-footer">
                       <span>${app.category} · ${app.size}</span>
-                      <span class="channel-status-chip">${ICONS.lock}<span>未开放</span></span>
+                      <span class="badge ${installed ? 'green' : 'blue'}">
+                        ${installed ? `${ICONS.check}<span>已安装</span>` : `<span>获取安装</span>`}
+                      </span>
                     </div>
-                  </article>
-                `,
-                  )
+                  </button>
+                `
+                  })
                   .join('')}
               </div>
 
-              <div class="channel-side-pager next" aria-label="下一页">
+              <button
+                type="button"
+                class="channel-side-pager next ${currentPage >= totalPages ? 'disabled' : ''}"
+                data-action="apps-page-next"
+                ${currentPage >= totalPages ? 'disabled' : ''}
+                aria-label="下一页"
+              >
                 <span class="side-pager-arrow">${ICONS.chevronRight}</span>
-              </div>
-            </div>
-
-            <div class="channel-frosted-shield style-a" role="status" aria-label="软件频道暂未开放">
-              <div class="shield-compact-pill">
-                <span class="shield-lock-circle">${ICONS.lock}</span>
-                <span class="shield-lock-text">软件频道暂未开放</span>
-              </div>
+              </button>
             </div>
           </div>
         </div>
@@ -1020,41 +1087,60 @@
     `
   }
 
-  /* ==================== 子页 3：「商店」（收敛为方案 A：无黑边磨砂贴 + 灵动胶囊锁 + 左右两侧翻页） ==================== */
+  /* ==================== 子页 3：「商店」（6×2 游戏封面网格 + 左右两侧翻页 + 卡片点击入队交互） ==================== */
   function renderStorePage() {
+    const pageSize = 12
+    const totalPages = Math.max(1, Math.ceil(STORE_GAMES.length / pageSize))
+    const currentPage = Math.min(totalPages, Math.max(1, state.storePage || 1))
+    const pageGames = STORE_GAMES.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+
     return `
       <main class="subpage-stage">
         <div class="subpage-content-body channel-showcase-body lock-style-a">
           <div class="channel-showcase-stage lock-style-a">
-            <div class="channel-pager-row" aria-hidden="true">
-              <div class="channel-side-pager prev disabled" aria-label="上一页">
+            <div class="channel-pager-row">
+              <button
+                type="button"
+                class="channel-side-pager prev ${currentPage <= 1 ? 'disabled' : ''}"
+                data-action="store-page-prev"
+                ${currentPage <= 1 ? 'disabled' : ''}
+                aria-label="上一页"
+              >
                 <span class="side-pager-arrow">${ICONS.chevronLeft}</span>
-              </div>
+              </button>
 
               <div class="game-grid channel-games-grid">
-                ${STORE_GAMES.map(
-                  (g) => `
-                  <article class="game-tile channel-game-tile">
+                ${pageGames
+                  .map((g) => {
+                    const queued = state.queuedGames.includes(g.id)
+                    return `
+                  <button
+                    type="button"
+                    class="game-tile channel-game-tile ${queued ? 'is-queued' : ''}"
+                    data-action="toggle-game-queue"
+                    data-game-id="${g.id}"
+                  >
                     <div class="game-cover">
                       <img src="${g.cover}" alt="${g.title}" />
+                      ${queued ? `<span class="game-cover-badge">${ICONS.check}<span>已入列</span></span>` : ''}
                     </div>
                     <h3>${g.title}</h3>
                     <p>${g.meta}</p>
-                  </article>
-                `,
-                ).join('')}
+                  </button>
+                `
+                  })
+                  .join('')}
               </div>
 
-              <div class="channel-side-pager next" aria-label="下一页">
+              <button
+                type="button"
+                class="channel-side-pager next ${currentPage >= totalPages ? 'disabled' : ''}"
+                data-action="store-page-next"
+                ${currentPage >= totalPages ? 'disabled' : ''}
+                aria-label="下一页"
+              >
                 <span class="side-pager-arrow">${ICONS.chevronRight}</span>
-              </div>
-            </div>
-
-            <div class="channel-frosted-shield style-a" role="status" aria-label="商店频道暂未开放">
-              <div class="shield-compact-pill">
-                <span class="shield-lock-circle">${ICONS.lock}</span>
-                <span class="shield-lock-text">商店频道暂未开放</span>
-              </div>
+              </button>
             </div>
           </div>
         </div>
@@ -1064,7 +1150,21 @@
     `
   }
 
-  /* ==================== 子页 4：「搜索」（左无框悬浮输入法 + 右上搜索栏与单按钮筛选 + 右下游戏商店卡片结果） ==================== */
+  /* ==================== 子页 4：「搜索」（左输入法面板 + 右上搜索栏与单按钮筛选 + 右下游戏商店卡片结果） ==================== */
+  function getFilteredSearchGames() {
+    const q = (state.searchState.query || '').trim().toUpperCase()
+    const filter = state.searchState.filter || 'all'
+    return STORE_GAMES.filter((g) => {
+      if (filter !== 'all' && g.genre !== filter) return false
+      if (!q) return true
+      return (
+        g.title.toUpperCase().includes(q) ||
+        (g.initials && g.initials.toUpperCase().includes(q)) ||
+        g.meta.toUpperCase().includes(q)
+      )
+    })
+  }
+
   function renderSearchPage() {
     const imeKeys = [
       'A', 'B', 'C', 'D', 'E', 'F',
@@ -1074,42 +1174,68 @@
       'Y', 'Z', '0', '1', '2', '3',
       '4', '5', '6', '7', '8', '9',
     ]
-    const resultGames = STORE_GAMES.slice(0, 8)
+    const filterLabels = {
+      all: '筛选：全部',
+      action: '筛选：动作冒险',
+      shoot: '筛选：射击肉鸽',
+      rpg: '筛选：开放世界',
+    }
+    const filtered = getFilteredSearchGames()
+    const pageSize = 8
+    const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+    const currentPage = Math.min(totalPages, Math.max(1, state.searchState.page || 1))
+    const resultGames = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    const qText = state.searchState.query ? state.searchState.query : '输入首字母或名称搜索'
 
     return `
       <main class="subpage-stage">
         <div class="subpage-content-body channel-showcase-body lock-style-a">
           <div class="channel-showcase-stage lock-style-a">
-            <div class="search-split-layout" aria-hidden="true">
+            <div class="search-split-layout">
               <aside class="search-left-ime" aria-label="手柄搜索输入法">
                 <div class="ime-mode-tabs">
-                  <span class="ime-seg active">首字母</span>
-                  <span class="ime-seg">全拼</span>
-                  <span class="ime-seg">123</span>
+                  <button
+                    type="button"
+                    class="ime-seg ${state.searchState.imeMode === 'initial' ? 'active' : ''}"
+                    data-action="search-ime-mode"
+                    data-mode="initial"
+                  >首字母</button>
+                  <button
+                    type="button"
+                    class="ime-seg ${state.searchState.imeMode === 'pinyin' ? 'active' : ''}"
+                    data-action="search-ime-mode"
+                    data-mode="pinyin"
+                  >全拼</button>
+                  <button
+                    type="button"
+                    class="ime-seg ${state.searchState.imeMode === 'num' ? 'active' : ''}"
+                    data-action="search-ime-mode"
+                    data-mode="num"
+                  >123</button>
                 </div>
 
                 <div class="search-ime-grid">
                   ${imeKeys
                     .map(
-                      (k, idx) =>
-                        `<span class="search-ime-key ${idx === 25 ? 'is-focused' : ''}">${k}</span>`,
+                      (k) =>
+                        `<button type="button" class="search-ime-key" data-action="search-ime-key" data-key="${k}">${k}</button>`,
                     )
                     .join('')}
                 </div>
 
                 <div class="search-ime-actions">
-                  <span class="ime-action-key">空格</span>
-                  <span class="ime-action-key">⌫ 退格</span>
-                  <span class="ime-action-key">清空</span>
+                  <button type="button" class="ime-action-key" data-action="search-ime-action" data-op="space">空格</button>
+                  <button type="button" class="ime-action-key" data-action="search-ime-action" data-op="backspace">⌫ 退格</button>
+                  <button type="button" class="ime-action-key" data-action="search-ime-action" data-op="clear">清空</button>
                 </div>
 
                 <div class="ime-hot-section">
                   <span class="ime-hot-title">热门搜索</span>
                   <div class="search-ime-suggest">
-                    <span class="ime-suggest-item">${ICONS.search}<span>战神：诸神黄昏</span></span>
-                    <span class="ime-suggest-item">${ICONS.search}<span>漫威蜘蛛侠 2</span></span>
-                    <span class="ime-suggest-item">${ICONS.search}<span>etaHEN 2.5B</span></span>
-                    <span class="ime-suggest-item">${ICONS.search}<span>最后生还者 Part I</span></span>
+                    <button type="button" class="ime-suggest-item" data-action="search-hot-query" data-query="战神">${ICONS.search}<span>战神：诸神黄昏</span></button>
+                    <button type="button" class="ime-suggest-item" data-action="search-hot-query" data-query="蜘蛛侠">${ICONS.search}<span>漫威蜘蛛侠 2</span></button>
+                    <button type="button" class="ime-suggest-item" data-action="search-hot-query" data-query="地平线">${ICONS.search}<span>地平线：西之绝境</span></button>
+                    <button type="button" class="ime-suggest-item" data-action="search-hot-query" data-query="">${ICONS.search}<span>显示全部游戏</span></button>
                   </div>
                 </div>
               </aside>
@@ -1119,51 +1245,63 @@
                   <div class="search-field-pill">
                     <div class="search-input-box">
                       ${ICONS.search}
-                      <span class="search-query-text">ZS · 战神</span>
+                      <span class="search-query-text">${qText}</span>
                       <span class="search-cursor"></span>
                     </div>
-                    <span class="search-result-count">16 款结果</span>
+                    <span class="search-result-count">${filtered.length} 款结果</span>
                   </div>
 
-                  <div class="search-filter-single-btn">
+                  <button type="button" class="search-filter-single-btn" data-action="search-cycle-filter">
                     ${ICONS.other}
-                    <span>筛选</span>
-                  </div>
+                    <span>${filterLabels[state.searchState.filter] || '筛选'}</span>
+                  </button>
                 </div>
 
                 <div class="channel-pager-row search-results-pager-row">
-                  <div class="channel-side-pager prev disabled" aria-label="上一页">
+                  <button
+                    type="button"
+                    class="channel-side-pager prev ${currentPage <= 1 ? 'disabled' : ''}"
+                    data-action="search-page-prev"
+                    ${currentPage <= 1 ? 'disabled' : ''}
+                    aria-label="上一页"
+                  >
                     <span class="side-pager-arrow">${ICONS.chevronLeft}</span>
-                  </div>
+                  </button>
 
                   <div class="game-grid search-games-grid">
                     ${resultGames
-                      .map(
-                        (g) => `
-                        <article class="game-tile channel-game-tile">
+                      .map((g) => {
+                        const queued = state.queuedGames.includes(g.id)
+                        return `
+                        <button
+                          type="button"
+                          class="game-tile channel-game-tile ${queued ? 'is-queued' : ''}"
+                          data-action="toggle-game-queue"
+                          data-game-id="${g.id}"
+                        >
                           <div class="game-cover">
                             <img src="${g.cover}" alt="${g.title}" />
+                            ${queued ? `<span class="game-cover-badge">${ICONS.check}<span>已入列</span></span>` : ''}
                           </div>
                           <h3>${g.title}</h3>
                           <p>${g.meta}</p>
-                        </article>
-                      `,
-                      )
+                        </button>
+                      `
+                      })
                       .join('')}
                   </div>
 
-                  <div class="channel-side-pager next" aria-label="下一页">
+                  <button
+                    type="button"
+                    class="channel-side-pager next ${currentPage >= totalPages ? 'disabled' : ''}"
+                    data-action="search-page-next"
+                    ${currentPage >= totalPages ? 'disabled' : ''}
+                    aria-label="下一页"
+                  >
                     <span class="side-pager-arrow">${ICONS.chevronRight}</span>
-                  </div>
+                  </button>
                 </div>
               </section>
-            </div>
-
-            <div class="channel-frosted-shield style-a" role="status" aria-label="搜索频道暂未开放">
-              <div class="shield-compact-pill">
-                <span class="shield-lock-circle">${ICONS.lock}</span>
-                <span class="shield-lock-text">搜索频道暂未开放</span>
-              </div>
             </div>
           </div>
         </div>
@@ -2202,6 +2340,115 @@
           ? state.autoBackupScope.filter((x) => x !== id)
           : [...state.autoBackupScope, id]
         render('update')
+        break
+      }
+      case 'apps-page-prev':
+        if (state.appsPage > 1) {
+          state.appsPage -= 1
+          render('update')
+        }
+        break
+      case 'apps-page-next': {
+        const maxAppsPage = Math.max(1, Math.ceil(STORE_APPS.length / 9))
+        if (state.appsPage < maxAppsPage) {
+          state.appsPage += 1
+          render('update')
+        }
+        break
+      }
+      case 'toggle-app-install': {
+        const appId = btn.dataset.appId
+        const appObj = STORE_APPS.find((a) => a.id === appId)
+        if (!appObj) break
+        if (state.installedApps.includes(appId)) {
+          state.installedApps = state.installedApps.filter((id) => id !== appId)
+          showToast(`已卸载 ${appObj.name}`)
+        } else {
+          state.installedApps = [...state.installedApps, appId]
+          showToast(`已安装并启用 ${appObj.name}`)
+        }
+        render('update')
+        break
+      }
+      case 'store-page-prev':
+        if (state.storePage > 1) {
+          state.storePage -= 1
+          render('update')
+        }
+        break
+      case 'store-page-next': {
+        const maxStorePage = Math.max(1, Math.ceil(STORE_GAMES.length / 12))
+        if (state.storePage < maxStorePage) {
+          state.storePage += 1
+          render('update')
+        }
+        break
+      }
+      case 'toggle-game-queue': {
+        const gameId = btn.dataset.gameId
+        const gameObj = STORE_GAMES.find((g) => g.id === gameId)
+        if (!gameObj) break
+        if (state.queuedGames.includes(gameId)) {
+          state.queuedGames = state.queuedGames.filter((id) => id !== gameId)
+          showToast(`已从下载安装队列移除《${gameObj.title}》`)
+        } else {
+          state.queuedGames = [...state.queuedGames, gameId]
+          showToast(`已加入网盘下载与安装队列：《${gameObj.title}》`)
+        }
+        render('update')
+        break
+      }
+      case 'search-ime-mode': {
+        state.searchState.imeMode = btn.dataset.mode || 'initial'
+        render('update')
+        break
+      }
+      case 'search-ime-key': {
+        const k = btn.dataset.key || ''
+        state.searchState.query = (state.searchState.query || '') + k
+        state.searchState.page = 1
+        render('update')
+        break
+      }
+      case 'search-ime-action': {
+        const op = btn.dataset.op
+        if (op === 'space') {
+          state.searchState.query = (state.searchState.query || '') + ' '
+        } else if (op === 'backspace') {
+          state.searchState.query = (state.searchState.query || '').slice(0, -1)
+        } else if (op === 'clear') {
+          state.searchState.query = ''
+        }
+        state.searchState.page = 1
+        render('update')
+        break
+      }
+      case 'search-hot-query': {
+        state.searchState.query = btn.dataset.query ?? ''
+        state.searchState.page = 1
+        render('update')
+        break
+      }
+      case 'search-cycle-filter': {
+        const order = ['all', 'action', 'shoot', 'rpg']
+        const idx = order.indexOf(state.searchState.filter || 'all')
+        state.searchState.filter = order[(idx + 1) % order.length]
+        state.searchState.page = 1
+        render('update')
+        break
+      }
+      case 'search-page-prev':
+        if (state.searchState.page > 1) {
+          state.searchState.page -= 1
+          render('update')
+        }
+        break
+      case 'search-page-next': {
+        const total = Math.max(1, Math.ceil(getFilteredSearchGames().length / 8))
+        if (state.searchState.page < total) {
+          state.searchState.page += 1
+          render('update')
+        }
         break
       }
       case 'ds-cross': {
