@@ -1402,36 +1402,77 @@
     const mode = state.lockScene.mode
     return `
       <section class="restore-lock-scene" aria-live="polite">
-        <div class="gentle-warning-banner">
-          <div class="gentle-warning-left">
-            <div class="gentle-warning-icon">${ICONS.warn}</div>
-            <div>
-              <strong>正在恢复数据，请勿启动游戏或关闭主机</strong>
-              <p>全部项目恢复完成后将自动解锁界面并汇总结果。</p>
+        <div class="lock-top-group">
+          <div class="gentle-warning-banner">
+            <div class="gentle-warning-left">
+              <div class="gentle-warning-icon">${ICONS.warn}</div>
+              <div>
+                <strong>正在恢复数据，请勿启动游戏或关闭主机</strong>
+                <p>全部项目恢复完成后将自动解锁界面并汇总结果。</p>
+              </div>
+            </div>
+            <span class="badge green">来源：USB 存储设备 · 今天 19:10 自动备份</span>
+          </div>
+
+          <div class="lock-stages-strip" aria-label="恢复阶段进度">
+            <div class="lock-stage-item is-done">
+              <span class="lock-stage-index">${ICONS.check}</span>
+              <div class="lock-stage-text">
+                <strong>1. 系统插件与载荷</strong>
+                <small>已完成 (12/12)</small>
+              </div>
+            </div>
+            <div class="lock-stage-line is-done"></div>
+            <div class="lock-stage-item is-done">
+              <span class="lock-stage-index">${ICONS.check}</span>
+              <div class="lock-stage-text">
+                <strong>2. 游戏桌面展示</strong>
+                <small>已完成 (14/14)</small>
+              </div>
+            </div>
+            <div class="lock-stage-line is-done"></div>
+            <div class="lock-stage-item is-active">
+              <span class="lock-stage-index">3</span>
+              <div class="lock-stage-text">
+                <strong>3. 全游戏通用存档</strong>
+                <small>进行中 (14/19)</small>
+              </div>
+            </div>
+            <div class="lock-stage-line"></div>
+            <div class="lock-stage-item is-pending">
+              <span class="lock-stage-index">4</span>
+              <div class="lock-stage-text">
+                <strong>4. 系统设置与媒体图库</strong>
+                <small>等待中</small>
+              </div>
             </div>
           </div>
-          <span class="badge blue">第 3 / 4 步</span>
         </div>
 
         <div class="lock-progress-hero">
-          <div>
-            <span class="badge green">来源：USB 存储设备 · 今天 19:10 自动备份</span>
-            <h2 style="font-size:36rem; font-weight:400; margin:14rem 0 8rem;">
-              ${
-                mode === 'conflict'
-                  ? '检测到《最后生还者 Part I》正在运行，已优先恢复其余项目'
-                  : mode === 'resumed'
-                    ? '已从上次中断位置继续恢复剩余项目'
-                    : '正在恢复全游戏通用存档'
-              }
-            </h2>
-            <p style="font-size:17rem; color:#b2c0d4; margin:0;">
-              ${state.lockScene.currentDetail}
-            </p>
+          <div class="lock-main-progress">
+            <div class="lock-title-row">
+              <div>
+                <h2 style="font-size:38rem; font-weight:400; margin:0 0 10rem;">
+                  ${
+                    mode === 'conflict'
+                      ? '检测到《最后生还者 Part I》正在运行，已优先恢复其余项目'
+                      : mode === 'resumed'
+                        ? '已从上次中断位置继续恢复剩余项目'
+                        : '正在恢复全游戏通用存档'
+                  }
+                </h2>
+                <p style="font-size:17.5rem; color:#b2c0d4; margin:0;">
+                  ${state.lockScene.currentDetail}
+                </p>
+              </div>
+              <div class="progress-big-number">${state.lockScene.progress}%</div>
+            </div>
+
             <div class="progress-bar-track">
               <div class="progress-bar-fill" style="width:${state.lockScene.progress}%"></div>
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:14.5rem; color:#9fb0c6;">
+            <div style="display:flex; justify-content:space-between; font-size:15rem; color:#9fb0c6;">
               <span>已完成：插件与载荷 (12/12) · 游戏桌面展示 (14/14) · 游戏存档 (14/19)</span>
               <span>剩余约 45 秒</span>
             </div>
@@ -1441,8 +1482,8 @@
                 ? `
               <div class="inline-notice-box warn">
                 <div>
-                  <strong style="display:block; font-size:16.5rem; color:#f8fafc; margin-bottom:4rem;">请先保存并关闭正在运行的《最后生还者 Part I》</strong>
-                  <span style="font-size:14rem; color:#a9b8ce;">为避免覆盖正在游玩的进度，系统已暂停该游戏存档写入，其余无冲突项目正继续恢复。</span>
+                  <strong style="display:block; font-size:17rem; color:#f8fafc; margin-bottom:4rem;">请先保存并关闭正在运行的《最后生还者 Part I》</strong>
+                  <span style="font-size:14.5rem; color:#a9b8ce;">为避免覆盖正在游玩的进度，系统已暂停该游戏存档写入，其余无冲突项目正继续恢复。</span>
                 </div>
                 <button type="button" class="pill sm primary" data-action="resolve-conflict-continue">已关闭游戏，继续恢复</button>
               </div>
@@ -1455,27 +1496,14 @@
                 ? `
               <div class="inline-notice-box">
                 <div>
-                  <strong style="display:block; font-size:16.5rem; color:#cfe6ff; margin-bottom:4rem;">已自动核验中断前进度并继续执行</strong>
-                  <span style="font-size:14rem; color:#b8cde6;">重启前已完成的系统插件与桌面图标无需重复恢复，当前直接从第 15 款游戏存档继续。</span>
+                  <strong style="display:block; font-size:17rem; color:#cfe6ff; margin-bottom:4rem;">已自动核验中断前进度并继续执行</strong>
+                  <span style="font-size:14.5rem; color:#b8cde6;">重启前已完成的系统插件与桌面图标无需重复恢复，当前直接从第 15 款游戏存档继续。</span>
                 </div>
                 <span class="badge green">断点续做</span>
               </div>
             `
                 : ''
             }
-          </div>
-
-          <div class="lock-side-card">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18rem;">
-              <div class="progress-big-number">${state.lockScene.progress}%</div>
-              <img src="./assets/restore-logo.png" alt="ReStore" style="width:66rem; height:66rem; border-radius:20rem;" />
-            </div>
-            <div class="settings-row-list">
-              <div class="settings-row-card"><span>1. 系统插件与载荷</span><span class="badge green">已完成</span></div>
-              <div class="settings-row-card"><span>2. 游戏桌面展示</span><span class="badge green">已完成</span></div>
-              <div class="settings-row-card" style="border-color:rgba(118,190,255,0.55);"><strong>3. 全游戏通用存档</strong><span class="badge blue">进行中 (14/19)</span></div>
-              <div class="settings-row-card"><span>4. 系统设置与媒体图库</span><span class="badge muted">等待中</span></div>
-            </div>
           </div>
         </div>
 
