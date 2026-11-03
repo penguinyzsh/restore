@@ -145,8 +145,55 @@
     return `${hours}:${minutes} ${period}`
   }
 
+  /* ==================== 三套 BDD 交互与视觉变体（?variant=A|B|C） ====================
+     - Variant A（默认）：tvOS 极速跟随流（子页导航落焦即切 + 全站多选统一圆形打勾 + 初始落焦直达主按钮）
+     - Variant B：PS5 显式确认流（全站导航按 ✕ 才切 + 恢复/引导用圆勾、设置页用液态拨杆 + 初始落焦左上首卡 + PS5 棱光边框）
+     - Variant C：大屏直觉一体流（全站导航与单选胶囊落焦即切 + 全站多选统一「✓ 已纳入 / ○ 未纳入」文字状态徽章 + VisionOS 柔光浮层）
+  */
+  const BDD_VARIANTS = {
+    A: {
+      key: 'A',
+      name: '方案 A · tvOS 极速跟随 + 全站统一圆勾',
+      shortName: 'A · tvOS 跟随 + 统一圆勾',
+      navMode: 'subpage-follow', // 主页按 ✕ 进子页；子页内底坞 & 左侧栏落焦即切
+      initialFocusMode: 'primary-cta', // 进恢复页/引导页直达右下主按钮
+      toggleIndicator: 'circle-all', // 全站 4 处多选卡全部统一为右上角圆形打勾
+      radioFollowFocus: false,
+      styleTheme: 'tvos-glow',
+      summary: '子页内 Tab 落焦即切 · 全站 4 处多选卡统一圆形打勾 · 进页面直达主行动点',
+    },
+    B: {
+      key: 'B',
+      name: '方案 B · PS5 显式确认 + 圆勾/拨杆区分',
+      shortName: 'B · PS5 确认 + 拨杆区分',
+      navMode: 'explicit-press', // 全站所有 Tab 移动仅高亮，按 ✕ 才切换
+      initialFocusMode: 'first-card', // 进恢复页/引导页默认落焦左上第 1 张卡片
+      toggleIndicator: 'contextual', // 恢复/引导用圆形打勾，其他设置页用 Apple 拨杆
+      radioFollowFocus: false,
+      styleTheme: 'ps5-edge',
+      summary: '全站 Tab 必须按 ✕ 才切换 · 恢复用圆勾/设置用拨杆 · 进页面落焦左上第 1 张卡',
+    },
+    C: {
+      key: 'C',
+      name: '方案 C · 全跟随直觉 + 大屏文字状态胶囊',
+      shortName: 'C · 全跟随 + 文字状态胶囊',
+      navMode: 'all-follow', // 底坞、左侧栏、单选胶囊全部落焦即切换
+      initialFocusMode: 'primary-cta', // 进恢复页/引导页直达主按钮
+      toggleIndicator: 'pill-badge', // 全站 4 处多选卡统一右上角「✓ 已纳入 / ● 已启用」状态胶囊
+      radioFollowFocus: true,
+      styleTheme: 'vision-soft',
+      summary: '全站导航与单选胶囊落焦即切 · 多选卡统一文字状态胶囊 · VisionOS 柔光浮起',
+    },
+  }
+
+  function normalizeVariant(v) {
+    const up = String(v || 'A').toUpperCase()
+    return BDD_VARIANTS[up] ? up : 'A'
+  }
+
   const urlParams = new URLSearchParams(window.location.search)
   const rawView = urlParams.get('view')
+  const initialVariant = normalizeVariant(urlParams.get('variant'))
   const initialOnboardingOpen = rawView === 'onboarding' || urlParams.get('onboarding') === '1'
   const initialStep = Math.min(3, Math.max(1, parseInt(urlParams.get('step') || '1', 10) || 1))
   const initialLockMode = urlParams.get('lock')
@@ -157,10 +204,14 @@
     initialModal === 'restore-result'
 
   const state = {
+    variant: initialVariant,
     view: hasInitialLock ? 'restore' : normalizeView(rawView),
     otherTab: 'locations',
-    focusedDockId: 'restore',
+    focusedDockId: hasInitialLock ? 'restore' : normalizeView(rawView) === 'other' ? 'other' : 'restore',
     devDockCollapsed: true,
+    bddHudExpanded: true,
+    pendingFocusSelector: null,
+    lastTriggerSelector: null,
     onboardingOpen: initialOnboardingOpen,
     onboardingStep: initialStep,
     onboardingHasRp: urlParams.get('branch') !== 'empty-rp',
@@ -282,11 +333,33 @@
     toastTimer = setTimeout(() => el.classList.remove('show'), 2600)
   }
 
+  function getActiveVariant() {
+    return BDD_VARIANTS[state.variant] || BDD_VARIANTS.A
+  }
+
+  /* 全站 4 处「多选开关卡片」的统一右上角状态指示器（随 Variant A/B/C 自动切换） */
+  function renderToggleIndicator(isOn, contextType = 'selection') {
+    const v = getActiveVariant()
+    if (v.toggleIndicator === 'pill-badge') {
+      const onLabel = contextType === 'location' ? '● 已启用' : '✓ 已纳入'
+      const offLabel = contextType === 'location' ? '○ 已暂停' : '○ 未纳入'
+      return `<span class="bdd-toggle-pill ${isOn ? 'is-on' : 'is-off'}">${isOn ? onLabel : offLabel}</span>`
+    }
+    if (v.toggleIndicator === 'contextual' && (contextType === 'location' || contextType === 'scope')) {
+      return `
+        <span class="apple-switch ${isOn ? 'on' : ''}" aria-hidden="true">
+          <span class="apple-switch-knob"></span>
+        </span>
+      `
+    }
+    return `<div class="check-indicator" aria-hidden="true">${ICONS.check}</div>`
+  }
+
   function syncUrl() {
     const u = new URL(window.location.href)
-    u.searchParams.delete('variant')
     u.searchParams.delete('lockStyle')
     u.searchParams.delete('otherStyle')
+    u.searchParams.set('variant', state.variant)
     u.searchParams.set('view', state.onboardingOpen ? 'onboarding' : state.view)
     if (state.onboardingOpen) {
       u.searchParams.set('step', String(state.onboardingStep))
@@ -587,6 +660,7 @@
           class="restore-horiz-card ${selected ? 'selected' : ''}"
           data-action="toggle-object"
           data-obj="${obj.id}"
+          data-bdd-label="多选卡：${obj.order}. ${obj.title}"
         >
           <div class="restore-horiz-top">
             <div class="restore-horiz-left">
@@ -596,7 +670,7 @@
                 <p>${obj.desc}</p>
               </div>
             </div>
-            <div class="check-indicator">${ICONS.check}</div>
+            ${renderToggleIndicator(selected, 'selection')}
           </div>
           <div class="restore-horiz-foot">
             <div class="restore-horiz-tags">
@@ -620,6 +694,7 @@
             type="button"
             class="restore-horiz-card action-cta-card"
             data-action="select-all-objects"
+            data-bdd-label="主次按钮：一键全选 5 类备份数据"
           >
             <div class="restore-horiz-top">
               <div class="restore-horiz-left">
@@ -663,10 +738,10 @@
                 <div class="restore-hub-cta-group">
                   ${
                     !retried
-                      ? `<button type="button" class="pill sm brand" data-action="retry-unfinished-items">一键重试未完成项</button>`
+                      ? `<button type="button" class="pill sm brand" data-action="retry-unfinished-items" data-bdd-label="主按钮：一键重试未完成项">一键重试未完成项</button>`
                       : ''
                   }
-                  <button type="button" class="pill sm primary" data-action="finish-restore-and-close">完成</button>
+                  <button type="button" class="pill sm primary" data-action="finish-restore-and-close" data-bdd-label="主按钮：完成并退出汇总">完成</button>
                 </div>
               </div>
 
@@ -711,8 +786,8 @@
               <div class="restore-hub-cta-group">
                 ${
                   mode === 'conflict'
-                    ? `<button type="button" class="pill sm primary" data-action="resolve-conflict-continue">已关闭游戏，继续恢复</button>`
-                    : `<button type="button" class="pill sm primary" data-action="open-restore-result-modal">完成汇总</button>`
+                    ? `<button type="button" class="pill sm primary" data-action="resolve-conflict-continue" data-bdd-label="主按钮：已关闭游戏，继续恢复">已关闭游戏，继续恢复</button>`
+                    : `<button type="button" class="pill sm primary" data-action="open-restore-result-modal" data-bdd-label="主按钮：进入恢复完成汇总">完成汇总</button>`
                 }
               </div>
             </div>
@@ -750,7 +825,7 @@
             <div class="restore-hub-cta-group">
               ${
                 state.selectedObjects.length < 5
-                  ? `<button type="button" class="pill sm secondary" data-action="select-all-objects">全选 5 项</button>`
+                  ? `<button type="button" class="pill sm secondary" data-action="select-all-objects" data-bdd-label="次按钮：全选 5 项">全选 5 项</button>`
                   : ''
               }
               <button
@@ -758,6 +833,7 @@
                 class="pill sm primary"
                 data-action="start-lock-demo"
                 data-mode="normal"
+                data-bdd-label="主按钮：立即恢复"
               >
                 ${ICONS.restore}<span>立即恢复</span>
               </button>
@@ -776,6 +852,7 @@
                       class="restore-mini-pill ${state.selectedLocationId === loc.id ? 'active-loc' : ''}"
                       data-action="select-location"
                       data-loc="${loc.id}"
+                      data-bdd-label="单选胶囊：恢复位置 ${loc.name}"
                     >
                       ${loc.name.replace(' 存储设备', '')}
                     </button>
@@ -795,6 +872,7 @@
                       class="restore-mini-pill ${state.selectedRestorePointId === rp.id ? 'active-rp' : ''}"
                       data-action="select-rp"
                       data-rp="${rp.id}"
+                      data-bdd-label="单选胶囊：时间点 ${rp.title}"
                     >
                       ${rp.title.replace(' 自动备份', '').replace(' 手动备份', ' 手动')}
                     </button>
@@ -858,9 +936,9 @@
         <div class="other-a-stage-head">
           <div>
             <h2>备份存储位置与网络凭据</h2>
-            <p>各存储位置独立同步互不阻塞，支持随时接入 USB 或通过手柄软键盘配置 WebDAV 凭据。</p>
+            <p>整张位置卡片落焦后按 ✕ 即可切换启用或暂停；WebDAV 位置支持按 ↓ 选择「修改凭据」唤起手柄软键盘。</p>
           </div>
-          <button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="lan">
+          <button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="lan" data-bdd-label="次按钮：配置 WebDAV 凭据">
             <span>配置 WebDAV 凭据</span>
           </button>
         </div>
@@ -870,7 +948,15 @@
             .map((loc, idx) => {
               const ringColors = ['#38BDF8', '#60A5FA', '#818CF8']
               return `
-                <article class="other-a-loc-card ${loc.enabled ? 'is-enabled' : ''}">
+                <div
+                  role="button"
+                  tabindex="0"
+                  class="other-a-loc-card bdd-whole-toggle-card ${loc.enabled ? 'is-enabled selected' : ''}"
+                  data-action="toggle-location"
+                  data-loc="${loc.id}"
+                  data-bdd-label="多选位置卡：${loc.name}"
+                  aria-label="切换 ${loc.name}（当前${loc.enabled ? '已启用' : '已暂停'}）"
+                >
                   <div class="other-a-loc-top">
                     <div class="other-a-loc-title">
                       ${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}
@@ -879,15 +965,7 @@
                         <small>${loc.endpoint}</small>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      class="apple-switch ${loc.enabled ? 'on' : ''}"
-                      data-action="toggle-location"
-                      data-loc="${loc.id}"
-                      aria-label="切换 ${loc.name}"
-                    >
-                      <span class="apple-switch-knob"></span>
-                    </button>
+                    ${renderToggleIndicator(loc.enabled, 'location')}
                   </div>
 
                   <div class="vb-ring-row" style="margin: 6rem 0;">
@@ -903,11 +981,11 @@
                     <span>最近同步：${loc.lastSync}</span>
                     ${
                       loc.type === 'webdav'
-                        ? `<button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="${loc.id}">修改凭据</button>`
+                        ? `<button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="${loc.id}" data-bdd-label="次按钮：修改 ${loc.name} 凭据">修改凭据</button>`
                         : `<span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已就绪' : '已暂停'}</span>`
                     }
                   </div>
-                </article>
+                </div>
               `
             })
             .join('')}
@@ -932,6 +1010,7 @@
                 class="other-a-scope-card ${on ? 'selected' : ''}"
                 data-action="toggle-auto-scope"
                 data-obj="${obj.id}"
+                data-bdd-label="多选范围卡：${obj.title}"
               >
                 <div class="other-a-scope-top">
                   <div class="other-a-scope-title">
@@ -941,9 +1020,7 @@
                       <small>${obj.countText} · ${obj.size}</small>
                     </div>
                   </div>
-                  <span class="apple-switch ${on ? 'on' : ''}">
-                    <span class="apple-switch-knob"></span>
-                  </span>
+                  ${renderToggleIndicator(on, 'scope')}
                 </div>
                 <p>${obj.desc}</p>
               </button>
@@ -994,6 +1071,7 @@
                     class="pill sm ${rp.protected ? 'brand' : 'secondary'}"
                     data-action="toggle-rp-protect"
                     data-rp="${rp.id}"
+                    data-bdd-label="次按钮：切换恢复点保护（${rp.title}）"
                   >
                     ${rp.protected ? '已锁定保护' : '锁定保护'}
                   </button>
@@ -1011,7 +1089,7 @@
             <h2>后台守护服务与初始化向导</h2>
             <p>守护服务在关闭界面后继续常驻运行，游戏运行期间零抢占读写，退游存档落盘稳定后自动增量同步。</p>
           </div>
-          <button type="button" class="pill sm brand" data-action="open-onboarding">
+          <button type="button" class="pill sm brand" data-action="open-onboarding" data-bdd-label="主按钮：重新打开首次引导">
             <span>重新打开首次引导</span>
           </button>
         </div>
@@ -1032,7 +1110,7 @@
             </div>
             <div class="other-a-loc-foot">
               <span>上次触发：今天 19:10（《最后生还者 Part I》）</span>
-              <button type="button" class="pill sm primary" data-action="manual-backup">立即手动备份</button>
+              <button type="button" class="pill sm primary" data-action="manual-backup" data-bdd-label="主按钮：立即手动备份">立即手动备份</button>
             </div>
           </article>
 
@@ -1051,7 +1129,7 @@
             </div>
             <div class="other-a-loc-foot">
               <span>支持三步向导随时重配</span>
-              <button type="button" class="pill sm secondary" data-action="open-onboarding">打开三步引导向导</button>
+              <button type="button" class="pill sm secondary" data-action="open-onboarding" data-bdd-label="次按钮：打开三步引导向导">打开三步引导向导</button>
             </div>
           </article>
         </div>
@@ -1069,6 +1147,7 @@
                 class="other-a-nav-btn ${activeTab === item.id ? 'active' : ''}"
                 data-action="select-other-tab"
                 data-tab="${item.id}"
+                data-bdd-label="左侧导航轨：${item.title}"
               >
                 <span class="other-clean-icon">${ICONS[item.icon]}</span>
                 <div class="other-a-nav-copy">
@@ -1123,9 +1202,9 @@
         <div class="wizard-stage-head">
           <div>
             <h2>第一步：选择备份存储位置（可多选）</h2>
-            <p>选择一个或多个用于存放与读取恢复点的存储设备，网络存储支持手柄软键盘输入凭据。</p>
+            <p>整张卡片落焦后按 ✕ 切换启用；网络存储可按 ↓ 选择「填写地址与账号」打开手柄软键盘。</p>
           </div>
-          <button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="lan">
+          <button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="lan" data-bdd-label="次按钮：配置 WebDAV 连接">
             <span>配置 WebDAV 连接</span>
           </button>
         </div>
@@ -1134,22 +1213,22 @@
           ${state.locations
             .map(
               (loc) => `
-            <div class="wizard-loc-card ${loc.enabled ? 'selected' : ''}">
+            <div
+              role="button"
+              tabindex="0"
+              class="wizard-loc-card bdd-whole-toggle-card ${loc.enabled ? 'selected' : ''}"
+              data-action="toggle-location"
+              data-loc="${loc.id}"
+              data-bdd-label="多选位置卡：${loc.name}"
+              aria-label="切换 ${loc.name}"
+            >
               <div>
                 <div class="loc-row-top" style="margin-bottom:14rem;">
                   <div class="loc-row-title">
                     ${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}
                     <span>${loc.name}</span>
                   </div>
-                  <button
-                    type="button"
-                    class="check-indicator"
-                    data-action="toggle-location"
-                    data-loc="${loc.id}"
-                    aria-label="切换 ${loc.name}"
-                  >
-                    ${ICONS.check}
-                  </button>
+                  ${renderToggleIndicator(loc.enabled, 'location')}
                 </div>
                 <p style="margin:0 0 10rem; font-size:15.5rem; color:#b2c0d4;">
                   ${hasRp ? `最近备份：${loc.lastSync}` : '设备已就绪，可用于存放备份'}
@@ -1159,11 +1238,11 @@
                 </p>
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center; padding-top:16rem; border-top:1rem solid rgba(255,255,255,0.08);">
-                <span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已选择' : '未启用'}</span>
+                <span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已启用此位置' : '未启用（按 ✕ 启用）'}</span>
                 ${
                   loc.type === 'webdav'
-                    ? `<button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="${loc.id}">填写地址与账号</button>`
-                    : `<button type="button" class="pill sm secondary" data-action="toggle-location" data-loc="${loc.id}">${loc.enabled ? '取消选择' : '选择此位置'}</button>`
+                    ? `<button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="${loc.id}" data-bdd-label="次按钮：填写 ${loc.name} 凭据">填写地址与账号</button>`
+                    : `<span class="badge blue">整卡按 ✕ 切换</span>`
                 }
               </div>
             </div>
@@ -1180,8 +1259,8 @@
       `
       footerRight = `
         <div style="display:flex; gap:12rem;">
-          <button type="button" class="pill secondary" data-action="close-onboarding">跳过向导</button>
-          <button type="button" class="pill primary" data-action="wizard-next-step">
+          <button type="button" class="pill secondary" data-action="close-onboarding" data-bdd-label="次按钮：跳过向导">跳过向导</button>
+          <button type="button" class="pill primary" data-action="wizard-next-step" data-bdd-label="主按钮：下一步">
             <span>下一步</span>
           </button>
         </div>
@@ -1206,6 +1285,7 @@
                 class="rp-card ${state.selectedRestorePointId === rp.id ? 'selected' : ''}"
                 data-action="select-rp"
                 data-rp="${rp.id}"
+                data-bdd-label="单选恢复点卡：${rp.title}"
               >
                 <div>
                   <div class="rp-card-top">
@@ -1251,8 +1331,8 @@
       }
       footerRight = `
         <div style="display:flex; gap:12rem;">
-          <button type="button" class="pill secondary" data-action="wizard-prev-step">上一步</button>
-          <button type="button" class="pill primary" data-action="wizard-next-step">
+          <button type="button" class="pill secondary" data-action="wizard-prev-step" data-bdd-label="次按钮：上一步">上一步</button>
+          <button type="button" class="pill primary" data-action="wizard-next-step" data-bdd-label="主按钮：下一步">
             <span>下一步</span>
           </button>
         </div>
@@ -1329,16 +1409,16 @@
       `
       footerRight = `
         <div style="display:flex; gap:12rem;">
-          <button type="button" class="pill secondary" data-action="wizard-prev-step">上一步</button>
+          <button type="button" class="pill secondary" data-action="wizard-prev-step" data-bdd-label="次按钮：上一步">上一步</button>
           ${
             hasRp
               ? `
-              <button type="button" class="pill primary" data-action="start-lock-demo" data-mode="normal">
+              <button type="button" class="pill primary" data-action="start-lock-demo" data-mode="normal" data-bdd-label="主按钮：开始整机恢复">
                 ${ICONS.restore}<span>开始整机恢复</span>
               </button>
             `
               : `
-              <button type="button" class="pill primary" data-action="trigger-initial-backup">
+              <button type="button" class="pill primary" data-action="trigger-initial-backup" data-bdd-label="主按钮：开始首次备份">
                 ${ICONS.bolt}<span>开始首次备份</span>
               </button>
             `
@@ -1367,6 +1447,7 @@
                 class="wizard-step-pill ${step === s.num ? 'active' : step > s.num ? 'done' : ''}"
                 data-action="wizard-goto-step"
                 data-step="${s.num}"
+                data-bdd-label="步骤胶囊：${s.title}"
               >
                 <span>${s.title}</span>
               </button>
@@ -1391,6 +1472,7 @@
   function renderModal() {
     if (state.modal === 'webdav-osk') {
       const loc = state.locations.find((l) => l.id === state.editingLocationId) || state.locations[1]
+      const activeField = state.oskForm.activeField || 'url'
       const keys = [
         ['http://', 'https://', '192.168.', ':5244', '/dav', '/restore', '.com', '退格'],
         ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm'],
@@ -1401,21 +1483,48 @@
         <div class="modal-backdrop" role="dialog" aria-modal="true" aria-label="配置 WebDAV 存储">
           <div class="modal">
             <h2>配置 ${loc.name}</h2>
-            <p>使用手柄方向键选择输入框与软键盘字符，按 ✕ 输入并验证连接。</p>
+            <p>使用手柄方向键在顶部切换「服务器地址 / 账号 / 密码」目标字段，再在下方的软键盘按 ✕ 输入字符。</p>
             <div class="osk-field-grid">
-              <div class="osk-field">
-                <label>服务器地址</label>
-                <input class="modal-input" type="text" id="osk-url" value="${state.oskForm.url}" />
-              </div>
+              <button
+                type="button"
+                class="osk-field osk-field-selectable ${activeField === 'url' ? 'is-active-field' : ''}"
+                data-action="select-osk-field"
+                data-field="url"
+                data-bdd-label="输入框目标：服务器地址"
+              >
+                <div class="osk-field-head">
+                  <label>服务器地址</label>
+                  <span class="badge ${activeField === 'url' ? 'blue' : 'muted'}">${activeField === 'url' ? '当前输入目标' : '按 ✕ 切换至此'}</span>
+                </div>
+                <div class="modal-input-display">${state.oskForm.url || '<span style="opacity:0.45">请输入地址</span>'}<i class="osk-caret"></i></div>
+              </button>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:14rem;">
-                <div class="osk-field">
-                  <label>账号</label>
-                  <input class="modal-input" type="text" id="osk-user" value="${state.oskForm.user}" />
-                </div>
-                <div class="osk-field">
-                  <label>密码</label>
-                  <input class="modal-input" type="text" id="osk-pass" value="${state.oskForm.pass}" />
-                </div>
+                <button
+                  type="button"
+                  class="osk-field osk-field-selectable ${activeField === 'user' ? 'is-active-field' : ''}"
+                  data-action="select-osk-field"
+                  data-field="user"
+                  data-bdd-label="输入框目标：账号"
+                >
+                  <div class="osk-field-head">
+                    <label>账号</label>
+                    <span class="badge ${activeField === 'user' ? 'blue' : 'muted'}">${activeField === 'user' ? '当前输入目标' : '按 ✕ 切换至此'}</span>
+                  </div>
+                  <div class="modal-input-display">${state.oskForm.user || '<span style="opacity:0.45">请输入账号</span>'}<i class="osk-caret"></i></div>
+                </button>
+                <button
+                  type="button"
+                  class="osk-field osk-field-selectable ${activeField === 'pass' ? 'is-active-field' : ''}"
+                  data-action="select-osk-field"
+                  data-field="pass"
+                  data-bdd-label="输入框目标：密码"
+                >
+                  <div class="osk-field-head">
+                    <label>密码</label>
+                    <span class="badge ${activeField === 'pass' ? 'blue' : 'muted'}">${activeField === 'pass' ? '当前输入目标' : '按 ✕ 切换至此'}</span>
+                  </div>
+                  <div class="modal-input-display">${state.oskForm.pass || '<span style="opacity:0.45">请输入密码</span>'}<i class="osk-caret"></i></div>
+                </button>
               </div>
             </div>
             <div class="osk-keypad" aria-label="软键盘">
@@ -1423,7 +1532,7 @@
                 .map(
                   (row) => `
                 <div class="osk-keypad-row">
-                  ${row.map((k) => `<button type="button" class="osk-key" data-action="osk-key" data-key="${k}">${k}</button>`).join('')}
+                  ${row.map((k) => `<button type="button" class="osk-key" data-action="osk-key" data-key="${k}" data-bdd-label="软键盘按键：${k}">${k}</button>`).join('')}
                 </div>
               `,
                 )
@@ -1432,8 +1541,8 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:22rem;">
               <span class="badge green">${ICONS.check}<span>连接测试正常</span></span>
               <div style="display:flex; gap:12rem;">
-                <button type="button" class="pill secondary sm" data-action="close-modal">取消</button>
-                <button type="button" class="pill primary sm" data-action="save-webdav-osk">保存并连接</button>
+                <button type="button" class="pill secondary sm" data-action="close-modal" data-bdd-label="次按钮：取消并关闭弹窗">取消</button>
+                <button type="button" class="pill primary sm" data-action="save-webdav-osk" data-bdd-label="主按钮：保存并连接 WebDAV">保存并连接</button>
               </div>
             </div>
           </div>
@@ -1463,6 +1572,119 @@
           </button>
         </div>
       </footer>
+    `
+  }
+
+  /* ==================== 顶部居中 BDD 变体切换器与实时路径监视器（Prototype Switcher + Live BDD HUD） ==================== */
+  function describeCurrentBddContext(focusedEl) {
+    let whereText = '主页 · 底部控制坞'
+    if (state.modal === 'webdav-osk') {
+      whereText = '弹窗层 · WebDAV 软键盘'
+    } else if (state.onboardingOpen) {
+      whereText = `首次引导 · 第 ${state.onboardingStep} 步`
+    } else if (state.view === 'restore') {
+      if (state.lockScene.active) {
+        whereText = state.lockScene.mode === 'done' ? '恢复页 · 2×3 完成汇总态' : '恢复页 · 2×3 原地执行态'
+      } else {
+        whereText = '恢复页 · 2×3 矩阵常态'
+      }
+    } else if (state.view === 'other') {
+      const tabNames = {
+        locations: '存储位置与连接',
+        scope: '自动备份范围',
+        protect: '恢复点保护',
+        daemon: '后台守护与向导',
+      }
+      whereText = `其他页 · ${tabNames[state.otherTab] || '设置'}`
+    }
+
+    const label =
+      focusedEl?.dataset?.bddLabel ||
+      focusedEl?.getAttribute?.('aria-label') ||
+      focusedEl?.textContent?.trim()?.slice(0, 18) ||
+      '当前首项'
+
+    const v = getActiveVariant()
+    let actionHint = '按 ✕ 触发当前控件'
+    const act = focusedEl?.dataset?.action
+    if (act === 'open-dock-item') {
+      actionHint =
+        state.view === 'home'
+          ? '按 ←/→ 移动焦点，按 ✕ 进入子页'
+          : v.navMode === 'explicit-press'
+            ? '按 ✕ 切换至此子页（再按收起回主页）'
+            : '落焦已自动切页（按 ↑ 入内容区，按 ✕ 回主页）'
+    } else if (act === 'select-other-tab') {
+      actionHint =
+        v.navMode === 'explicit-press'
+          ? '按 ↑/↓ 仅移动白框，按 ✕ 确认切换右侧舞台'
+          : '按 ↑/↓ 落焦即切换右侧舞台，按 → 进入右侧卡片'
+    } else if (act === 'toggle-object' || act === 'toggle-auto-scope' || act === 'toggle-location') {
+      actionHint = '整卡落焦 · 按 ✕ 直接切换选中/启用态'
+    } else if (act === 'select-location' || act === 'select-rp') {
+      actionHint = v.radioFollowFocus ? '落焦已自动单选切换' : '按 ✕ 单选切换此项'
+    }
+
+    return { whereText, label, actionHint }
+  }
+
+  function renderBddVariantSwitcher() {
+    const v = getActiveVariant()
+    return `
+      <aside class="bdd-prototype-switcher" aria-label="BDD 交互与样式方案切换器">
+        <div class="bdd-switcher-top">
+          <button type="button" class="bdd-cycle-btn" data-action="cycle-variant" data-dir="-1" title="上一套方案 ([ 键)">◀</button>
+          <div class="bdd-variant-tabs">
+            ${Object.values(BDD_VARIANTS)
+              .map(
+                (item) => `
+                <button
+                  type="button"
+                  class="bdd-variant-pill ${state.variant === item.key ? 'active' : ''}"
+                  data-action="select-variant"
+                  data-variant="${item.key}"
+                >
+                  <span>${item.shortName}</span>
+                </button>
+              `,
+              )
+              .join('')}
+          </div>
+          <button type="button" class="bdd-cycle-btn" data-action="cycle-variant" data-dir="1" title="下一套方案 (] 键)">▶</button>
+          <button type="button" class="bdd-hud-toggle" data-action="toggle-bdd-hud">
+            ${state.bddHudExpanded ? '收起说明' : '展开 BDD'}
+          </button>
+        </div>
+        ${
+          state.bddHudExpanded
+            ? `
+            <div class="bdd-live-hud" id="bdd-live-hud">
+              <div class="bdd-hud-rule">
+                <span class="bdd-tag">当前方案规则</span>
+                <span>${v.summary}</span>
+              </div>
+              <div class="bdd-hud-trace" id="bdd-hud-trace">
+                <span><strong>Given</strong> <em>主页 · 底部控制坞</em></span>
+                <span>→ <strong>Focused</strong> <em>恢复</em></span>
+                <span>→ <strong>When/Then</strong> <em>按 ✕ 进入子页</em></span>
+              </div>
+            </div>
+          `
+            : ''
+        }
+      </aside>
+    `
+  }
+
+  function updateBddHudTrace() {
+    const traceEl = document.getElementById('bdd-hud-trace')
+    if (!traceEl) return
+    const focused = document.querySelector('[data-pad-focus="true"]')
+    const { whereText, label, actionHint } = describeCurrentBddContext(focused)
+    traceEl.innerHTML = `
+      <span><strong>Given</strong> <em>【${whereText}】</em></span>
+      <span>→ <strong>Focused</strong> <em>「${label}」</em></span>
+      <span>→ <strong>Rule</strong> <em>${actionHint}</em></span>
     `
   }
 
@@ -1547,19 +1769,87 @@
     return renderHomePage()
   }
 
+  /* ==================== 计算各页面/弹窗的默认初始落焦选择器 ==================== */
+  function getDefaultFocusSelector() {
+    const v = getActiveVariant()
+    if (state.modal === 'webdav-osk') {
+      return '.modal .osk-key[data-key="http://"]'
+    }
+    if (state.onboardingOpen) {
+      if (v.initialFocusMode === 'first-card') {
+        if (state.onboardingStep === 1) return '.fullscreen-overlay .wizard-loc-card[data-loc]'
+        if (state.onboardingStep === 2) {
+          return state.onboardingHasRp
+            ? '.fullscreen-overlay .rp-card[data-rp]'
+            : '.fullscreen-overlay .restore-horiz-card[data-obj]'
+        }
+      }
+      return '.fullscreen-overlay .wizard-footer-bar .pill.primary'
+    }
+    if (state.view === 'restore' || state.lockScene.active) {
+      if (state.lockScene.active) {
+        if (state.lockScene.mode === 'done') {
+          return state.restoreResultRetried
+            ? '[data-action="finish-restore-and-close"]'
+            : '[data-action="retry-unfinished-items"]'
+        }
+        return state.lockScene.mode === 'conflict'
+          ? '[data-action="resolve-conflict-continue"]'
+          : '[data-action="open-restore-result-modal"]'
+      }
+      return v.initialFocusMode === 'first-card'
+        ? '.restore-horiz-card[data-obj="elf"]'
+        : '.restore-control-hub-card [data-action="start-lock-demo"]'
+    }
+    if (state.view === 'other') {
+      return `.other-a-nav-btn[data-tab="${state.otherTab || 'locations'}"]`
+    }
+    return `.dock-icon-card[data-dock-id="${state.focusedDockId || 'restore'}"]`
+  }
+
+  function buildFocusIdentitySelector(el) {
+    if (!el || !el.dataset) return null
+    const act = el.dataset.action
+    if (!act) return null
+    if (el.dataset.dockId) return `[data-action="${act}"][data-dock-id="${el.dataset.dockId}"]`
+    if (el.dataset.obj) return `[data-action="${act}"][data-obj="${el.dataset.obj}"]`
+    if (el.dataset.loc) return `[data-action="${act}"][data-loc="${el.dataset.loc}"]`
+    if (el.dataset.rp) return `[data-action="${act}"][data-rp="${el.dataset.rp}"]`
+    if (el.dataset.tab) return `[data-action="${act}"][data-tab="${el.dataset.tab}"]`
+    if (el.dataset.key) return `[data-action="${act}"][data-key="${CSS.escape(el.dataset.key)}"]`
+    if (el.dataset.field) return `[data-action="${act}"][data-field="${el.dataset.field}"]`
+    if (el.dataset.step) return `[data-action="${act}"][data-step="${el.dataset.step}"]`
+    return `[data-action="${act}"]`
+  }
+
+  function applyFocusToSelector(selector) {
+    if (!selector) return false
+    const target = document.querySelector(selector)
+    if (!target) return false
+    document.querySelectorAll('[data-pad-focus="true"]').forEach((n) => delete n.dataset.padFocus)
+    target.dataset.padFocus = 'true'
+    target.focus({ preventScroll: true })
+    return true
+  }
+
   function render(reason = 'update') {
     const app = document.getElementById('app')
     if (!app) return
     const previous = window.PS5Motion ? window.PS5Motion.capture() : {}
 
+    const prevFocusedEl = document.querySelector('[data-pad-focus="true"]')
+    const preservedSelector = reason === 'update' ? buildFocusIdentitySelector(prevFocusedEl) : null
+
     app.innerHTML = `
       <div
         class="app-shell"
+        data-variant="${state.variant}"
         data-view="${state.view}"
         data-focus-dock="${state.focusedDockId}"
         data-onboarding-step="${state.onboardingOpen ? state.onboardingStep : ''}"
       >
         <div class="console-wallpaper" aria-hidden="true"></div>
+        ${renderBddVariantSwitcher()}
         ${renderHeader()}
         ${renderMainScene()}
         ${renderOnboardingOverlay()}
@@ -1569,10 +1859,17 @@
       </div>
     `
 
+    const targetSelector = state.pendingFocusSelector || preservedSelector || getDefaultFocusSelector()
+    state.pendingFocusSelector = null
+    if (!applyFocusToSelector(targetSelector)) {
+      applyFocusToSelector(getDefaultFocusSelector())
+    }
+
     if (window.PS5Motion) {
       window.PS5Motion.animate(previous, reason)
     }
     syncUrl()
+    updateBddHudTrace()
   }
 
   function triggerQuickBackup() {
@@ -1591,6 +1888,8 @@
   function handleBackAction() {
     if (state.modal) {
       state.modal = null
+      state.pendingFocusSelector = state.lastTriggerSelector || null
+      state.lastTriggerSelector = null
       render('update')
     } else if (state.onboardingOpen) {
       if (state.onboardingStep > 1) {
@@ -1600,12 +1899,30 @@
       }
       render('route')
     } else if (state.lockScene.active) {
+      if (state.lockScene.mode !== 'done') {
+        showToast('正在恢复数据，请等待当前恢复完成后再返回')
+        return
+      }
       state.lockScene.active = false
+      state.pendingFocusSelector = '.restore-control-hub-card [data-action="start-lock-demo"]'
       render('route')
     } else if (state.view !== 'home') {
+      const exitFromDockId = state.view === 'other' ? 'other' : 'restore'
+      state.focusedDockId = exitFromDockId
       state.view = 'home'
+      state.pendingFocusSelector = `.dock-icon-card[data-dock-id="${exitFromDockId}"]`
       render('route')
     }
+  }
+
+  function cycleVariant(delta) {
+    const keys = Object.keys(BDD_VARIANTS)
+    const idx = keys.indexOf(state.variant)
+    const nextIdx = (idx + delta + keys.length) % keys.length
+    state.variant = keys[nextIdx]
+    const v = getActiveVariant()
+    showToast(`已切换至 ${v.name}`)
+    render('update')
   }
 
   document.addEventListener('focusin', (e) => {
@@ -1615,6 +1932,7 @@
       const shell = document.querySelector('#app .app-shell')
       if (shell) shell.dataset.focusDock = state.focusedDockId
     }
+    updateBddHudTrace()
   })
 
   document.addEventListener('mouseover', (e) => {
@@ -1631,7 +1949,37 @@
     if (!btn) return
     const action = btn.dataset.action
 
+    if (
+      !btn.classList.contains('ds-prompt') &&
+      !btn.classList.contains('bdd-variant-pill') &&
+      !btn.classList.contains('bdd-cycle-btn') &&
+      !btn.classList.contains('bdd-hud-toggle') &&
+      !btn.classList.contains('proto-dock-btn') &&
+      !btn.classList.contains('proto-dev-tag')
+    ) {
+      document.querySelectorAll('[data-pad-focus="true"]').forEach((n) => delete n.dataset.padFocus)
+      btn.dataset.padFocus = 'true'
+    }
+
     switch (action) {
+      case 'select-variant': {
+        const targetVar = normalizeVariant(btn.dataset.variant)
+        if (state.variant !== targetVar) {
+          state.variant = targetVar
+          showToast(`已切换至 ${getActiveVariant().name}`)
+          render('update')
+        }
+        break
+      }
+      case 'cycle-variant': {
+        const dir = parseInt(btn.dataset.dir || '1', 10)
+        cycleVariant(dir)
+        break
+      }
+      case 'toggle-bdd-hud':
+        state.bddHudExpanded = !state.bddHudExpanded
+        render('update')
+        break
       case 'open-dock-item': {
         if (state.lockScene.active && state.lockScene.mode !== 'done') {
           showToast('正在恢复数据，请先完成当前恢复任务')
@@ -1641,7 +1989,11 @@
         const targetId = btn.dataset.dockId
         state.focusedDockId = targetId
         state.onboardingOpen = false
-        state.view = state.view === targetId ? 'home' : targetId
+        const goingHome = state.view === targetId
+        state.view = goingHome ? 'home' : targetId
+        if (goingHome) {
+          state.pendingFocusSelector = `.dock-icon-card[data-dock-id="${targetId}"]`
+        }
         render('route')
         break
       }
@@ -1652,6 +2004,7 @@
       case 'select-other-tab': {
         const t = btn.dataset.tab || 'locations'
         state.otherTab = t
+        state.pendingFocusSelector = `.other-a-nav-btn[data-tab="${t}"]`
         render('update')
         break
       }
@@ -1712,16 +2065,19 @@
         if (loc) {
           loc.enabled = !loc.enabled
           showToast(`${loc.name}${loc.enabled ? '已启用' : '已暂停'}`)
+          state.pendingFocusSelector = `[data-action="toggle-location"][data-loc="${loc.id}"]`
           render('update')
         }
         break
       }
       case 'select-location':
         state.selectedLocationId = btn.dataset.loc
+        state.pendingFocusSelector = `[data-action="select-location"][data-loc="${btn.dataset.loc}"]`
         render('update')
         break
       case 'select-rp':
         state.selectedRestorePointId = btn.dataset.rp
+        state.pendingFocusSelector = `[data-action="select-rp"][data-rp="${btn.dataset.rp}"]`
         render('update')
         break
       case 'toggle-object': {
@@ -1735,12 +2091,16 @@
         } else {
           state.selectedObjects = [...state.selectedObjects, id]
         }
+        state.pendingFocusSelector = `[data-action="toggle-object"][data-obj="${id}"]`
         render('update')
         break
       }
       case 'select-all-objects':
         state.selectedObjects = FIVE_OBJECTS.map((o) => o.id)
         showToast('已全选全部 5 类数据')
+        state.pendingFocusSelector = state.onboardingOpen
+          ? '.fullscreen-overlay [data-action="select-all-objects"]'
+          : '.restore-control-hub-card [data-action="start-lock-demo"]'
         render('update')
         break
       case 'trigger-initial-backup':
@@ -1757,6 +2117,7 @@
         } else {
           state.onboardingOpen = false
           state.view = 'restore'
+          state.focusedDockId = 'restore'
           state.lockScene.active = true
           state.lockScene.mode = targetMode
           state.lockScene.progress = targetMode === 'done' ? 100 : targetMode === 'resumed' ? 76 : 68
@@ -1772,6 +2133,7 @@
         state.lockScene.progress = 92
         state.lockScene.currentDetail = '《最后生还者 Part I》已关闭，正在完成存档恢复'
         showToast('已继续恢复《最后生还者 Part I》存档')
+        state.pendingFocusSelector = '[data-action="open-restore-result-modal"]'
         render('update')
         break
       case 'open-restore-result-modal':
@@ -1780,24 +2142,36 @@
         state.lockScene.active = true
         state.lockScene.mode = 'done'
         state.lockScene.progress = 100
+        state.pendingFocusSelector = '[data-action="retry-unfinished-items"]'
         render('update')
         break
       case 'retry-unfinished-items':
         state.restoreResultRetried = true
         state.lockScene.progress = 100
         showToast('未完成项已重试成功')
+        state.pendingFocusSelector = '[data-action="finish-restore-and-close"]'
         render('update')
         break
       case 'finish-restore-and-close':
         state.modal = null
         state.lockScene.active = false
+        state.pendingFocusSelector = '.restore-control-hub-card [data-action="start-lock-demo"]'
         render('update')
         break
       case 'open-webdav-osk':
+        state.lastTriggerSelector = buildFocusIdentitySelector(btn)
         state.editingLocationId = btn.dataset.loc || 'lan'
         state.modal = 'webdav-osk'
+        state.pendingFocusSelector = '.modal .osk-key[data-key="http://"]'
         render('update')
         break
+      case 'select-osk-field': {
+        const f = btn.dataset.field || 'url'
+        state.oskForm.activeField = f
+        state.pendingFocusSelector = `.modal [data-action="select-osk-field"][data-field="${f}"]`
+        render('update')
+        break
+      }
       case 'osk-key': {
         const k = btn.dataset.key
         const field = state.oskForm.activeField || 'url'
@@ -1806,12 +2180,11 @@
         } else {
           state.oskForm[field] += k
         }
+        state.pendingFocusSelector = `.modal .osk-key[data-key="${CSS.escape(k)}"]`
         render('update')
         break
       }
       case 'save-webdav-osk': {
-        const urlInput = document.getElementById('osk-url')
-        if (urlInput) state.oskForm.url = urlInput.value
         const loc = state.locations.find((l) => l.id === state.editingLocationId)
         if (loc) {
           loc.enabled = true
@@ -1820,12 +2193,16 @@
           loc.statusText = '在线 · 已同步最新备份'
         }
         state.modal = null
+        state.pendingFocusSelector = state.lastTriggerSelector || null
+        state.lastTriggerSelector = null
         showToast('WebDAV 连接配置已保存')
         render('update')
         break
       }
       case 'close-modal':
         state.modal = null
+        state.pendingFocusSelector = state.lastTriggerSelector || null
+        state.lastTriggerSelector = null
         render('update')
         break
       case 'toggle-rp-protect': {
@@ -1833,6 +2210,7 @@
         if (rp) {
           rp.protected = !rp.protected
           showToast(`${rp.title}${rp.protected ? '已锁定保护' : '已解除保护'}`)
+          state.pendingFocusSelector = `[data-action="toggle-rp-protect"][data-rp="${rp.id}"]`
           render('update')
         }
         break
@@ -1847,6 +2225,7 @@
         state.autoBackupScope = state.autoBackupScope.includes(id)
           ? state.autoBackupScope.filter((x) => x !== id)
           : [...state.autoBackupScope, id]
+        state.pendingFocusSelector = `[data-action="toggle-auto-scope"][data-obj="${id}"]`
         render('update')
         break
       }
@@ -1872,9 +2251,11 @@
           showToast('恢复任务正在执行中')
         } else if (state.view !== 'restore') {
           state.onboardingOpen = false
+          state.focusedDockId = 'restore'
           state.view = 'restore'
           render('route')
         } else {
+          state.focusedDockId = 'restore'
           state.lockScene.active = true
           state.lockScene.mode = 'normal'
           state.lockScene.progress = 68
@@ -1883,6 +2264,65 @@
         break
     }
   })
+
+  /* 当方向键落焦到新元素时，根据当前 Variant 的 BDD 规则决定是否触发 Selection Follows Focus */
+  function handleFocusEnteredElement(el) {
+    if (!el || !el.dataset) return
+    const v = getActiveVariant()
+    const act = el.dataset.action
+
+    // 1. 其他页左侧四项导航轨
+    if (act === 'select-other-tab' && (v.navMode === 'subpage-follow' || v.navMode === 'all-follow')) {
+      const targetTab = el.dataset.tab
+      if (targetTab && state.otherTab !== targetTab) {
+        state.otherTab = targetTab
+        state.pendingFocusSelector = `.other-a-nav-btn[data-tab="${targetTab}"]`
+        render('update')
+        return
+      }
+    }
+
+    // 2. 子页底部紧凑控制坞（恢复 ↔ 其他）
+    if (
+      act === 'open-dock-item' &&
+      state.view !== 'home' &&
+      !state.lockScene.active &&
+      (v.navMode === 'subpage-follow' || v.navMode === 'all-follow')
+    ) {
+      const targetDock = el.dataset.dockId
+      if (targetDock && state.view !== targetDock) {
+        state.focusedDockId = targetDock
+        state.view = targetDock
+        state.pendingFocusSelector = `.dock-icon-card[data-dock-id="${targetDock}"]`
+        render('route')
+        return
+      }
+    }
+
+    // 3. 方案 C（all-follow）：连单选胶囊、恢复点卡片、软键盘目标输入框也落焦即切换
+    if (v.radioFollowFocus) {
+      if (act === 'select-location' && el.dataset.loc && state.selectedLocationId !== el.dataset.loc) {
+        state.selectedLocationId = el.dataset.loc
+        state.pendingFocusSelector = `[data-action="select-location"][data-loc="${el.dataset.loc}"]`
+        render('update')
+        return
+      }
+      if (act === 'select-rp' && el.dataset.rp && state.selectedRestorePointId !== el.dataset.rp) {
+        state.selectedRestorePointId = el.dataset.rp
+        state.pendingFocusSelector = `[data-action="select-rp"][data-rp="${el.dataset.rp}"]`
+        render('update')
+        return
+      }
+      if (act === 'select-osk-field' && el.dataset.field && state.oskForm.activeField !== el.dataset.field) {
+        state.oskForm.activeField = el.dataset.field
+        state.pendingFocusSelector = `.modal [data-action="select-osk-field"][data-field="${el.dataset.field}"]`
+        render('update')
+        return
+      }
+    }
+
+    updateBddHudTrace()
+  }
 
   function moveFocusSpatially(dir) {
     const scopeRoot = state.modal
@@ -1893,7 +2333,7 @@
 
     const candidates = [
       ...(scopeRoot || document).querySelectorAll(
-        'button:not([disabled]):not(.proto-dock-btn):not(.proto-dev-tag):not(.ds-prompt), input:not([disabled])',
+        'button:not([disabled]):not(.proto-dock-btn):not(.proto-dev-tag):not(.ds-prompt):not(.bdd-variant-pill):not(.bdd-cycle-btn):not(.bdd-hud-toggle), [role="button"][tabindex="0"], input:not([disabled])',
       ),
     ].filter((el) => {
       const r = el.getBoundingClientRect()
@@ -1908,6 +2348,7 @@
     if (!current || !candidates.includes(current)) {
       candidates[0].dataset.padFocus = 'true'
       candidates[0].focus({ preventScroll: true })
+      handleFocusEnteredElement(candidates[0])
       return
     }
 
@@ -1944,6 +2385,7 @@
     document.querySelectorAll('[data-pad-focus="true"]').forEach((n) => delete n.dataset.padFocus)
     next.dataset.padFocus = 'true'
     next.focus({ preventScroll: true })
+    handleFocusEnteredElement(next)
   }
 
   document.addEventListener('keydown', (e) => {
@@ -1956,7 +2398,19 @@
       return
     }
 
-    if (e.key === 'ArrowRight') {
+    if (e.key === '[') {
+      e.preventDefault()
+      cycleVariant(-1)
+    } else if (e.key === ']') {
+      e.preventDefault()
+      cycleVariant(1)
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      const focused = document.querySelector('[data-pad-focus="true"]')
+      if (focused) {
+        e.preventDefault()
+        focused.click()
+      }
+    } else if (e.key === 'ArrowRight') {
       e.preventDefault()
       moveFocusSpatially('right')
     } else if (e.key === 'ArrowLeft') {
