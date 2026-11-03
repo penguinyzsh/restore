@@ -34,9 +34,15 @@
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
     shield:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6.5v5.8c0 5 3.4 9.3 8 10.7 4.6-1.4 8-5.7 8-10.7V6.5L12 3Z"/></svg>',
+    search:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4.2-4.2"/></svg>',
+    chevronLeft:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+    chevronRight:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>',
   }
 
-  /* 四个底部纯 ICON 卡片专属立体徽标（卡片内部严格只有 ICON，零文字） */
+  /* 五个底部纯 ICON 卡片专属立体徽标（卡片内部严格只有 ICON，零文字） */
   const DOCK_EMBLEMS = {
     restore: `
       <svg class="dock-emblem" viewBox="0 0 88 88" fill="none" aria-hidden="true">
@@ -85,6 +91,25 @@
         <path d="M44 45.5L51.5 58.5H36.5L44 45.5Z" stroke="#1D4ED8" stroke-width="3.6" stroke-linejoin="round"/>
       </svg>
     `,
+    search: `
+      <svg class="dock-emblem" viewBox="0 0 88 88" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="emb-search-ring" x1="18" y1="16" x2="62" y2="60" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#FFFFFF"/>
+            <stop offset="100%" stop-color="#93C5FD"/>
+          </linearGradient>
+          <radialGradient id="emb-search-glass" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(38 38) rotate(45) scale(24)">
+            <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.48"/>
+            <stop offset="100%" stop-color="#1D4ED8" stop-opacity="0.16"/>
+          </radialGradient>
+        </defs>
+        <circle cx="39" cy="39" r="21" fill="url(#emb-search-glass)"/>
+        <circle cx="39" cy="39" r="21" stroke="url(#emb-search-ring)" stroke-width="6.4"/>
+        <path d="M30.5 31.5C33 28.5 36.8 27 40.8 27.5" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-opacity="0.85"/>
+        <path d="M55 55L70 70" stroke="#60A5FA" stroke-width="8.5" stroke-linecap="round"/>
+        <path d="M54.5 54.5L69.5 69.5" stroke="#FFFFFF" stroke-width="5.2" stroke-linecap="round"/>
+      </svg>
+    `,
     other: `
       <svg class="dock-emblem" viewBox="0 0 88 88" fill="none" aria-hidden="true">
         <rect x="16" y="25" width="56" height="12" rx="6" fill="#FFFFFF" fill-opacity="0.22"/>
@@ -97,11 +122,12 @@
     `,
   }
 
-  /* 四个底部纯图标卡片（顺序：恢复、软件、商店、其他） */
+  /* 五个底部纯图标卡片（顺序：恢复、软件、商店、搜索、其他） */
   const DOCK_ITEMS = [
     { id: 'restore', label: '恢复' },
     { id: 'apps', label: '软件', lockedPreview: true },
     { id: 'store', label: '商店', lockedPreview: true },
+    { id: 'search', label: '搜索', lockedPreview: true },
     { id: 'other', label: '其他' },
   ]
 
@@ -249,6 +275,7 @@
     if (v === 'restore') return 'restore'
     if (v === 'apps' || v === 'store-apps') return 'apps'
     if (v === 'store' || v === 'store-games') return 'store'
+    if (v === 'search') return 'search'
     if (v === 'other' || v === 'settings') return 'other'
     return 'home'
   }
@@ -939,45 +966,43 @@
     `
   }
 
-  /* ==================== 子页 2：「软件」（收敛为方案 A：无黑边磨砂贴 + 灵动胶囊锁 + 多页翻页阵列） ==================== */
+  /* ==================== 子页 2：「软件」（收敛为方案 A：无黑边磨砂贴 + 灵动胶囊锁 + 左右两侧翻页） ==================== */
   function renderAppsPage() {
-    const pageApps = STORE_APPS.slice(0, 6)
+    const pageApps = STORE_APPS.slice(0, 9)
     return `
       <main class="subpage-stage">
         <div class="subpage-content-body channel-showcase-body lock-style-a">
           <div class="channel-showcase-stage lock-style-a">
-            <div class="library-grid channel-apps-grid" aria-hidden="true">
-              ${pageApps
-                .map(
-                  (app) => `
-                <article class="store-app-card channel-card">
-                  <div class="store-app-top">
-                    <img src="${app.art}" alt="${app.name}" />
-                    <div>
-                      <strong>${app.name}</strong>
-                      <small>${app.version}</small>
-                    </div>
-                  </div>
-                  <p class="store-app-desc">${app.desc}</p>
-                  <div class="store-app-footer">
-                    <span>${app.category} · ${app.size}</span>
-                    <span class="channel-status-chip">${ICONS.lock}<span>未开放</span></span>
-                  </div>
-                </article>
-              `,
-                )
-                .join('')}
-            </div>
+            <div class="channel-pager-row" aria-hidden="true">
+              <div class="channel-side-pager prev disabled" aria-label="上一页">
+                <span class="side-pager-arrow">${ICONS.chevronLeft}</span>
+              </div>
 
-            <div class="channel-pagination-bar" aria-hidden="true">
-              <span class="channel-page-summary">共 24 款开源软件与系统载荷 · 第 1 / 4 页</span>
-              <div class="channel-page-controls">
-                <span class="channel-page-pill disabled">上一页</span>
-                <span class="channel-page-num active">1</span>
-                <span class="channel-page-num">2</span>
-                <span class="channel-page-num">3</span>
-                <span class="channel-page-num">4</span>
-                <span class="channel-page-pill">下一页</span>
+              <div class="library-grid channel-apps-grid">
+                ${pageApps
+                  .map(
+                    (app) => `
+                  <article class="store-app-card channel-card">
+                    <div class="store-app-top">
+                      <img src="${app.art}" alt="${app.name}" />
+                      <div>
+                        <strong>${app.name}</strong>
+                        <small>${app.version}</small>
+                      </div>
+                    </div>
+                    <p class="store-app-desc">${app.desc}</p>
+                    <div class="store-app-footer">
+                      <span>${app.category} · ${app.size}</span>
+                      <span class="channel-status-chip">${ICONS.lock}<span>未开放</span></span>
+                    </div>
+                  </article>
+                `,
+                  )
+                  .join('')}
+              </div>
+
+              <div class="channel-side-pager next" aria-label="下一页">
+                <span class="side-pager-arrow">${ICONS.chevronRight}</span>
               </div>
             </div>
 
@@ -995,34 +1020,33 @@
     `
   }
 
-  /* ==================== 子页 3：「商店」（收敛为方案 A：无黑边磨砂贴 + 灵动胶囊锁 + 多页翻页阵列） ==================== */
+  /* ==================== 子页 3：「商店」（收敛为方案 A：无黑边磨砂贴 + 灵动胶囊锁 + 左右两侧翻页） ==================== */
   function renderStorePage() {
     return `
       <main class="subpage-stage">
         <div class="subpage-content-body channel-showcase-body lock-style-a">
           <div class="channel-showcase-stage lock-style-a">
-            <div class="game-grid channel-games-grid" aria-hidden="true">
-              ${STORE_GAMES.map(
-                (g) => `
-                <article class="game-tile channel-game-tile">
-                  <div class="game-cover">
-                    <img src="${g.cover}" alt="${g.title}" />
-                  </div>
-                  <h3>${g.title}</h3>
-                  <p>${g.meta}</p>
-                </article>
-              `,
-              ).join('')}
-            </div>
+            <div class="channel-pager-row" aria-hidden="true">
+              <div class="channel-side-pager prev disabled" aria-label="上一页">
+                <span class="side-pager-arrow">${ICONS.chevronLeft}</span>
+              </div>
 
-            <div class="channel-pagination-bar" aria-hidden="true">
-              <span class="channel-page-summary">共 36 款网盘游戏资源 · 第 1 / 3 页</span>
-              <div class="channel-page-controls">
-                <span class="channel-page-pill disabled">上一页</span>
-                <span class="channel-page-num active">1</span>
-                <span class="channel-page-num">2</span>
-                <span class="channel-page-num">3</span>
-                <span class="channel-page-pill">下一页</span>
+              <div class="game-grid channel-games-grid">
+                ${STORE_GAMES.map(
+                  (g) => `
+                  <article class="game-tile channel-game-tile">
+                    <div class="game-cover">
+                      <img src="${g.cover}" alt="${g.title}" />
+                    </div>
+                    <h3>${g.title}</h3>
+                    <p>${g.meta}</p>
+                  </article>
+                `,
+                ).join('')}
+              </div>
+
+              <div class="channel-side-pager next" aria-label="下一页">
+                <span class="side-pager-arrow">${ICONS.chevronRight}</span>
               </div>
             </div>
 
@@ -1030,6 +1054,63 @@
               <div class="shield-compact-pill">
                 <span class="shield-lock-circle">${ICONS.lock}</span>
                 <span class="shield-lock-text">商店频道暂未开放</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        ${renderPersistentDock(true)}
+      </main>
+    `
+  }
+
+  /* ==================== 子页 4：「搜索」（置于商店与其他之间：搜索栏 + 混合结果阵列 + 左右两侧翻页） ==================== */
+  function renderSearchPage() {
+    return `
+      <main class="subpage-stage">
+        <div class="subpage-content-body channel-showcase-body lock-style-a">
+          <div class="channel-showcase-stage lock-style-a">
+            <div class="search-bar-strip" aria-hidden="true">
+              <div class="search-input-box">
+                ${ICONS.search}
+                <span>搜索开源软件、系统载荷或网盘游戏名称...</span>
+              </div>
+              <div class="search-filter-pills">
+                <span class="badge blue">全部结果</span>
+                <span class="badge muted">游戏资源</span>
+                <span class="badge muted">开源软件</span>
+                <span class="badge muted">已备份存档</span>
+              </div>
+            </div>
+
+            <div class="channel-pager-row" aria-hidden="true">
+              <div class="channel-side-pager prev disabled" aria-label="上一页">
+                <span class="side-pager-arrow">${ICONS.chevronLeft}</span>
+              </div>
+
+              <div class="game-grid channel-games-grid">
+                ${STORE_GAMES.map(
+                  (g) => `
+                  <article class="game-tile channel-game-tile">
+                    <div class="game-cover">
+                      <img src="${g.cover}" alt="${g.title}" />
+                    </div>
+                    <h3>${g.title}</h3>
+                    <p>${g.meta}</p>
+                  </article>
+                `,
+                ).join('')}
+              </div>
+
+              <div class="channel-side-pager next" aria-label="下一页">
+                <span class="side-pager-arrow">${ICONS.chevronRight}</span>
+              </div>
+            </div>
+
+            <div class="channel-frosted-shield style-a" role="status" aria-label="搜索频道暂未开放">
+              <div class="shield-compact-pill">
+                <span class="shield-lock-circle">${ICONS.lock}</span>
+                <span class="shield-lock-text">搜索频道暂未开放</span>
               </div>
             </div>
           </div>
@@ -1763,6 +1844,7 @@
     if (state.view === 'restore' || state.lockScene.active) return renderRestorePage()
     if (state.view === 'apps') return renderAppsPage()
     if (state.view === 'store') return renderStorePage()
+    if (state.view === 'search') return renderSearchPage()
     if (state.view === 'other') return renderOtherPage()
     return renderHomePage()
   }
