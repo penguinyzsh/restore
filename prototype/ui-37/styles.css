@@ -784,6 +784,29 @@ input:focus-visible,
   height: 16rem;
 }
 
+.restore-inline-summary-strip {
+  padding-top: 12rem;
+  border-top: 1rem solid rgba(255, 255, 255, 0.16);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16rem;
+}
+
+.restore-inline-summary-col {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8rem;
+  padding: 2rem 0;
+}
+
+.summary-col-label {
+  font-size: 13.5rem;
+  color: #dbeafe;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 .restore-horiz-top {
   display: flex;
   align-items: flex-start;

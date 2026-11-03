@@ -269,7 +269,9 @@
   const initialLockMode = urlParams.get('lock')
   const initialModal = urlParams.get('modal')
 
-  const hasInitialLock = ['normal', 'conflict', 'resumed'].includes(initialLockMode)
+  const hasInitialLock =
+    ['normal', 'conflict', 'resumed', 'done'].includes(initialLockMode) ||
+    initialModal === 'restore-result'
 
   const state = {
     view: hasInitialLock ? 'restore' : normalizeView(rawView),
@@ -293,11 +295,11 @@
     },
     lockScene: {
       active: hasInitialLock,
-      mode: hasInitialLock ? initialLockMode : 'normal',
-      progress: initialLockMode === 'resumed' ? 76 : 68,
+      mode: initialModal === 'restore-result' ? 'done' : hasInitialLock ? initialLockMode : 'normal',
+      progress: initialLockMode === 'done' || initialModal === 'restore-result' ? 100 : initialLockMode === 'resumed' ? 76 : 68,
       currentDetail: '正在还原《最后生还者 Part I》游戏存档（第 14 / 19 款）',
     },
-    modal: ['webdav-osk', 'restore-result'].includes(initialModal) ? initialModal : null,
+    modal: initialModal === 'webdav-osk' ? 'webdav-osk' : null,
     editingLocationId: 'lan',
     oskForm: {
       url: 'http://192.168.50.10:5244/dav/restore',
@@ -582,6 +584,67 @@
       const selected = state.selectedObjects.includes(obj.id)
 
       if (isRestoring) {
+        if (mode === 'done') {
+          const retried = state.restoreResultRetried
+          const isUnfinishedSaves = obj.id === 'saves' && !retried
+          const isPendingDesktop = obj.id === 'desktop'
+          const stageClass = isUnfinishedSaves ? 'stage-active' : 'stage-done'
+          let statusBadge = `<span class="badge green">第 ${obj.order} 步 · 已恢复</span>`
+          let secondBadge = `<span class="badge muted">${obj.countText}</span>`
+          let rightStat = `<span class="stage-done-label">100% · ${obj.size}</span>`
+          let subText = obj.desc
+
+          if (obj.id === 'elf') {
+            subText = '12 项系统插件与载荷服务已启用，外置游戏扫描配置已还原生效。'
+            secondBadge = `<span class="badge muted">12 项插件已启用</span>`
+          } else if (isPendingDesktop) {
+            statusBadge = `<span class="badge green">第 2 步 · 已恢复 14 款</span>`
+            secondBadge = `<span class="badge gold">待处理 · 2 款待挂载外置盘</span>`
+            subText = '14 款桌面图标已还原；《战神：诸神黄昏》待挂载外置盘、《死亡回归》待安装本体后即可启动。'
+          } else if (obj.id === 'saves') {
+            if (!retried) {
+              statusBadge = `<span class="badge green">第 3 步 · 已恢复 18/19 款</span>`
+              secondBadge = `<span class="badge gold">未完成 · 1 项可重试</span>`
+              subText = '18 款游戏存档已恢复；《最后生还者 Part I》因恢复期间曾运行而跳过，关闭游戏后可一键重试。'
+              rightStat = `<strong class="stage-active-pct">18 / 19 款</strong>`
+            } else {
+              statusBadge = `<span class="badge green">第 3 步 · 全部 19 款已恢复</span>`
+              secondBadge = `<span class="badge muted">46 个存档已对齐</span>`
+              subText = '《最后生还者 Part I》存档已重试恢复成功，全部 19 款游戏存档均已绑定当前账号。'
+            }
+          } else if (obj.id === 'settings') {
+            subText = '账号离线激活状态、省电待机设置、显示、音频与系统语言偏好已全部还原。'
+          } else if (obj.id === 'media') {
+            subText = '86 项游戏截图与视频记录已全部还原，可在系统媒体图库中直接浏览播放。'
+          }
+
+          return `
+            <div class="restore-horiz-card ${selected ? 'selected' : ''} ${stageClass}">
+              <div class="restore-horiz-top">
+                <div class="restore-horiz-left">
+                  <div class="restore-step-icon-box">${ICONS[obj.icon]}</div>
+                  <div class="restore-horiz-copy">
+                    <h2>${obj.title}</h2>
+                    <p>${subText}</p>
+                  </div>
+                </div>
+                <div class="check-indicator ${isUnfinishedSaves ? 'active-pulse' : 'done'}">
+                  ${isUnfinishedSaves ? '<span style="font-size:14rem;font-weight:700;">!</span>' : ICONS.check}
+                </div>
+              </div>
+              <div class="restore-horiz-foot">
+                <div class="restore-horiz-tags">
+                  ${statusBadge}
+                  ${secondBadge}
+                </div>
+                <div class="restore-horiz-stat">
+                  ${rightStat}
+                </div>
+              </div>
+            </div>
+          `
+        }
+
         const isDone = obj.order < 3
         const isActive = obj.order === 3
         const stageClass = isDone ? 'stage-done' : isActive ? 'stage-active' : 'stage-pending'
@@ -700,6 +763,49 @@
     }
 
     if (isRestoring) {
+      if (mode === 'done') {
+        const retried = state.restoreResultRetried
+        return `
+          <div class="restore-two-by-three-grid">
+            ${fiveCardsHtml}
+            <section class="restore-horiz-card action-cta-card restore-control-hub-card is-restoring-hub is-summary-hub" aria-live="polite" aria-label="恢复完成结果汇总">
+              <div class="restore-horiz-top">
+                <div class="restore-horiz-left">
+                  <div class="restore-step-icon-box" style="color:#ffffff;">${ICONS.check}</div>
+                  <div class="restore-horiz-copy">
+                    <h2>恢复完成汇总</h2>
+                    <p>来源：${currentLoc.name} · ${currentRp.title}（${currentRp.size}）</p>
+                  </div>
+                </div>
+                <div class="restore-hub-cta-group">
+                  ${
+                    !retried
+                      ? `<button type="button" class="pill sm brand" data-action="retry-unfinished-items">一键重试未完成项</button>`
+                      : ''
+                  }
+                  <button type="button" class="pill sm primary" data-action="finish-restore-and-close">完成</button>
+                </div>
+              </div>
+
+              <div class="restore-inline-summary-strip">
+                <div class="restore-inline-summary-col">
+                  <span class="summary-col-label">已恢复</span>
+                  <span class="badge green">${retried ? '全部 5 类完整' : '4 类 + 18 款存档'}</span>
+                </div>
+                <div class="restore-inline-summary-col">
+                  <span class="summary-col-label">待处理</span>
+                  <span class="badge gold">2 款待挂载外置盘</span>
+                </div>
+                <div class="restore-inline-summary-col">
+                  <span class="summary-col-label">未完成</span>
+                  <span class="badge ${retried ? 'green' : 'gold'}">${retried ? '0 项未完成' : '1 项可重试'}</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        `
+      }
+
       const hubTitle =
         mode === 'conflict'
           ? '检测到《最后生还者 Part I》正在运行'
@@ -1553,64 +1659,6 @@
       `
     }
 
-    if (state.modal === 'restore-result') {
-      const retried = state.restoreResultRetried
-      return `
-        <div class="modal-backdrop" role="dialog" aria-modal="true" aria-label="恢复完成结果汇总">
-          <div class="modal wide">
-            <h2>恢复完成汇总</h2>
-            <p>以下为本次恢复任务的执行结果分类清单。</p>
-            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:18rem;">
-              <div class="wizard-loc-card">
-                <div class="loc-row-top">
-                  <strong>已恢复</strong>
-                  <span class="badge green">${retried ? '全部完成' : '4 类完整 + 18 款存档'}</span>
-                </div>
-                <div style="font-size:14rem; color:#b2c0d4; line-height:1.6;">
-                  <div>• 系统插件与载荷：12 项已启用</div>
-                  <div>• 游戏桌面展示：14 款图标已还原</div>
-                  <div>• 全游戏通用存档：${retried ? '全部 19 款已恢复' : '18 款游戏存档已恢复'}</div>
-                  <div>• 系统设置与媒体：离线激活与 86 项媒体已恢复</div>
-                </div>
-              </div>
-
-              <div class="wizard-loc-card">
-                <div class="loc-row-top">
-                  <strong>待处理</strong>
-                  <span class="badge gold">2 款待挂载外置盘</span>
-                </div>
-                <div style="font-size:14rem; color:#b2c0d4; line-height:1.6;">
-                  <div>• 《战神：诸神黄昏》：桌面图标已恢复，接入外置存储后即可启动</div>
-                  <div>• 《死亡回归》：桌面图标已恢复，待安装游戏本体</div>
-                </div>
-              </div>
-
-              <div class="wizard-loc-card">
-                <div class="loc-row-top">
-                  <strong>未完成</strong>
-                  <span class="badge ${retried ? 'green' : 'gold'}">${retried ? '0 项' : '1 项可重试'}</span>
-                </div>
-                <div style="font-size:14rem; color:#b2c0d4; line-height:1.6;">
-                  ${
-                    retried
-                      ? '<div>• 《最后生还者 Part I》存档已重试恢复成功。</div>'
-                      : '<div>• 《最后生还者 Part I》：恢复期间游戏曾处于运行状态，关闭游戏后可一键重试。</div>'
-                  }
-                </div>
-              </div>
-            </div>
-            <div style="display:flex; justify-content:flex-end; align-items:center; gap:12rem; margin-top:24rem;">
-              ${
-                !retried
-                  ? `<button type="button" class="pill brand sm" data-action="retry-unfinished-items">一键重试未完成项</button>`
-                  : ''
-              }
-              <button type="button" class="pill primary sm" data-action="finish-restore-and-close">关闭汇总</button>
-            </div>
-          </div>
-        </div>
-      `
-    }
     return ''
   }
 
@@ -1689,6 +1737,14 @@
             data-mode="resumed"
           >
             恢复锁：断点续做
+          </button>
+          <button
+            type="button"
+            class="proto-dock-btn ${state.lockScene.active && state.lockScene.mode === 'done' ? 'active' : ''}"
+            data-action="start-lock-demo"
+            data-mode="done"
+          >
+            恢复：完成汇总
           </button>
           <button
             type="button"
@@ -1799,10 +1855,11 @@
 
     switch (action) {
       case 'open-dock-item': {
-        if (state.lockScene.active) {
+        if (state.lockScene.active && state.lockScene.mode !== 'done') {
           showToast('正在恢复数据，请先完成当前恢复任务')
           return
         }
+        state.lockScene.active = false
         const targetId = btn.dataset.dockId
         state.focusedDockId = targetId
         state.onboardingOpen = false
@@ -1924,7 +1981,10 @@
           state.view = 'restore'
           state.lockScene.active = true
           state.lockScene.mode = targetMode
-          state.lockScene.progress = targetMode === 'resumed' ? 76 : 68
+          state.lockScene.progress = targetMode === 'done' ? 100 : targetMode === 'resumed' ? 76 : 68
+          if (targetMode === 'done') {
+            state.restoreResultRetried = false
+          }
         }
         render('route')
         break
@@ -1938,7 +1998,10 @@
         break
       case 'open-restore-result-modal':
         state.restoreResultRetried = false
-        state.modal = 'restore-result'
+        state.modal = null
+        state.lockScene.active = true
+        state.lockScene.mode = 'done'
+        state.lockScene.progress = 100
         render('update')
         break
       case 'retry-unfinished-items':
@@ -1950,8 +2013,7 @@
       case 'finish-restore-and-close':
         state.modal = null
         state.lockScene.active = false
-        state.view = 'home'
-        render('route')
+        render('update')
         break
       case 'open-webdav-osk':
         state.editingLocationId = btn.dataset.loc || 'lan'
