@@ -136,3 +136,23 @@
 | **3. 系统设置与离线账号** | 修改系统设置时，内核/Shell 更新 `/system_data/settings/sysreg.000` ~ `sysreg.003` 的 `mtime`；账号配置位于 `/system_data/priv/home/<uid>/config.dat` 与 `np/auth.dat`。 | 监听 `/system_data/settings/sysreg.000..003` 与 `config.dat` 的 `st_mtim`；检测到变化并静默稳定后，调用 `sceRegMgrGet*` 扫描白名单键表生成可读 JSON 快照并与前次快照比对，仅在白名单键值实际变化时生成新恢复点。 |
 | **4. 媒体画廊（截图/录像）** | 按下 Share 键截图或结束录像落盘后，文件写入 `/user/av_contents/{photo,video,thumbnails}`，同时 `av_content.db` 的 `tbl_UpdateSquence.sequence` 递增且数据库 `mtime` 更新。 | 监听 `/system_data/priv/mms/av_content.db` 的 `st_mtim` 及 `tbl_UpdateSquence.sequence` 序号；当序号递增且对应 `/user/av_contents/` 目标文件写入完成（`file_status == 0` 且文件大小稳定）后，触发新增媒体增量备份。 |
 | **5. 游戏桌面展示元数据** | 新增或重新挂载游戏时，`/user/app/<TITLE_ID>/`（`sce_sys/`、`mount.lnk`）与 `/system_data/priv/mms/app.db` 的 `tbl_contentinfo` 行更新。 | 监听 `/system_data/priv/mms/app.db` 的 `st_mtim` 及 `tbl_contentinfo` 集合变化，静默稳定后同步备份轻量桌面元数据。 |
+
+---
+
+## 七、PS5 12.40 后台驻留载荷避坑与内核稳定性经验（#38 实测）
+
+在 `192.168.0.111`（PS5 12.40）实机部署并验证 ReStore 后台驻留服务（`restore.elf`）的过程中，总结出以下 4 条必须严格遵守的稳定性红线：
+
+1. **禁止直接杀死（`SIGKILL` / `/process_kill`）或主动 `exit()` 已执行 `crt1.o` 初始化的 Payload 进程**：
+   - `ps5-payload-sdk` 的 `crt1.o`（`__kernel_init`）通过 `kernel_overlap_sockets` 在内核堆上重叠了两个 IPv6 socket 的 `inp_outputopts6`（`ip6_pktopts`）指针以实现内核任意读写；
+   - 一旦该进程退出（`return` / `exit()`）或被 `kill(pid, SIGKILL)` / `/process_kill` 强杀，FreeBSD 内核在回收进程文件描述符表（`fdtable`）时会重复释放同一个 `ip6_pktopts` 结构体，直接引发 **Kernel Panic（死机崩溃）**；
+   - **正确做法**：后台服务一旦启动应保持常驻；若检测到端口已被占用或遇到不可恢复初始化错误，应关闭业务 socket 后调用 `for (;;) sleep(3600);` 原地挂起休眠，严禁退出进程或强杀旧实例。
+2. **禁止在编译期将 `-lSceAppInstUtil` 写入 ELF `DT_NEEDED`**：
+   - `libSceAppInstUtil.sprx` 依赖 `libSceIpmi.sprx`，若在链接期直接加 `-lSceAppInstUtil` 而不满足加载顺序，宿主进程 `rtld` 在进入 `main()` 前就会触发 `ud2` 并卡死在 `mDBG` 状态；
+   - **正确做法**：链接期只保留 `-lSceUserService -lpthread`，运行期在 `main()` 内依次 `dlopen("/system/common/lib/libSceIpmi.sprx", RTLD_NOW | RTLD_GLOBAL)` 与 `dlopen("/system/common/lib/libSceAppInstUtil.sprx", RTLD_NOW | RTLD_GLOBAL)`。
+3. **保持 ELF 段体积精简（静态资源与二进制分离）**：
+   - 宿主寄付进程（如 `NPXS40112/eboot.bin`）的 `PT_LOAD` 段映射空间有限；将数百 KB 的图片/前端资源通过 `.incbin` 塞入 `.rodata` 会使 `LOAD 1` 暴涨至 `600 KB+`；
+   - **正确做法**：将 `param.json`、`icon0.png` 及前端 UI 静态文件存放在 `/data/restore/app/` 与 `/data/restore/ui/`，使 `restore.elf` 保持在 `~151 KB`（`LOAD 0` `49 KB`、`LOAD 1` `33 KB`），不仅内存布局与 `ps5loop.elf` 一致，而且后续更新前端资源或应用图标时直接通过 FTP 覆盖磁盘文件即可，无需重启或重注入 ELF。
+4. **避开实机常驻服务的已占用端口**：
+   - 在 `192.168.0.111` 上，`9090` 端口已被 `pkgmgr.elf`（`pkg-server`）占用，`8084` 为 `pldmgr.elf`，`8844` 为 `PKGM00001`，`8888` 为 `websrv.elf`，`10101` 为 `Shadow Mount+`，`1337` 为 `ftpsrv.elf`，`9020` 为 `OnionHEN` 内置 `elfldr`；
+   - ReStore 固定使用空闲端口 **`9099`**（`http://127.0.0.1:9099/`）。

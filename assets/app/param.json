@@ -1,7 +1,7 @@
 {
   "applicationCategoryType": 65536,
   "titleId": "RSTR00001",
-  "deeplinkUri": "http://127.0.0.1:9090/",
+  "deeplinkUri": "http://127.0.0.1:9099/",
   "localizedParameters": {
     "defaultLanguage": "zh-Hans",
     "en-US": {

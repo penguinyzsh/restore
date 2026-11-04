@@ -1,16 +1,17 @@
 /*
- * ReStore - PS5 12.40 Resident Background Service & Standalone App Host (#38)
+ * ReStore - PS5 12.40 后台常驻守护服务与独立应用登记底座 (#38)
  *
- * Responsibilities:
- * 1. CPU-only CRT startup & 4-step verified credential/rootdir elevation.
- * 2. Single-instance takeover (terminates older restore.elf instance cleanly).
- * 3. Registers RSTR00001 standalone app (with official ReStore 512x512 icon
- *    and deeplinkUri http://127.0.0.1:9090/) onto the PS5 12.40 home screen.
- * 4. Serves the Phase 1 UI and local JSON API (/api/status, /api/state) on
- *    port 9090 while remaining resident after foreground apps close.
+ * 核心职责：
+ * 1. 保持精简 ELF 体积（不将数百 KB 静态资源塞入 .rodata，统一从
+ *    /data/restore/ui 与 /data/restore/app 按需读取）。
+ * 2. 遵循 PS5 12.40 载荷生命周期安全约束：严禁强杀或直接退出已执行 crt1.o
+ *    重叠 IPv6 Socket 初始化的进程，防止内核重复释放 ip6_pktopts 引发崩溃。
+ * 3. 先在 9099 端口绑定本地 HTTP 服务（/api/status、/api/state、
+ *    /api/register 与前端静态资源），再向 PS5 主界面登记 RSTR00001。
  */
 
 #include <arpa/inet.h>
+#include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
@@ -36,32 +37,13 @@
 #include <ps5/klog.h>
 
 #define RESTORE_TITLE_ID "RSTR00001"
-#define RESTORE_PORT 9090
+#define RESTORE_PORT 9099
 #define RESTORE_DATA_DIR "/data/restore"
+#define RESTORE_APP_DIR "/data/restore/app"
+#define RESTORE_UI_DIR "/data/restore/ui"
 #define RESTORE_STATE_FILE "/data/restore/state.json"
-#define RESTORE_STATE_TMP "/data/restore/state.json.tmp"
 #define RESTORE_LOG_FILE "/data/restore/daemon.log"
 #define RESTORE_AUTHID 0x4801000000000013ULL
-
-#define INCASSET(name, file)                                                   \
-  __asm__(".section .rodata\n"                                                 \
-          ".global " #name "\n"                                                \
-          ".global " #name "_end\n"                                            \
-          ".global " #name "_size\n"                                           \
-          ".align 16\n" #name ":\n"                                            \
-          ".incbin \"" file "\"\n" #name "_end:\n" #name "_size:\n"            \
-          ".quad " #name "_end - " #name "\n"                                  \
-          ".previous\n");                                                      \
-  extern const uint8_t name[];                                                 \
-  extern const size_t name##_size;
-
-INCASSET(asset_param_json, "../../assets/app/param.json");
-INCASSET(asset_icon0_png, "../../assets/app/icon0.png");
-INCASSET(asset_index_html, "../ui/index.html");
-INCASSET(asset_styles_css, "../ui/styles.css");
-INCASSET(asset_app_js, "../ui/app.js");
-INCASSET(asset_motion_js, "../ui/motion.js");
-INCASSET(asset_bg_jpg, "../ui/assets/ps5-showcase-crop.jpg");
 
 typedef struct notify_request {
   char useless1[45];
@@ -69,13 +51,12 @@ typedef struct notify_request {
 } notify_request_t;
 
 int sceKernelSendNotificationRequest(int, notify_request_t *, size_t, int);
-int sceAppInstUtilInitialize(void);
-int sceAppInstUtilAppInstallAll(void *);
 int sceUserServiceInitialize(void *);
 void sceUserServiceTerminate(void);
 
 static time_t g_start_time = 0;
 static bool g_app_registered = false;
+static int g_last_install_rc = -999;
 static pthread_mutex_t g_state_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static void daemon_log(const char *fmt, ...) {
@@ -110,95 +91,32 @@ static void send_ps5_notification(const char *fmt, ...) {
 }
 
 /*
- * 4-Step Verified Privilege & RootVnode Escape (ps5-1240-runtime-safety.md)
+ * 安全提权：仅设置进程 authid 与全量权限位（与实测稳定的 ps5loop.elf 一致），
+ * 不额外修改已由 elfldr.elf 初始化完成的 rootdir / jaildir。
  */
-typedef struct cred_backup {
-  pid_t pid;
-  uint64_t orig_authid;
-  intptr_t orig_rootdir;
-  intptr_t orig_jaildir;
-  uint32_t changed_mask;
-} cred_backup_t;
-
-#define CRED_CHANGED_AUTHID (1u << 0)
-#define CRED_CHANGED_ROOTDIR (1u << 1)
-#define CRED_CHANGED_JAILDIR (1u << 2)
-
-static bool elevate_and_verify(cred_backup_t *out) {
-  memset(out, 0, sizeof(*out));
+static void elevate_privileges(void) {
   pid_t pid = getpid();
-  out->pid = pid;
-
-  intptr_t ucred = kernel_get_proc_ucred(pid);
-  intptr_t fdesc = kernel_get_proc_filedesc(pid);
-  intptr_t rootvnode = KERNEL_ADDRESS_ROOTVNODE;
-  if (!ucred || !fdesc || !rootvnode) {
-    klog_printf("[ReStore] elevate aborted: ucred=%p fdesc=%p rootvnode=%p\n",
-                (void *)ucred, (void *)fdesc, (void *)rootvnode);
-    return false;
-  }
-
-  out->orig_authid = kernel_get_ucred_authid(pid);
-  if (out->orig_authid != RESTORE_AUTHID) {
-    if (kernel_set_ucred_authid(pid, RESTORE_AUTHID) != 0 ||
-        kernel_get_ucred_authid(pid) != RESTORE_AUTHID) {
-      klog_printf("[ReStore] authid read-back verification failed\n");
-      return false;
-    }
-    out->changed_mask |= CRED_CHANGED_AUTHID;
-  }
-
-  out->orig_rootdir = kernel_get_proc_rootdir(pid);
-  if (out->orig_rootdir != rootvnode) {
-    if (kernel_set_proc_rootdir(pid, rootvnode) != 0 ||
-        kernel_get_proc_rootdir(pid) != rootvnode) {
-      klog_printf("[ReStore] rootdir read-back verification failed\n");
-      return false;
-    }
-    out->changed_mask |= CRED_CHANGED_ROOTDIR;
-  }
-
-  out->orig_jaildir = kernel_get_proc_jaildir(pid);
-  if (out->orig_jaildir != 0) {
-    if (kernel_set_proc_jaildir(pid, 0) != 0 ||
-        kernel_get_proc_jaildir(pid) != 0) {
-      klog_printf("[ReStore] jaildir read-back verification failed\n");
-      return false;
-    }
-    out->changed_mask |= CRED_CHANGED_JAILDIR;
-  }
-
-  return true;
+  uint64_t orig_authid = kernel_get_ucred_authid(pid);
+  const uint8_t all_caps[16] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                                0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+  int rc_auth = kernel_set_ucred_authid(pid, RESTORE_AUTHID);
+  int rc_caps = kernel_set_ucred_caps(pid, all_caps);
+  uint64_t new_authid = kernel_get_ucred_authid(pid);
+  daemon_log("elevate pid=%d authid 0x%llx -> 0x%llx (rc=%d, caps_rc=%d)",
+             (int)pid, (unsigned long long)orig_authid,
+             (unsigned long long)new_authid, rc_auth, rc_caps);
 }
 
-static pid_t find_other_pid_by_name(const char *name) {
-  int mib[4] = {1, 14, 8, 0};
-  pid_t mypid = getpid();
-  pid_t found = -1;
-  size_t buf_size = 0;
-
-  if (sysctl(mib, 4, NULL, &buf_size, NULL, 0) != 0 || buf_size == 0)
-    return -1;
-
-  uint8_t *buf = malloc(buf_size);
-  if (!buf)
-    return -1;
-
-  if (sysctl(mib, 4, buf, &buf_size, NULL, 0) == 0) {
-    for (uint8_t *ptr = buf; ptr < buf + buf_size;) {
-      int ki_structsize = *(int *)ptr;
-      if (ki_structsize <= 0)
-        break;
-      pid_t ki_pid = *(pid_t *)&ptr[72];
-      const char *ki_tdname = (const char *)&ptr[447];
-      if (strcmp(name, ki_tdname) == 0 && ki_pid != mypid) {
-        found = ki_pid;
-      }
-      ptr += ki_structsize;
-    }
+/*
+ * 原地休眠挂起而不退出进程：
+ * ps5-payload-sdk 的 crt1.o (__kernel_init) 会重叠两个 IPv6 Socket 的
+ * ip6_pktopts 指针；若进程退出关闭文件描述符表，内核会二次释放同一结构体导致崩溃。
+ */
+static void park_forever(const char *reason) {
+  daemon_log("parking process pid=%d forever (%s)", (int)getpid(), reason);
+  for (;;) {
+    sleep(3600);
   }
-  free(buf);
-  return found;
 }
 
 static bool write_file_atomic(const char *path, const uint8_t *data,
@@ -230,50 +148,106 @@ static bool write_file_atomic(const char *path, const uint8_t *data,
   return true;
 }
 
-static bool file_matches_size(const char *path, size_t expected_size) {
-  struct stat st;
-  if (stat(path, &st) != 0)
-    return false;
-  return (size_t)st.st_size == expected_size;
-}
-
-static int call_install_app(const char *title_id, const char *dir) {
-  int (*sceAppInstUtilAppInstallTitleDir)(const char *, const char *, void *) =
-      NULL;
-  const char *nid = "Wudg3Xe3heE";
-  uint32_t handle = 0;
-
-  if (!kernel_dynlib_handle(-1, "libSceAppInstUtil.sprx", &handle)) {
-    sceAppInstUtilAppInstallTitleDir =
-        (void *)kernel_dynlib_resolve(-1, handle, nid);
-  }
-  if (sceAppInstUtilAppInstallTitleDir) {
-    return sceAppInstUtilAppInstallTitleDir(title_id, dir, NULL);
-  }
-  return sceAppInstUtilAppInstallAll(NULL);
-}
-
-static bool is_title_in_app_db(const char *title_id) {
-  FILE *fp = fopen("/system_data/priv/mms/app.db", "rb");
+static uint8_t *read_disk_file(const char *path, size_t *size_out) {
+  *size_out = 0;
+  FILE *fp = fopen(path, "rb");
   if (!fp)
-    return false;
+    return NULL;
   if (fseek(fp, 0, SEEK_END) != 0) {
     fclose(fp);
-    return false;
+    return NULL;
   }
   long sz = ftell(fp);
   if (sz <= 0 || sz > 16 * 1024 * 1024) {
     fclose(fp);
-    return false;
+    return NULL;
   }
   rewind(fp);
   uint8_t *buf = malloc((size_t)sz);
   if (!buf) {
     fclose(fp);
-    return false;
+    return NULL;
   }
   size_t rd = fread(buf, 1, (size_t)sz, fp);
   fclose(fp);
+  if (rd != (size_t)sz) {
+    free(buf);
+    return NULL;
+  }
+  *size_out = rd;
+  return buf;
+}
+
+static bool copy_file_atomic(const char *src_path, const char *dst_path) {
+  size_t sz = 0;
+  uint8_t *buf = read_disk_file(src_path, &sz);
+  if (!buf || sz == 0) {
+    free(buf);
+    return false;
+  }
+  bool ok = write_file_atomic(dst_path, buf, sz);
+  free(buf);
+  return ok;
+}
+
+static bool files_match_size_on_disk(const char *path_a, const char *path_b) {
+  struct stat sta, stb;
+  if (stat(path_a, &sta) != 0 || stat(path_b, &stb) != 0)
+    return false;
+  return sta.st_size > 0 && sta.st_size == stb.st_size;
+}
+
+static int call_install_app(const char *title_id, const char *dir) {
+  void *ipmi =
+      dlopen("/system/common/lib/libSceIpmi.sprx", RTLD_NOW | RTLD_GLOBAL);
+  if (!ipmi) {
+    ipmi = dlopen("libSceIpmi.sprx", RTLD_NOW | RTLD_GLOBAL);
+  }
+  void *appinst = dlopen("/system/common/lib/libSceAppInstUtil.sprx",
+                         RTLD_NOW | RTLD_GLOBAL);
+  if (!appinst) {
+    appinst = dlopen("libSceAppInstUtil.sprx", RTLD_NOW | RTLD_GLOBAL);
+  }
+  daemon_log("dlopen libSceIpmi=%p libSceAppInstUtil=%p", ipmi, appinst);
+  if (!appinst) {
+    return -1;
+  }
+
+  int (*fn_init)(void) =
+      (int (*)(void))dlsym(appinst, "sceAppInstUtilInitialize");
+  if (fn_init) {
+    int init_rc = fn_init();
+    daemon_log("sceAppInstUtilInitialize rc=0x%08x", (unsigned)init_rc);
+  }
+
+  int (*sceAppInstUtilAppInstallTitleDir)(const char *, const char *, void *) =
+      (int (*)(const char *, const char *, void *))dlsym(
+          appinst, "sceAppInstUtilAppInstallTitleDir");
+  if (!sceAppInstUtilAppInstallTitleDir) {
+    const char *nid = "Wudg3Xe3heE";
+    uint32_t handle = 0;
+    if (!kernel_dynlib_handle(-1, "libSceAppInstUtil.sprx", &handle)) {
+      sceAppInstUtilAppInstallTitleDir =
+          (void *)kernel_dynlib_resolve(-1, handle, nid);
+    }
+  }
+  if (sceAppInstUtilAppInstallTitleDir) {
+    return sceAppInstUtilAppInstallTitleDir(title_id, dir, NULL);
+  }
+
+  int (*fn_install_all)(void *) =
+      (int (*)(void *))dlsym(appinst, "sceAppInstUtilAppInstallAll");
+  if (fn_install_all) {
+    return fn_install_all(NULL);
+  }
+  return -2;
+}
+
+static bool is_title_in_app_db(const char *title_id) {
+  size_t rd = 0;
+  uint8_t *buf = read_disk_file("/system_data/priv/mms/app.db", &rd);
+  if (!buf)
+    return false;
 
   size_t needle_len = strlen(title_id);
   bool found = false;
@@ -289,7 +263,9 @@ static bool is_title_in_app_db(const char *title_id) {
   return found;
 }
 
-static bool register_restore_app(void) {
+static bool register_restore_app(bool force_reinstall) {
+  const char *src_param = RESTORE_APP_DIR "/param.json";
+  const char *src_icon = RESTORE_APP_DIR "/icon0.png";
   const char *app_dir = "/user/app/" RESTORE_TITLE_ID;
   const char *sce_sys_dir = "/user/app/" RESTORE_TITLE_ID "/sce_sys";
   const char *param_path = "/user/app/" RESTORE_TITLE_ID "/sce_sys/param.json";
@@ -299,39 +275,41 @@ static bool register_restore_app(void) {
   const char *meta_icon = "/user/appmeta/" RESTORE_TITLE_ID "/icon0.png";
 
   bool already_registered =
-      file_matches_size(meta_param, asset_param_json_size) &&
-      file_matches_size(meta_icon, asset_icon0_png_size) &&
+      !force_reinstall &&
+      files_match_size_on_disk(meta_param, src_param) &&
+      files_match_size_on_disk(meta_icon, src_icon) &&
       is_title_in_app_db(RESTORE_TITLE_ID);
 
   mkdir("/user/app", 0755);
   mkdir(app_dir, 0755);
   mkdir(sce_sys_dir, 0755);
 
-  if (!write_file_atomic(param_path, asset_param_json, asset_param_json_size)) {
-    daemon_log("failed to write %s: %s", param_path, strerror(errno));
+  if (!copy_file_atomic(src_param, param_path)) {
+    daemon_log("failed to copy %s -> %s: %s", src_param, param_path,
+               strerror(errno));
     return false;
   }
-  if (!write_file_atomic(icon_path, asset_icon0_png, asset_icon0_png_size)) {
-    daemon_log("failed to write %s: %s", icon_path, strerror(errno));
+  if (!copy_file_atomic(src_icon, icon_path)) {
+    daemon_log("failed to copy %s -> %s: %s", src_icon, icon_path,
+               strerror(errno));
     return false;
   }
 
   if (already_registered) {
+    g_last_install_rc = 0;
     daemon_log("%s already registered in appmeta and app.db", RESTORE_TITLE_ID);
     return true;
   }
 
-  int init_rc = sceAppInstUtilInitialize();
-  daemon_log("sceAppInstUtilInitialize rc=0x%08x", (unsigned)init_rc);
-
   int inst_rc = call_install_app(RESTORE_TITLE_ID, "/user/app/");
+  g_last_install_rc = inst_rc;
   daemon_log("call_install_app(%s) rc=0x%08x", RESTORE_TITLE_ID,
              (unsigned)inst_rc);
 
   mkdir("/user/appmeta", 0755);
   mkdir(meta_dir, 0755);
-  (void)write_file_atomic(meta_param, asset_param_json, asset_param_json_size);
-  (void)write_file_atomic(meta_icon, asset_icon0_png, asset_icon0_png_size);
+  (void)copy_file_atomic(src_param, meta_param);
+  (void)copy_file_atomic(src_icon, meta_icon);
 
   return is_title_in_app_db(RESTORE_TITLE_ID) || inst_rc == 0;
 }
@@ -457,6 +435,8 @@ static void handle_api_status(int fd) {
                     ? (long)(now - g_start_time)
                     : 0;
 
+  bool in_db = is_title_in_app_db(RESTORE_TITLE_ID);
+
   char json[8192];
   int len = snprintf(
       json, sizeof(json),
@@ -468,7 +448,9 @@ static void handle_api_status(int fd) {
       "\"uptime_sec\":%ld,"
       "\"title_id\":\"%s\","
       "\"port\":%d,"
-      "\"registered\":%s"
+      "\"registered\":%s,"
+      "\"in_app_db\":%s,"
+      "\"last_install_rc\":%d"
       "},"
       "\"user\":{"
       "\"user_id_hex\":\"%s\","
@@ -485,10 +467,11 @@ static void handle_api_status(int fd) {
       "\"persisted_state\":%s"
       "}",
       (int)getpid(), uptime, RESTORE_TITLE_ID, RESTORE_PORT,
-      g_app_registered ? "true" : "false", uid_hex, username,
-      activated ? "true" : "false", (unsigned long long)free_gb,
-      (unsigned long long)total_gb, used_pct, (unsigned long long)free_gb,
-      (unsigned long long)total_gb, persisted_json);
+      g_app_registered ? "true" : "false", in_db ? "true" : "false",
+      g_last_install_rc, uid_hex, username, activated ? "true" : "false",
+      (unsigned long long)free_gb, (unsigned long long)total_gb, used_pct,
+      (unsigned long long)free_gb, (unsigned long long)total_gb,
+      persisted_json);
 
   if (len < 0)
     len = 0;
@@ -526,31 +509,12 @@ static void handle_api_state_post(int fd, const char *body, size_t body_len) {
                      strlen(resp));
 }
 
-static bool try_serve_disk_override(int fd, const char *rel_path,
-                                    const char *content_type) {
-  char full_path[PATH_MAX];
-  snprintf(full_path, sizeof(full_path), "%s/ui/%s", RESTORE_DATA_DIR,
-           rel_path);
-  FILE *fp = fopen(full_path, "rb");
-  if (!fp)
+static bool serve_disk_file(int fd, const char *full_path,
+                            const char *content_type) {
+  size_t rd = 0;
+  uint8_t *buf = read_disk_file(full_path, &rd);
+  if (!buf)
     return false;
-  if (fseek(fp, 0, SEEK_END) != 0) {
-    fclose(fp);
-    return false;
-  }
-  long sz = ftell(fp);
-  if (sz < 0 || sz > 8 * 1024 * 1024) {
-    fclose(fp);
-    return false;
-  }
-  rewind(fp);
-  uint8_t *buf = malloc((size_t)sz);
-  if (!buf) {
-    fclose(fp);
-    return false;
-  }
-  size_t rd = fread(buf, 1, (size_t)sz, fp);
-  fclose(fp);
   send_http_response(fd, 200, "OK", content_type, buf, rd);
   free(buf);
   return true;
@@ -593,7 +557,7 @@ static void *handle_client_thread(void *arg) {
     return NULL;
   }
 
-  /* Strip query string (?...) from URI */
+  /* 剥离 URI 中的查询参数 (?...) */
   char *q = strchr(uri, '?');
   if (q)
     *q = '\0';
@@ -630,41 +594,51 @@ static void *handle_client_thread(void *arg) {
     return NULL;
   }
 
+  if (strcmp(method, "POST") == 0 && strcmp(uri, "/api/register") == 0) {
+    g_app_registered = register_restore_app(true);
+    handle_api_status(fd);
+    close(fd);
+    return NULL;
+  }
+
   if (strcmp(uri, "/api/status") == 0) {
     handle_api_status(fd);
   } else if (strcmp(uri, "/") == 0 || strcmp(uri, "/index.html") == 0) {
-    if (!try_serve_disk_override(fd, "index.html",
-                                 "text/html; charset=utf-8")) {
-      send_http_response(fd, 200, "OK", "text/html; charset=utf-8",
-                         asset_index_html, asset_index_html_size);
+    if (!serve_disk_file(fd, RESTORE_UI_DIR "/index.html",
+                         "text/html; charset=utf-8")) {
+      const char *fallback =
+          "<!doctype html><html><body><h1>ReStore daemon running</h1></body></html>";
+      send_http_response(fd, 200, "OK", "text/html; charset=utf-8", fallback,
+                         strlen(fallback));
     }
   } else if (strcmp(uri, "/styles.css") == 0) {
-    if (!try_serve_disk_override(fd, "styles.css", "text/css; charset=utf-8")) {
-      send_http_response(fd, 200, "OK", "text/css; charset=utf-8",
-                         asset_styles_css, asset_styles_css_size);
+    if (!serve_disk_file(fd, RESTORE_UI_DIR "/styles.css",
+                         "text/css; charset=utf-8")) {
+      send_http_response(fd, 404, "Not Found", "text/plain", "missing", 7);
     }
   } else if (strcmp(uri, "/app.js") == 0) {
-    if (!try_serve_disk_override(fd, "app.js",
-                                 "application/javascript; charset=utf-8")) {
-      send_http_response(fd, 200, "OK",
-                         "application/javascript; charset=utf-8", asset_app_js,
-                         asset_app_js_size);
+    if (!serve_disk_file(fd, RESTORE_UI_DIR "/app.js",
+                         "application/javascript; charset=utf-8")) {
+      send_http_response(fd, 404, "Not Found", "text/plain", "missing", 7);
     }
   } else if (strcmp(uri, "/motion.js") == 0) {
-    if (!try_serve_disk_override(fd, "motion.js",
-                                 "application/javascript; charset=utf-8")) {
-      send_http_response(fd, 200, "OK",
-                         "application/javascript; charset=utf-8",
-                         asset_motion_js, asset_motion_js_size);
+    if (!serve_disk_file(fd, RESTORE_UI_DIR "/motion.js",
+                         "application/javascript; charset=utf-8")) {
+      send_http_response(fd, 404, "Not Found", "text/plain", "missing", 7);
     }
   } else if (strcmp(uri, "/assets/restore-logo.png") == 0 ||
              strcmp(uri, "/assets/restore-logo-full.png") == 0 ||
              strcmp(uri, "/icon0.png") == 0) {
-    send_http_response(fd, 200, "OK", "image/png", asset_icon0_png,
-                       asset_icon0_png_size);
+    if (!serve_disk_file(fd, RESTORE_UI_DIR "/assets/restore-logo.png",
+                         "image/png") &&
+        !serve_disk_file(fd, RESTORE_APP_DIR "/icon0.png", "image/png")) {
+      send_http_response(fd, 404, "Not Found", "text/plain", "missing", 7);
+    }
   } else if (strcmp(uri, "/assets/ps5-showcase-crop.jpg") == 0) {
-    send_http_response(fd, 200, "OK", "image/jpeg", asset_bg_jpg,
-                       asset_bg_jpg_size);
+    if (!serve_disk_file(fd, RESTORE_UI_DIR "/assets/ps5-showcase-crop.jpg",
+                         "image/jpeg")) {
+      send_http_response(fd, 404, "Not Found", "text/plain", "missing", 7);
+    }
   } else {
     const char *not_found = "{\"ok\":false,\"error\":\"not found\"}";
     send_http_response(fd, 404, "Not Found",
@@ -678,37 +652,23 @@ static void *handle_client_thread(void *arg) {
 
 int main(void) {
   signal(SIGPIPE, SIG_IGN);
-  syscall(SYS_thr_set_name, -1, "restore.elf");
   g_start_time = time(NULL);
 
-  cred_backup_t cred;
-  if (!elevate_and_verify(&cred)) {
-    return EXIT_FAILURE;
-  }
-
   mkdir(RESTORE_DATA_DIR, 0777);
+  mkdir(RESTORE_APP_DIR, 0777);
+  mkdir(RESTORE_UI_DIR, 0777);
+  mkdir(RESTORE_UI_DIR "/assets", 0777);
+
   daemon_log("starting ReStore resident daemon (pid=%d, fw=0x%08x)",
              (int)getpid(), kernel_get_fw_version());
 
-  /* Terminate any older restore.elf instance cleanly before binding */
-  for (int attempt = 0; attempt < 5; attempt++) {
-    pid_t old_pid = find_other_pid_by_name("restore.elf");
-    if (old_pid <= 0)
-      break;
-    daemon_log("stopping previous restore.elf instance pid=%d", (int)old_pid);
-    kill(old_pid, SIGKILL);
-    usleep(200000);
-  }
-
+  elevate_privileges();
   (void)sceUserServiceInitialize(NULL);
-  g_app_registered = register_restore_app();
-  daemon_log("standalone app %s registration status=%d", RESTORE_TITLE_ID,
-             g_app_registered ? 1 : 0);
 
   int srv_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (srv_fd < 0) {
     daemon_log("socket() failed: %s", strerror(errno));
-    return EXIT_FAILURE;
+    park_forever("socket failed");
   }
 
   int opt = 1;
@@ -723,17 +683,22 @@ int main(void) {
   if (bind(srv_fd, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
     daemon_log("bind(:%d) failed: %s", RESTORE_PORT, strerror(errno));
     close(srv_fd);
-    return EXIT_FAILURE;
+    park_forever("bind failed - another instance is already listening");
   }
 
   if (listen(srv_fd, 64) != 0) {
     daemon_log("listen(:%d) failed: %s", RESTORE_PORT, strerror(errno));
     close(srv_fd);
-    return EXIT_FAILURE;
+    park_forever("listen failed");
   }
 
   daemon_log("listening on 0.0.0.0:%d (deeplink http://127.0.0.1:%d/)",
              RESTORE_PORT, RESTORE_PORT);
+
+  g_app_registered = register_restore_app(false);
+  daemon_log("standalone app %s registration status=%d (rc=0x%08x)",
+             RESTORE_TITLE_ID, g_app_registered ? 1 : 0,
+             (unsigned)g_last_install_rc);
   send_ps5_notification("ReStore 服务已驻留 (:%d)", RESTORE_PORT);
 
   pthread_attr_t attr;
@@ -758,5 +723,6 @@ int main(void) {
 
   close(srv_fd);
   sceUserServiceTerminate();
+  park_forever("main loop exited");
   return EXIT_SUCCESS;
 }

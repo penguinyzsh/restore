@@ -18,7 +18,7 @@ UI_ASSETS := \
 	$(ROOT)/src/ui/assets/ps5-showcase-crop.jpg
 
 CFLAGS := -std=c11 -O2 -Wall -Wextra -Werror
-LDLIBS := -lSceAppInstUtil -lSceUserService -lpthread
+LDLIBS := -lSceUserService -lpthread
 
 all: $(ELF)
 
