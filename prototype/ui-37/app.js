@@ -543,7 +543,6 @@
                     <p>${subText}</p>
                   </div>
                 </div>
-                ${renderCardOrderNum(obj.order)}
               </div>
               <div class="restore-horiz-foot">
                 <div class="restore-horiz-tags">
@@ -554,6 +553,7 @@
                   ${rightStat}
                 </div>
               </div>
+              ${renderCardOrderNum(obj.order)}
             </div>
           `
         }
@@ -601,7 +601,6 @@
                   <p>${subText}</p>
                 </div>
               </div>
-              ${renderCardOrderNum(obj.order)}
             </div>
             <div class="restore-horiz-foot">
               <div class="restore-horiz-tags">
@@ -612,6 +611,7 @@
                 ${rightStat}
               </div>
             </div>
+            ${renderCardOrderNum(obj.order)}
           </div>
         `
       }
@@ -632,7 +632,6 @@
                 <p>${obj.desc}</p>
               </div>
             </div>
-            ${renderCardOrderNum(obj.order)}
           </div>
           <div class="restore-horiz-foot">
             <div class="restore-horiz-tags">
@@ -644,29 +643,31 @@
               <strong>${obj.size}</strong>
             </div>
           </div>
+          ${renderCardOrderNum(obj.order)}
         </button>
       `
     }).join('')
 
     if (!includeActionCard) {
+      const allSelected = state.selectedObjects.length === 5
       return `
         <div class="restore-two-by-three-grid">
           ${fiveCardsHtml}
           <button
             type="button"
-            class="restore-horiz-card action-cta-card"
+            class="restore-horiz-card bdd-whole-toggle-card ${allSelected ? 'card-tone-green' : 'card-tone-blue'}"
             data-action="select-all-objects"
             data-bdd-label="主次按钮：一键全选 5 类备份数据"
           >
             <div class="restore-horiz-top">
               <div class="restore-horiz-left">
-                <div class="restore-step-icon-box" style="color:#fff;">${ICONS.check}</div>
+                <div class="restore-step-icon-box">${ICONS.check}</div>
                 <div class="restore-horiz-copy">
                   <h2>已选 ${state.selectedObjects.length} / 5 类备份数据</h2>
                   <p>默认全选全部 5 类核心数据，点击此卡片可一键全选所有类别。</p>
                 </div>
               </div>
-              <span class="pill sm primary">全选 5 类</span>
+              <span class="badge ${allSelected ? 'green' : 'blue'}">${allSelected ? '已全选' : '按 ✕ 全选'}</span>
             </div>
             <div class="restore-horiz-foot">
               <div class="restore-horiz-tags">
@@ -677,6 +678,7 @@
                 <strong>5.4 GB</strong>
               </div>
             </div>
+            ${renderCardOrderNum(6)}
           </button>
         </div>
       `
@@ -688,10 +690,10 @@
         return `
           <div class="restore-two-by-three-grid">
             ${fiveCardsHtml}
-            <section class="restore-horiz-card action-cta-card restore-control-hub-card is-restoring-hub is-summary-hub" aria-live="polite" aria-label="恢复完成结果汇总">
+            <section class="restore-horiz-card restore-control-hub-card is-restoring-hub is-summary-hub ${retried ? 'card-tone-green' : 'card-tone-yellow'}" aria-live="polite" aria-label="恢复完成结果汇总">
               <div class="restore-horiz-top">
                 <div class="restore-horiz-left">
-                  <div class="restore-step-icon-box" style="color:#ffffff;">${ICONS.check}</div>
+                  <div class="restore-step-icon-box">${ICONS.check}</div>
                   <div class="restore-horiz-copy">
                     <h2>恢复完成汇总</h2>
                     <p>来源：${currentLoc.name} · ${currentRp.title}（${currentRp.size}）</p>
@@ -700,7 +702,7 @@
                 <div class="restore-hub-cta-group">
                   ${
                     !retried
-                      ? `<button type="button" class="pill sm brand" data-action="retry-unfinished-items" data-bdd-label="主按钮：一键重试未完成项">一键重试未完成项</button>`
+                      ? `<button type="button" class="pill sm brand" data-action="retry-unfinished-items" data-bdd-label="主按钮：重试未完">重试未完</button>`
                       : ''
                   }
                   <button type="button" class="pill sm primary" data-action="finish-restore-and-close" data-bdd-label="主按钮：完成并退出汇总">完成</button>
@@ -714,13 +716,14 @@
                 </div>
                 <div class="restore-inline-summary-col">
                   <span class="summary-col-label">待处理</span>
-                  <span class="badge gold">2 款待挂载</span>
+                  <span class="badge gold">2 项待挂</span>
                 </div>
                 <div class="restore-inline-summary-col">
                   <span class="summary-col-label">未完成</span>
                   <span class="badge ${retried ? 'green' : 'red'}">${retried ? '0 项' : '1 项未完'}</span>
                 </div>
               </div>
+              ${renderCardOrderNum(6)}
             </section>
           </div>
         `
@@ -736,22 +739,22 @@
       return `
         <div class="restore-two-by-three-grid">
           ${fiveCardsHtml}
-          <section class="restore-horiz-card action-cta-card restore-control-hub-card is-restoring-hub" aria-live="polite" aria-label="实时恢复进度总控">
+          <button
+            type="button"
+            class="restore-horiz-card bdd-whole-toggle-card restore-control-hub-card is-restoring-hub ${mode === 'conflict' ? 'card-tone-yellow' : 'card-tone-blue'}"
+            data-action="${mode === 'conflict' ? 'resolve-conflict-continue' : 'open-restore-result-modal'}"
+            data-bdd-label="${mode === 'conflict' ? '整卡按 ✕：已关闭游戏，继续恢复' : '整卡按 ✕：查看恢复完成汇总'}"
+            aria-live="polite"
+          >
             <div class="restore-horiz-top">
               <div class="restore-horiz-left">
-                <div class="restore-step-icon-box" style="color:#ffffff;">${ICONS.restore}</div>
-                <div class="restore-horiz-copy">
+                <div class="restore-step-icon-box">${ICONS.restore}</div>
+                <div class="restore-horiz-copy" style="text-align:left;">
                   <h2>${hubTitle}</h2>
                   <p>来源：${currentLoc.name} · ${currentRp.title}（剩余约 45 秒）</p>
                 </div>
               </div>
-              <div class="restore-hub-cta-group">
-                ${
-                  mode === 'conflict'
-                    ? `<button type="button" class="pill sm primary" data-action="resolve-conflict-continue" data-bdd-label="主按钮：已关闭游戏，继续恢复">已关闭游戏，继续恢复</button>`
-                    : `<button type="button" class="pill sm primary" data-action="open-restore-result-modal" data-bdd-label="主按钮：进入恢复完成汇总">完成汇总</button>`
-                }
-              </div>
+              <span class="badge ${mode === 'conflict' ? 'gold' : 'blue'}">${mode === 'conflict' ? '按 ✕ 续传' : '恢复中'}</span>
             </div>
 
             <div class="restore-inline-progress-zone">
@@ -767,7 +770,8 @@
                 <span>正在恢复数据，请勿启动游戏或关闭主机 · 全部项目完成后将自动解锁并汇总结果</span>
               </div>
             </div>
-          </section>
+            ${renderCardOrderNum(6)}
+          </button>
         </div>
       `
     }
@@ -775,10 +779,10 @@
     return `
       <div class="restore-two-by-three-grid">
         ${fiveCardsHtml}
-        <section class="restore-horiz-card action-cta-card restore-control-hub-card" aria-label="恢复配置与执行控制台">
+        <section class="restore-horiz-card restore-control-hub-card card-tone-blue" aria-label="恢复配置与执行控制台">
           <div class="restore-horiz-top">
             <div class="restore-horiz-left">
-              <div class="restore-step-icon-box" style="color:#ffffff;">${ICONS.restore}</div>
+              <div class="restore-step-icon-box">${ICONS.restore}</div>
               <div class="restore-horiz-copy">
                 <h2>恢复源与执行总控（已选 ${state.selectedObjects.length} / 5 项）</h2>
                 <p>当前：${currentLoc.name} · ${currentRp.title}（${currentRp.size}）</p>
@@ -787,7 +791,7 @@
             <div class="restore-hub-cta-group">
               ${
                 state.selectedObjects.length < 5
-                  ? `<button type="button" class="pill sm secondary" data-action="select-all-objects" data-bdd-label="次按钮：全选 5 项">全选 5 项</button>`
+                  ? `<button type="button" class="pill sm secondary" data-action="select-all-objects" data-bdd-label="次按钮：全选">全选</button>`
                   : ''
               }
               <button
@@ -844,6 +848,7 @@
               </div>
             </div>
           </div>
+          ${renderCardOrderNum(6)}
         </section>
       </div>
     `
@@ -926,7 +931,6 @@
                         <small>${loc.endpoint}</small>
                       </div>
                     </div>
-                    ${renderCardOrderNum(idx + 1)}
                   </div>
 
                   <div class="vb-ring-row" style="margin: 6rem 0;">
@@ -946,6 +950,7 @@
                         : `<span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已启用' : '已暂停'}</span>`
                     }
                   </div>
+                  ${renderCardOrderNum(idx + 1)}
                 </div>
               `
             })
@@ -981,9 +986,9 @@
                       <small>${obj.countText} · ${obj.size}</small>
                     </div>
                   </div>
-                  ${renderCardOrderNum(obj.order)}
                 </div>
                 <p>${obj.desc}</p>
+                ${renderCardOrderNum(obj.order)}
               </button>
             `
           }).join('')}
@@ -1028,7 +1033,6 @@
                 <div>
                   <div class="other-a-loc-top">
                     <strong style="font-size:19rem; color:#f8fafc;">${rp.title}</strong>
-                    ${renderCardOrderNum(idx + 1)}
                   </div>
                   <p style="margin:10rem 0; font-size:13.5rem; color:#a8b8ce; line-height:1.5; text-align:left;">${rp.summary}</p>
                 </div>
@@ -1040,6 +1044,7 @@
                       : `<span class="badge ${rp.protected ? 'green' : 'muted'}">${rp.protected ? '已锁定' : '可清理'}</span>`
                   }
                 </div>
+                ${renderCardOrderNum(idx + 1)}
               </button>
             `,
             )
@@ -1069,7 +1074,6 @@
                   <span class="other-clean-icon">${ICONS.bolt}</span>
                   <strong>游戏退出后存档稳定监听</strong>
                 </div>
-                ${renderCardOrderNum(1)}
               </div>
               <p style="margin:12rem 0 0; font-size:14rem; color:#b2c2d8; line-height:1.55; text-align:left;">
                 实时监测前台游戏生命周期与存档目录写入状态，仅在退出游戏且文件落盘稳定后触发增量备份，绝不干扰游玩帧率。
@@ -1079,6 +1083,7 @@
               <span>上次触发：今天 19:10（《最后生还者 Part I》）</span>
               <span class="badge green">零抢占</span>
             </div>
+            ${renderCardOrderNum(1)}
           </button>
 
           <button
@@ -1093,7 +1098,6 @@
                   <span class="other-clean-icon">${ICONS.settings}</span>
                   <strong>插件变更即时同步与向导重置</strong>
                 </div>
-                ${renderCardOrderNum(2)}
               </div>
               <p style="margin:12rem 0 0; font-size:14rem; color:#b2c2d8; line-height:1.55; text-align:left;">
                 当系统载荷、自启插件列表或外置盘游戏扫描路径发生变更时自动同步；您也可以随时重新进入三步初始化向导。
@@ -1103,6 +1107,7 @@
               <span>支持三步向导随时重配</span>
               <span class="badge blue">重配向导</span>
             </div>
+            ${renderCardOrderNum(2)}
           </button>
         </div>
       `
@@ -1198,7 +1203,6 @@
                     ${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}
                     <span>${loc.name}</span>
                   </div>
-                  ${renderCardOrderNum(idx + 1)}
                 </div>
                 <p style="margin:0 0 10rem; font-size:15.5rem; color:#b2c0d4;">
                   ${hasRp ? `最近备份：${loc.lastSync}` : '设备已就绪，可用于存放备份'}
@@ -1215,6 +1219,7 @@
                     : `<span class="badge blue">按 ✕ 切换</span>`
                 }
               </div>
+              ${renderCardOrderNum(idx + 1)}
             </div>
           `,
             )
@@ -1260,7 +1265,6 @@
                 <div>
                   <div class="rp-card-top">
                     <strong style="font-size:20rem;">${rp.title}</strong>
-                    ${renderCardOrderNum(idx + 1)}
                   </div>
                   <div class="rp-card-desc" style="margin-top:12rem;">${rp.summary}</div>
                 </div>
@@ -1268,6 +1272,7 @@
                   <span>体积：${rp.size} · ${rp.note}</span>
                   ${rp.isLatestComplete ? '<span class="badge green">推荐</span>' : `<span class="badge ${state.selectedRestorePointId === rp.id ? 'green' : 'muted'}">${state.selectedRestorePointId === rp.id ? '已选' : '可选'}</span>`}
                 </div>
+                ${renderCardOrderNum(idx + 1)}
               </button>
             `,
               )
@@ -1322,7 +1327,6 @@
             <div>
               <div class="loc-row-top" style="margin-bottom:14rem;">
                 <span class="badge green">位置</span>
-                ${renderCardOrderNum(1)}
               </div>
               <h3 style="margin:0 0 10rem; font-size:24rem; font-weight:500;">已启用 ${enabledLocs.length} 个备份位置</h3>
               <p style="margin:0; font-size:15rem; color:#b5c3d7; line-height:1.6;">
@@ -1333,13 +1337,13 @@
               <span>多位置独立同步</span>
               <span>互不阻塞</span>
             </div>
+            ${renderCardOrderNum(1)}
           </div>
 
           <div class="wizard-loc-card selected card-tone-green">
             <div>
               <div class="loc-row-top" style="margin-bottom:14rem;">
                 <span class="badge green">${hasRp ? '恢复点' : '范围'}</span>
-                ${renderCardOrderNum(2)}
               </div>
               <h3 style="margin:0 0 10rem; font-size:24rem; font-weight:500;">
                 ${hasRp ? selectedRp.title : `共 ${state.selectedObjects.length} 类主机核心数据`}
@@ -1352,13 +1356,13 @@
               <span>预计数据量：5.4 GB</span>
               <span>${hasRp ? selectedRp.note : '块级去重'}</span>
             </div>
+            ${renderCardOrderNum(2)}
           </div>
 
           <div class="wizard-loc-card card-tone-blue">
             <div>
               <div class="loc-row-top" style="margin-bottom:14rem;">
                 <span class="badge blue">策略</span>
-                ${renderCardOrderNum(3)}
               </div>
               <h3 style="margin:0 0 10rem; font-size:24rem; font-weight:500;">
                 ${hasRp ? '按依赖顺序还原 + 断点续做' : '退出游戏自动增量同步'}
@@ -1375,6 +1379,7 @@
               <span>零抢占保护</span>
               <span>保底最新点</span>
             </div>
+            ${renderCardOrderNum(3)}
           </div>
         </div>
       `

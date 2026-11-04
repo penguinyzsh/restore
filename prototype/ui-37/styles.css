@@ -304,22 +304,32 @@ input:focus-visible,
 }
 
 .pill.primary {
-  background: #f4f7fb;
-  color: #0e131b;
-  box-shadow: 0 10rem 26rem rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.44), rgba(5, 150, 105, 0.28));
+  color: #ecfdf5;
+  border: 1rem solid rgba(110, 231, 183, 0.62);
+  backdrop-filter: blur(18rem);
+  -webkit-backdrop-filter: blur(18rem);
+  box-shadow:
+    inset 0 1rem 0 rgba(255, 255, 255, 0.26),
+    0 10rem 26rem rgba(0, 0, 0, 0.28);
 }
 
 .pill.brand {
-  background: linear-gradient(145deg, #1b64d8, #00439c);
-  color: #f8fafc;
-  border: 1rem solid rgba(130, 196, 255, 0.38);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.46), rgba(29, 78, 216, 0.28));
+  color: #eff6ff;
+  border: 1rem solid rgba(147, 197, 253, 0.58);
+  backdrop-filter: blur(18rem);
+  -webkit-backdrop-filter: blur(18rem);
+  box-shadow:
+    inset 0 1rem 0 rgba(255, 255, 255, 0.22),
+    0 10rem 24rem rgba(0, 0, 0, 0.26);
 }
 
 .pill.secondary {
-  background: rgba(38, 45, 58, 0.72);
+  background: rgba(24, 34, 52, 0.68);
   backdrop-filter: blur(20rem);
   color: #e4eaf3;
-  border: 1rem solid rgba(255, 255, 255, 0.12);
+  border: 1rem solid rgba(148, 163, 184, 0.24);
 }
 
 .pill.sm {
@@ -679,18 +689,13 @@ input:focus-visible,
   background: rgba(255, 255, 255, 0.16);
 }
 
-.restore-mini-pill.active-loc {
-  background: #2563eb;
-  border-color: #93c5fd;
-  color: #ffffff;
-  font-weight: 600;
-}
-
+.restore-mini-pill.active-loc,
 .restore-mini-pill.active-rp {
-  background: #f8fafc;
-  border-color: #ffffff;
-  color: #0b1324;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.42), rgba(5, 150, 105, 0.28));
+  border-color: rgba(110, 231, 183, 0.68);
+  color: #ecfdf5;
   font-weight: 600;
+  box-shadow: inset 0 1rem 0 rgba(255, 255, 255, 0.22);
 }
 
 /* ---------- 恢复页 2×3 原地继续恢复状态（不跳二级页） ---------- */
@@ -1326,8 +1331,9 @@ input:focus-visible,
 }
 
 .wizard-step-pill.active {
-  background: #f4f7fb;
-  color: #0e131b;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.46), rgba(29, 78, 216, 0.3));
+  border: 1rem solid rgba(147, 197, 253, 0.62);
+  color: #f8fafc;
   font-weight: 600;
 }
 
@@ -1940,17 +1946,48 @@ input:focus-visible,
     border-color 180ms ease;
 }
 
-/* 卡片末尾融合序号数字（无圆圈、无胶囊外框，直接融于卡片右上末尾） */
+/* 卡片末尾融合背景斜体艺术数字（无圆圈、无胶囊外框，作为大号斜体艺术水印融进卡片末尾背景） */
+.restore-horiz-card,
+.other-a-loc-card,
+.other-a-scope-card,
+.other-a-rp-card,
+.wizard-loc-card,
+.rp-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.restore-horiz-card > :not(.card-order-num),
+.other-a-loc-card > :not(.card-order-num),
+.other-a-scope-card > :not(.card-order-num),
+.other-a-rp-card > :not(.card-order-num),
+.wizard-loc-card > :not(.card-order-num),
+.rp-card > :not(.card-order-num) {
+  position: relative;
+  z-index: 1;
+}
+
 .card-order-num {
-  font-size: 25rem;
-  font-weight: 700;
+  position: absolute;
+  right: 14rem;
+  bottom: -14rem;
+  z-index: 0;
+  font-family: "SF Pro Display", "Avenir Next", "Futura", "Helvetica Neue", system-ui, sans-serif;
+  font-style: italic;
+  font-weight: 900;
+  font-size: 116rem;
+  line-height: 0.8;
+  letter-spacing: -6rem;
   font-variant-numeric: tabular-nums;
-  line-height: 1;
-  letter-spacing: -0.6rem;
-  color: rgba(147, 197, 253, 0.52);
-  flex-shrink: 0;
+  transform: skewX(-10deg);
+  pointer-events: none;
   user-select: none;
-  transition: color 180ms ease;
+  background: linear-gradient(180deg, rgba(147, 197, 253, 0.2) 0%, rgba(147, 197, 253, 0.02) 92%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1rem rgba(255, 255, 255, 0.05);
+  transition: opacity 200ms ease, transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* 1. 默认态：星际蓝（Blue — 未勾选 / 常态默认 / 正在执行） */
@@ -1968,7 +2005,10 @@ input:focus-visible,
 }
 
 .card-tone-blue .card-order-num {
-  color: rgba(147, 197, 253, 0.56);
+  background: linear-gradient(180deg, rgba(147, 197, 253, 0.22) 0%, rgba(59, 130, 246, 0.02) 92%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* 2. 已勾选 / 已启用 / 已完成态：翡翠绿（Green — 选中即绿卡，取代右上角小圆勾） */
@@ -1992,7 +2032,10 @@ input:focus-visible,
 }
 
 .card-tone-green .card-order-num {
-  color: rgba(110, 231, 183, 0.78);
+  background: linear-gradient(180deg, rgba(110, 231, 183, 0.25) 0%, rgba(16, 185, 129, 0.02) 92%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* 3. 警告 / 待处理 / 占用态：琥珀黄（Yellow / Gold） */
@@ -2009,7 +2052,10 @@ input:focus-visible,
 }
 
 .card-tone-yellow .card-order-num {
-  color: rgba(252, 211, 77, 0.78);
+  background: linear-gradient(180deg, rgba(252, 211, 77, 0.25) 0%, rgba(245, 158, 11, 0.02) 92%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* 4. 错误 / 未完成态：珊瑚红（Red） */
@@ -2026,7 +2072,10 @@ input:focus-visible,
 }
 
 .card-tone-red .card-order-num {
-  color: rgba(252, 165, 165, 0.82);
+  background: linear-gradient(180deg, rgba(252, 165, 165, 0.26) 0%, rgba(239, 68, 68, 0.02) 92%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .stage-error-pct {
