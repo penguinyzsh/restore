@@ -22,8 +22,8 @@
 - `PKGM00001`（`PKG Manager`）：`deeplinkUri = 'http://127.0.0.1:8844/'`，`categoryType = 65536`
 - `PLDM00001`（`Payload Manager`）：`deeplinkUri = 'http://127.0.0.1:8084/'`，`categoryType = 65536`
 
-### 1. 主界面原生图标 + `deeplinkUri` + 后台 `.elf` 插件结构（首选方案）
-- **磁盘目录结构**（无需构建/签名 `eboot.bin` FSELF，也无需 `nullfs` 挂载）：
+### 1. `#38` 阶段过渡验证（`deeplinkUri` 网页容器 + 后台 `.elf` 服务）
+- **磁盘目录结构**：
   - `/user/app/RSTR00001/sce_sys/param.json`（含 `"titleId": "RSTR00001"`、`"deeplinkUri": "http://127.0.0.1:9099/"` 与 `localizedParameters`）
   - `/user/app/RSTR00001/sce_sys/icon0.png`（ReStore 官方 Logo 图标，`512x512` 8-bit RGB 无透明通道 PNG）
   - `/user/appmeta/RSTR00001/param.json` 与 `icon0.png`
@@ -31,6 +31,8 @@
   - 调用 `sceAppInstUtilAppInstallTitleDir("RSTR00001", "/user/app/", NULL)` 返回 `0x00000000`（`SCE_OK`）；
   - 系统自动在 `tbl_contentinfo` 写入 `titleId = 'RSTR00001'`、`titleName = 'ReStore'`、`metaDataPath = '/user/app/RSTR00001/sce_sys'`、`viewCategory = 'game'`、`categoryType = 65536`、`pprDeeplinkUri = 'http://127.0.0.1:9099/'`、`pprHubAppUri = 'psmediahub:main?titleId=RSTR00001'`、`icon0Info = '/user/app/RSTR00001/sce_sys/icon0.png?ts=...'`；
   - **关键动态库依赖**：`libSceAppInstUtil.sprx` 内部依赖 `libSceIpmi.sprx` 的符号（如 `_ZN4IPMI6Client6Config7getNameEv`）。禁止直接在编译期把 `-lSceAppInstUtil` 放进 ELF `DT_NEEDED`（否则宿主进程 `rtld` 启动阶段会因未预载 `libSceIpmi.sprx` 直接触发 `ud2` 陷入 `mDBG` 挂起），必须在运行期按顺序调用 `dlopen("/system/common/lib/libSceIpmi.sprx", RTLD_NOW | RTLD_GLOBAL)` 与 `dlopen("/system/common/lib/libSceAppInstUtil.sprx", RTLD_NOW | RTLD_GLOBAL)`。
-- **前后台协同架构**：
-  1. **后台守护服务（`restore.elf` + `/data/restore/{app,ui}`）**：以精简 ELF（`~151 KB`）常驻后台，在 `0.0.0.0:9099`（避开 `pkgmgr.elf` 占用的 `9090` 端口）提供本地 HTTP UI 与 `/api/status`、`/api/state`、`/api/register` 接口；
-  2. **前台主界面入口（`RSTR00001`）**：从 PS5 主屏幕点击 ReStore 图标后直接通过系统内置容器打开 `http://127.0.0.1:9099/`，原生支持 DualSense 手柄按键导航，关闭前景应用后后台守护服务继续常驻运行。
+
+### 2. 架构约束与演进目标：必须采用纯正 PS5 原生应用（禁止停留在网页容器）
+- **明确产品要求（#38 实机验收反馈）**：
+  - `deeplinkUri`（`psmediahub` 网页容器）虽然在 `#38` 中跑通了主界面图标登记与前后台通信，但其本质仍是**网页应用（WebView 容器）**，带有浏览器顶栏/网页交互痕迹，不符合 ReStore 的最终形态要求。
+  - ReStore 前台必须演进为**真正的 PS5 原生独立应用**（参考 `OffAct` / `PS5-Payload-SDK install_app` 原生 `eboot.bin` / `SDL2` + `libScePad` + 原生图形渲染路径），不经过任何浏览器或网页容器，详见 `docs/adr/0001-native-app-over-webview-container.md`。
