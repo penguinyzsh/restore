@@ -13,6 +13,11 @@ python3 -c '
 import functools, http.server
 class H(http.server.SimpleHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        super().end_headers()
 class S(http.server.ThreadingHTTPServer):
     request_queue_size = 128
     allow_reuse_address = True
