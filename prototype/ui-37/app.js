@@ -171,6 +171,8 @@
   const initialStep = Math.min(3, Math.max(1, parseInt(urlParams.get('step') || '1', 10) || 1))
   const initialLockMode = urlParams.get('lock')
   const initialModal = urlParams.get('modal')
+  const rawTab = urlParams.get('tab')
+  const initialOtherTab = ['locations', 'scope', 'protect', 'daemon'].includes(rawTab) ? rawTab : 'locations'
 
   const hasInitialLock =
     ['normal', 'conflict', 'resumed', 'done'].includes(initialLockMode) ||
@@ -178,7 +180,7 @@
 
   const state = {
     view: hasInitialLock ? 'restore' : normalizeView(rawView),
-    otherTab: 'locations',
+    otherTab: initialOtherTab,
     focusedDockId: hasInitialLock ? 'restore' : normalizeView(rawView) === 'other' ? 'other' : 'restore',
     devDockCollapsed: true,
     pendingFocusSelector: null,
@@ -322,6 +324,11 @@
     } else {
       u.searchParams.delete('step')
     }
+    if (!state.onboardingOpen && state.view === 'other') {
+      u.searchParams.set('tab', state.otherTab)
+    } else {
+      u.searchParams.delete('tab')
+    }
     if (state.lockScene.active) {
       u.searchParams.set('lock', state.lockScene.mode)
     } else {
@@ -420,7 +427,7 @@
       <main class="home-stage">
         <section class="overview-showcase" aria-label="Bento 存储与设备状态矩阵">
           <div class="vb-bento-grid">
-            <div class="vb-bento-card span-2 card-tone-blue">
+            <div class="vb-bento-card span-2 card-tone-green">
               <div class="vb-bento-head">
                 <span class="vb-bento-label">${ICONS.ssd}<span>ReStore 整机概览</span></span>
               </div>
@@ -954,6 +961,7 @@
         </div>
       `
     } else if (activeTab === 'scope') {
+      const allScopeOn = state.autoBackupScope.length === 5
       stageHtml = `
         <div class="other-a-stage-head">
           <div>
@@ -979,15 +987,38 @@
                     <span class="other-clean-icon">${ICONS[obj.icon]}</span>
                     <div>
                       <strong>${obj.title}</strong>
-                      <small>${obj.countText} · ${obj.size}</small>
+                      <small>${obj.desc}</small>
                     </div>
                   </div>
                 </div>
-                <p>${obj.desc}</p>
+                <div class="other-a-loc-foot">
+                  <span class="badge ${on ? 'green' : 'muted'}">${on ? '已开启' : '已关闭'}</span>
+                  <span>${obj.shortTag} · <strong>${obj.size}</strong></span>
+                </div>
                 ${renderCardOrderNum(obj.order)}
               </button>
             `
           }).join('')}
+          <button
+            type="button"
+            class="other-a-scope-card bdd-whole-toggle-card ${allScopeOn ? 'selected card-tone-green' : 'card-tone-blue'}"
+            data-action="select-all-auto-scope"
+            data-bdd-label="主按钮：一键开启全部 5 类自动备份"
+          >
+            <div class="other-a-scope-top">
+              <div class="other-a-scope-title">
+                <span class="other-clean-icon">${ICONS.check}</span>
+                <div>
+                  <strong>已开启 ${state.autoBackupScope.length} / 5 类自动备份</strong>
+                  <small>默认保护全部 5 类数据，按 ✕ 可一键恢复全选。</small>
+                </div>
+              </div>
+            </div>
+            <div class="other-a-loc-foot">
+              <span class="badge ${allScopeOn ? 'green' : 'blue'}">${allScopeOn ? '已全选' : '按 ✕ 全选'}</span>
+              <span>全量总计 · <strong>5.4 GB</strong></span>
+            </div>
+          </button>
         </div>
       `
     } else if (activeTab === 'protect') {
@@ -1084,7 +1115,7 @@
 
           <button
             type="button"
-            class="other-a-rp-card bdd-whole-toggle-card card-tone-blue"
+            class="other-a-rp-card bdd-whole-toggle-card selected card-tone-green"
             data-action="open-onboarding"
             data-bdd-label="动作大卡：打开三步引导向导"
           >
@@ -1175,7 +1206,7 @@
         <div class="wizard-stage-head">
           <div>
             <h2>第一步：选择备份存储位置（可多选）</h2>
-            <p>整张卡片落焦后按 ✕ 切换启用或暂停；网络存储可按 ↓ 选择「填写地址与账号」打开手柄软键盘。</p>
+            <p>整张卡片落焦后按 ✕ 切换启用或暂停；网络存储可按 ↓ 选择「修改凭据」打开手柄软键盘。</p>
           </div>
           <span class="badge green">启用 ${enabledLocs.length}/${state.locations.length}</span>
         </div>
@@ -1194,24 +1225,29 @@
               aria-label="切换 ${loc.name}"
             >
               <div>
-                <div class="loc-row-top" style="margin-bottom:14rem;">
+                <div class="loc-row-top" style="margin-bottom:6rem;">
                   <div class="loc-row-title">
                     ${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}
-                    <span>${loc.name}</span>
+                    <div>
+                      <span>${loc.name}</span>
+                      <small style="display:block; font-size:13rem; color:#95a7bf; font-weight:400; margin-top:2rem;">${loc.endpoint}</small>
+                    </div>
                   </div>
                 </div>
-                <p style="margin:0 0 10rem; font-size:15.5rem; color:#b2c0d4;">
-                  ${hasRp ? `最近备份：${loc.lastSync}` : '设备已就绪，可用于存放备份'}
-                </p>
-                <p style="margin:0; font-size:14rem; color:#8fa1b8;">
-                  ${loc.freeSpace} · ${loc.endpoint}
-                </p>
               </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; padding-top:16rem; border-top:1rem solid rgba(255,255,255,0.08);">
+              <div class="vb-ring-row" style="margin: 8rem 0;">
+                ${renderRadialGauge(loc.freePercent, loc.enabled ? '#34D399' : '#38BDF8')}
+                <div class="vb-ring-copy">
+                  <strong style="font-size:22rem;">${loc.freeOnly} 可用</strong>
+                  <span>总容量 ${loc.totalOnly}</span>
+                  <small>${loc.enabled ? (hasRp ? `最近备份：${loc.lastSync}` : '设备已就绪') : '已暂停同步'}</small>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding-top:14rem; border-top:1rem solid rgba(255,255,255,0.08);">
                 <span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已启用' : '已暂停'}</span>
                 ${
                   loc.type === 'webdav'
-                    ? `<button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="${loc.id}" data-bdd-label="次按钮：填写 ${loc.name} 凭据">填写地址与账号</button>`
+                    ? `<button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="${loc.id}" data-bdd-label="次按钮：修改 ${loc.name} 凭据">修改凭据</button>`
                     : `<span class="badge blue">按 ✕ 切换</span>`
                 }
               </div>
@@ -1355,7 +1391,7 @@
             ${renderCardOrderNum(2)}
           </div>
 
-          <div class="wizard-loc-card card-tone-blue">
+          <div class="wizard-loc-card selected card-tone-green">
             <div>
               <div class="loc-row-top" style="margin-bottom:14rem;">
                 <span class="badge blue">策略</span>
@@ -2050,6 +2086,12 @@
         render('update')
         break
       }
+      case 'select-all-auto-scope':
+        state.autoBackupScope = FIVE_OBJECTS.map((o) => o.id)
+        showToast('已开启全部 5 类自动备份')
+        state.pendingFocusSelector = '[data-action="select-all-auto-scope"]'
+        render('update')
+        break
       case 'ds-cross': {
         const focused =
           document.querySelector('[data-pad-focus="true"]') ||
