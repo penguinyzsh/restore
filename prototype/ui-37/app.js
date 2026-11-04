@@ -505,7 +505,7 @@
             ? 'card-tone-red stage-error'
             : isPendingDesktop
               ? 'card-tone-yellow stage-warn'
-              : 'card-tone-green stage-done'
+              : 'stage-done'
           let statusBadge = `<span class="badge green">已恢复</span>`
           let secondBadge = `<span class="badge muted">${obj.shortTag}</span>`
           let rightStat = `<span class="stage-done-label">100% · ${obj.size}</span>`
@@ -563,7 +563,7 @@
         const isActive = obj.order === 3
         const isConflict = isActive && mode === 'conflict'
         const toneClass = isDone
-          ? 'card-tone-green stage-done'
+          ? 'stage-done'
           : isConflict
             ? 'card-tone-yellow stage-warn'
             : isActive
@@ -636,10 +636,11 @@
           </div>
           <div class="restore-horiz-foot">
             <div class="restore-horiz-tags">
-              <span class="badge muted">${obj.shortTag}</span>
+              <span class="badge ${selected ? 'green' : 'muted'}">${selected ? '已选' : '未选'}</span>
               ${obj.note ? `<span class="badge gold">${obj.note}</span>` : ''}
             </div>
             <div class="restore-horiz-stat">
+              <span>${obj.shortTag}</span>
               <strong>${obj.size}</strong>
             </div>
           </div>
@@ -899,9 +900,9 @@
         <div class="other-a-stage-head">
           <div>
             <h2>备份存储位置与网络凭据</h2>
-            <p>整张位置卡片落焦后按 ✕ 即可切换启用（绿卡）或暂停（蓝卡）；WebDAV 位置支持按 ↓ 选择「修改凭据」唤起手柄软键盘。</p>
+            <p>整张位置卡片落焦后按 ✕ 即可切换启用或暂停；WebDAV 位置支持按 ↓ 选择「修改凭据」唤起手柄软键盘。</p>
           </div>
-          <span class="badge blue">启用 ${enabledCount}/${state.locations.length}</span>
+          <span class="badge green">启用 ${enabledCount}/${state.locations.length}</span>
         </div>
 
         <div class="other-a-loc-grid">
@@ -957,7 +958,7 @@
         <div class="other-a-stage-head">
           <div>
             <h2>自动备份内容范围</h2>
-            <p>关闭游戏或变更宿主配置后，后台守护服务将自动增量同步以下已勾选（绿色）的数据类别。</p>
+            <p>关闭游戏或变更宿主配置后，后台守护服务将自动增量同步以下已勾选的数据类别。</p>
           </div>
           <span class="badge green">已选 ${state.autoBackupScope.length}/5</span>
         </div>
@@ -995,7 +996,7 @@
         <div class="other-a-stage-head">
           <div>
             <h2>恢复点锁定保护与空间自动清理</h2>
-            <p>整张恢复点卡片落焦后按 ✕ 即可切换锁定保护（绿卡）；空间不足时自动清理未锁定旧点并保底保留最新完整点。</p>
+            <p>整张恢复点卡片落焦后按 ✕ 即可切换锁定保护；空间不足时自动清理未锁定旧点并保底保留最新完整点。</p>
           </div>
           <span class="badge green">锁定 ${protectedCount}/${state.restorePoints.length}</span>
         </div>
@@ -1174,7 +1175,7 @@
         <div class="wizard-stage-head">
           <div>
             <h2>第一步：选择备份存储位置（可多选）</h2>
-            <p>整张卡片落焦后按 ✕ 切换启用（绿色）或暂停（蓝色）；网络存储可按 ↓ 选择「填写地址与账号」打开手柄软键盘。</p>
+            <p>整张卡片落焦后按 ✕ 切换启用或暂停；网络存储可按 ↓ 选择「填写地址与账号」打开手柄软键盘。</p>
           </div>
           <span class="badge green">启用 ${enabledLocs.length}/${state.locations.length}</span>
         </div>
@@ -1241,7 +1242,7 @@
           <div class="wizard-stage-head">
             <div>
               <h2>第二步：已发现可用恢复点</h2>
-              <p>已默认为您选中最新完整恢复点（绿色），您也可以切换至其他历史时间点。</p>
+              <p>已默认为您选中最新完整恢复点，您也可以切换至其他历史时间点。</p>
             </div>
             <span class="badge blue">${state.restorePoints.length} 份可用</span>
           </div>
@@ -1285,7 +1286,7 @@
           <div class="wizard-stage-head">
             <div>
               <h2>第二步：选择首次备份内容范围</h2>
-              <p>所选存储位置尚无历史恢复点，已默认为您全选全部 5 类核心数据（绿色）。</p>
+              <p>所选存储位置尚无历史恢复点，已默认为您全选全部 5 类核心数据。</p>
             </div>
             <span class="badge green">已选 ${state.selectedObjects.length}/5</span>
           </div>

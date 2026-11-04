@@ -304,20 +304,20 @@ input:focus-visible,
 }
 
 .pill.primary {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.44), rgba(5, 150, 105, 0.28));
-  color: #ecfdf5;
-  border: 1rem solid rgba(110, 231, 183, 0.62);
-  backdrop-filter: blur(18rem);
-  -webkit-backdrop-filter: blur(18rem);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.88), rgba(29, 78, 216, 0.78));
+  color: #ffffff;
+  border: 1rem solid rgba(147, 197, 253, 0.68);
+  backdrop-filter: blur(20rem);
+  -webkit-backdrop-filter: blur(20rem);
   box-shadow:
-    inset 0 1rem 0 rgba(255, 255, 255, 0.26),
-    0 10rem 26rem rgba(0, 0, 0, 0.28);
+    inset 0 1rem 0 rgba(255, 255, 255, 0.35),
+    0 10rem 26rem rgba(29, 78, 216, 0.38);
 }
 
 .pill.brand {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.46), rgba(29, 78, 216, 0.28));
-  color: #eff6ff;
-  border: 1rem solid rgba(147, 197, 253, 0.58);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.48), rgba(29, 78, 216, 0.34));
+  color: #f8fafc;
+  border: 1rem solid rgba(147, 197, 253, 0.55);
   backdrop-filter: blur(18rem);
   -webkit-backdrop-filter: blur(18rem);
   box-shadow:
@@ -326,10 +326,10 @@ input:focus-visible,
 }
 
 .pill.secondary {
-  background: rgba(24, 34, 52, 0.68);
+  background: rgba(20, 30, 48, 0.68);
   backdrop-filter: blur(20rem);
-  color: #e4eaf3;
-  border: 1rem solid rgba(148, 163, 184, 0.24);
+  color: #dbeafe;
+  border: 1rem solid rgba(147, 197, 253, 0.24);
 }
 
 .pill.sm {
@@ -691,11 +691,11 @@ input:focus-visible,
 
 .restore-mini-pill.active-loc,
 .restore-mini-pill.active-rp {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.42), rgba(5, 150, 105, 0.28));
-  border-color: rgba(110, 231, 183, 0.68);
-  color: #ecfdf5;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.68), rgba(29, 78, 216, 0.52));
+  border-color: rgba(147, 197, 253, 0.78);
+  color: #ffffff;
   font-weight: 600;
-  box-shadow: inset 0 1rem 0 rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1rem 0 rgba(255, 255, 255, 0.28);
 }
 
 /* ---------- 恢复页 2×3 原地继续恢复状态（不跳二级页） ---------- */
@@ -1331,9 +1331,9 @@ input:focus-visible,
 }
 
 .wizard-step-pill.active {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.46), rgba(29, 78, 216, 0.3));
-  border: 1rem solid rgba(147, 197, 253, 0.62);
-  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1rem solid rgba(255, 255, 255, 0.72);
+  color: #ffffff;
   font-weight: 600;
 }
 
@@ -1969,113 +1969,120 @@ input:focus-visible,
 
 .card-order-num {
   position: absolute;
-  right: 16rem;
-  top: 12rem;
-  padding-right: 18rem;
+  right: 22rem;
+  top: 14rem;
+  padding-right: 14rem;
   z-index: 0;
-  font-family: "SF Pro Display", "Avenir Next", "Futura", "Helvetica Neue", system-ui, sans-serif;
+  font-family: "Avenir Next", "Futura", "SF Pro Display", "Helvetica Neue", system-ui, sans-serif;
   font-style: italic;
-  font-weight: 900;
-  font-size: 92rem;
-  line-height: 0.86;
-  letter-spacing: -4rem;
+  font-weight: 800;
+  font-size: 68rem;
+  line-height: 0.9;
+  letter-spacing: -2rem;
   font-variant-numeric: tabular-nums;
-  transform: skewX(-12deg);
+  transform: skewX(-10deg);
   pointer-events: none;
   user-select: none;
-  background: linear-gradient(180deg, rgba(147, 197, 253, 0.28) 0%, rgba(147, 197, 253, 0.04) 95%);
+  background: linear-gradient(180deg, rgba(147, 197, 253, 0.18) 0%, rgba(147, 197, 253, 0.02) 95%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   transition: opacity 200ms ease, transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* 1. 默认态：星际蓝（Blue — 未勾选 / 常态默认 / 正在执行） */
+/* ==================== PS5 星际蓝宝石毛玻璃卡片体系 + 四色状态胶囊（绿/蓝/黄/红仅作状态表达） ==================== */
+/* 1. 未勾选 / 未启用卡片：深空暗色退后态 */
 .card-tone-blue {
-  background:
-    radial-gradient(circle at 18% 22%, rgba(37, 99, 235, 0.24), transparent 65%),
-    rgba(15, 26, 48, 0.78) !important;
-  border-color: rgba(96, 165, 250, 0.34) !important;
+  background: rgba(11, 16, 28, 0.56) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  opacity: 0.62;
 }
 
 .card-tone-blue .restore-step-icon-box,
 .card-tone-blue .other-clean-icon,
 .card-tone-blue .other-a-loc-title {
-  color: #60a5fa;
+  color: #64748b;
 }
 
 .card-tone-blue .card-order-num {
-  background: linear-gradient(180deg, rgba(147, 197, 253, 0.22) 0%, rgba(59, 130, 246, 0.02) 92%);
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.11) 0%, rgba(148, 163, 184, 0.01) 95%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-/* 2. 已勾选 / 已启用 / 已完成态：翡翠绿（Green — 选中即绿卡，取代右上角小圆勾） */
+/* 2. 已勾选 / 已启用 / 常态主控卡：原版高颜值 PS5 星际蓝宝石毛玻璃 + 冰蓝内高光描边 */
 .card-tone-green,
-.restore-horiz-card.selected.card-tone-green,
-.other-a-loc-card.selected.card-tone-green,
-.other-a-scope-card.selected.card-tone-green,
-.other-a-rp-card.selected.card-tone-green,
-.wizard-loc-card.selected.card-tone-green,
-.rp-card.selected.card-tone-green {
+.restore-horiz-card.selected,
+.other-a-loc-card.selected,
+.other-a-scope-card.selected,
+.other-a-rp-card.selected,
+.wizard-loc-card.selected,
+.rp-card.selected,
+.restore-control-hub-card {
+  opacity: 1 !important;
   background:
-    radial-gradient(circle at 18% 22%, rgba(16, 185, 129, 0.36), transparent 66%),
-    linear-gradient(155deg, rgba(13, 54, 43, 0.86), rgba(11, 31, 27, 0.9)) !important;
-  border-color: rgba(52, 211, 153, 0.68) !important;
+    radial-gradient(circle at 18% 24%, rgba(29, 107, 243, 0.34), transparent 64%),
+    rgba(20, 28, 42, 0.84) !important;
+  border-color: rgba(118, 190, 255, 0.56) !important;
+  box-shadow:
+    inset 0 1.5rem 0 rgba(255, 255, 255, 0.24),
+    0 18rem 42rem rgba(0, 0, 0, 0.38);
 }
 
 .card-tone-green .restore-step-icon-box,
 .card-tone-green .other-clean-icon,
-.card-tone-green .other-a-loc-title {
-  color: #6ee7b7;
+.card-tone-green .other-a-loc-title,
+.restore-horiz-card.selected .restore-step-icon-box,
+.restore-control-hub-card .restore-step-icon-box {
+  color: #8cc8ff;
 }
 
-.card-tone-green .card-order-num {
-  background: linear-gradient(180deg, rgba(110, 231, 183, 0.25) 0%, rgba(16, 185, 129, 0.02) 92%);
+.card-tone-green .card-order-num,
+.restore-horiz-card.selected .card-order-num {
+  background: linear-gradient(180deg, rgba(147, 197, 253, 0.22) 0%, rgba(59, 130, 246, 0.02) 95%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
-/* 3. 警告 / 待处理 / 占用态：琥珀黄（Yellow / Gold） */
-.card-tone-yellow {
+/* 3. 恢复执行与完成汇总时的状态微光（保持深空蓝宝石玻璃底，仅通过边角柔光与绿/黄/红状态胶囊区分状态） */
+.restore-horiz-card.stage-done {
+  opacity: 1 !important;
   background:
-    radial-gradient(circle at 18% 22%, rgba(245, 158, 11, 0.34), transparent 66%),
-    linear-gradient(155deg, rgba(58, 40, 14, 0.86), rgba(34, 24, 12, 0.9)) !important;
-  border-color: rgba(251, 191, 36, 0.68) !important;
+    radial-gradient(circle at 14% 22%, rgba(16, 185, 129, 0.22), transparent 62%),
+    rgba(18, 27, 42, 0.84) !important;
+  border-color: rgba(52, 211, 153, 0.44) !important;
+}
+
+.restore-horiz-card.stage-done .restore-step-icon-box {
+  color: #34d399;
+}
+
+.card-tone-yellow {
+  opacity: 1 !important;
+  background:
+    radial-gradient(circle at 14% 22%, rgba(245, 158, 11, 0.22), transparent 62%),
+    rgba(20, 27, 42, 0.84) !important;
+  border-color: rgba(251, 191, 36, 0.46) !important;
 }
 
 .card-tone-yellow .restore-step-icon-box,
 .card-tone-yellow .other-clean-icon {
-  color: #fcd34d;
+  color: #fbbf24;
 }
 
-.card-tone-yellow .card-order-num {
-  background: linear-gradient(180deg, rgba(252, 211, 77, 0.25) 0%, rgba(245, 158, 11, 0.02) 92%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* 4. 错误 / 未完成态：珊瑚红（Red） */
 .card-tone-red {
+  opacity: 1 !important;
   background:
-    radial-gradient(circle at 18% 22%, rgba(239, 68, 68, 0.36), transparent 66%),
-    linear-gradient(155deg, rgba(62, 20, 26, 0.86), rgba(36, 14, 18, 0.9)) !important;
-  border-color: rgba(248, 113, 113, 0.72) !important;
+    radial-gradient(circle at 14% 22%, rgba(239, 68, 68, 0.24), transparent 62%),
+    rgba(22, 24, 40, 0.84) !important;
+  border-color: rgba(248, 113, 113, 0.5) !important;
 }
 
 .card-tone-red .restore-step-icon-box,
 .card-tone-red .other-clean-icon {
-  color: #fca5a5;
-}
-
-.card-tone-red .card-order-num {
-  background: linear-gradient(180deg, rgba(252, 165, 165, 0.26) 0%, rgba(239, 68, 68, 0.02) 92%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #f87171;
 }
 
 .stage-error-pct {
