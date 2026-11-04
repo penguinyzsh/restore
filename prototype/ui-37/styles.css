@@ -1936,6 +1936,7 @@ input:focus-visible,
 
 .other-a-loc-card.selected .check-indicator,
 .other-a-scope-card.selected .check-indicator,
+.other-a-rp-card.selected .check-indicator,
 .wizard-loc-card.selected .check-indicator {
   background: var(--ps-blue-bright);
   border-color: #8cc5ff;

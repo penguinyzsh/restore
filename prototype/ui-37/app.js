@@ -874,15 +874,14 @@
 
     let stageHtml = ''
     if (activeTab === 'locations') {
+      const enabledCount = state.locations.filter((l) => l.enabled).length
       stageHtml = `
         <div class="other-a-stage-head">
           <div>
             <h2>备份存储位置与网络凭据</h2>
             <p>整张位置卡片落焦后按 ✕ 即可切换启用或暂停；WebDAV 位置支持按 ↓ 选择「修改凭据」唤起手柄软键盘。</p>
           </div>
-          <button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="lan" data-bdd-label="次按钮：配置 WebDAV 凭据">
-            <span>配置 WebDAV 凭据</span>
-          </button>
+          <span class="badge blue">已启用 ${enabledCount} / ${state.locations.length} 个存储位置</span>
         </div>
 
         <div class="other-a-loc-grid">
@@ -949,7 +948,7 @@
             return `
               <button
                 type="button"
-                class="other-a-scope-card ${on ? 'selected' : ''}"
+                class="other-a-scope-card bdd-whole-toggle-card ${on ? 'selected' : ''}"
                 data-action="toggle-auto-scope"
                 data-obj="${obj.id}"
                 data-bdd-label="多选范围卡：${obj.title}"
@@ -971,13 +970,14 @@
         </div>
       `
     } else if (activeTab === 'protect') {
+      const protectedCount = state.restorePoints.filter((rp) => rp.protected).length
       stageHtml = `
         <div class="other-a-stage-head">
           <div>
             <h2>恢复点锁定保护与空间自动清理</h2>
-            <p>当存储空间不足时，系统自动清理未锁定的旧恢复点，并始终保底保留最新一份完整恢复点。</p>
+            <p>整张恢复点卡片落焦后按 ✕ 即可切换锁定保护；当空间不足时自动清理未锁定旧点并保底保留最新完整点。</p>
           </div>
-          <span class="badge blue">智能保底已开启</span>
+          <span class="badge blue">已锁定保护 ${protectedCount} / ${state.restorePoints.length} 个恢复点</span>
         </div>
 
         ${
@@ -998,27 +998,29 @@
           ${state.restorePoints
             .map(
               (rp) => `
-              <article class="other-a-rp-card ${rp.protected ? 'is-protected' : ''}">
+              <button
+                type="button"
+                class="other-a-rp-card bdd-whole-toggle-card ${rp.protected ? 'is-protected selected' : ''}"
+                data-action="toggle-rp-protect"
+                data-rp="${rp.id}"
+                data-bdd-label="多选保护卡：${rp.title}"
+              >
                 <div>
                   <div class="other-a-loc-top">
                     <strong style="font-size:19rem; color:#f8fafc;">${rp.title}</strong>
-                    ${rp.isLatestComplete ? '<span class="badge blue">最新完整点</span>' : ''}
+                    ${renderToggleIndicator(rp.protected, 'rp-protect')}
                   </div>
-                  <p style="margin:10rem 0; font-size:13.5rem; color:#a8b8ce; line-height:1.5;">${rp.summary}</p>
+                  <p style="margin:10rem 0; font-size:13.5rem; color:#a8b8ce; line-height:1.5; text-align:left;">${rp.summary}</p>
                 </div>
                 <div class="other-a-loc-foot">
                   <span>体积 ${rp.size} · ${rp.note}</span>
-                  <button
-                    type="button"
-                    class="pill sm ${rp.protected ? 'brand' : 'secondary'}"
-                    data-action="toggle-rp-protect"
-                    data-rp="${rp.id}"
-                    data-bdd-label="次按钮：切换恢复点保护（${rp.title}）"
-                  >
-                    ${rp.protected ? '已锁定保护' : '锁定保护'}
-                  </button>
+                  ${
+                    rp.isLatestComplete
+                      ? '<span class="badge blue">最新完整点（保底）</span>'
+                      : `<span class="badge ${rp.protected ? 'green' : 'muted'}">${rp.protected ? '已锁定保护' : '未锁定（可自动清理）'}</span>`
+                  }
                 </div>
-              </article>
+              </button>
             `,
             )
             .join('')}
@@ -1029,15 +1031,18 @@
         <div class="other-a-stage-head">
           <div>
             <h2>后台守护服务与初始化向导</h2>
-            <p>守护服务在关闭界面后继续常驻运行，游戏运行期间零抢占读写，退游存档落盘稳定后自动增量同步。</p>
+            <p>守护服务在关闭界面后继续常驻运行；整张卡片落焦后按 ✕ 即可立即触发手动备份或重新打开三步引导向导。</p>
           </div>
-          <button type="button" class="pill sm brand" data-action="open-onboarding" data-bdd-label="主按钮：重新打开首次引导">
-            <span>重新打开首次引导</span>
-          </button>
+          <span class="badge green">守护进程常驻运行中</span>
         </div>
 
         <div class="other-a-daemon-grid">
-          <article class="other-a-rp-card is-protected">
+          <button
+            type="button"
+            class="other-a-rp-card bdd-whole-toggle-card is-protected"
+            data-action="manual-backup"
+            data-bdd-label="动作大卡：立即手动增量备份"
+          >
             <div>
               <div class="other-a-loc-top">
                 <div class="other-a-scope-title">
@@ -1046,17 +1051,22 @@
                 </div>
                 <span class="badge blue">零抢占读写</span>
               </div>
-              <p style="margin:12rem 0 0; font-size:14rem; color:#b2c2d8; line-height:1.55;">
+              <p style="margin:12rem 0 0; font-size:14rem; color:#b2c2d8; line-height:1.55; text-align:left;">
                 实时监测前台游戏生命周期与存档目录写入状态，仅在退出游戏且文件落盘稳定后触发增量备份，绝不干扰游玩帧率。
               </p>
             </div>
             <div class="other-a-loc-foot">
               <span>上次触发：今天 19:10（《最后生还者 Part I》）</span>
-              <button type="button" class="pill sm primary" data-action="manual-backup" data-bdd-label="主按钮：立即手动备份">立即手动备份</button>
+              <span class="pill sm primary">按 ✕ 立即手动备份</span>
             </div>
-          </article>
+          </button>
 
-          <article class="other-a-rp-card">
+          <button
+            type="button"
+            class="other-a-rp-card bdd-whole-toggle-card"
+            data-action="open-onboarding"
+            data-bdd-label="动作大卡：打开三步引导向导"
+          >
             <div>
               <div class="other-a-loc-top">
                 <div class="other-a-scope-title">
@@ -1065,15 +1075,15 @@
                 </div>
                 <span class="badge muted">全自动守护</span>
               </div>
-              <p style="margin:12rem 0 0; font-size:14rem; color:#b2c2d8; line-height:1.55;">
+              <p style="margin:12rem 0 0; font-size:14rem; color:#b2c2d8; line-height:1.55; text-align:left;">
                 当系统载荷、自启插件列表或外置盘游戏扫描路径发生变更时自动同步；您也可以随时重新进入三步初始化向导。
               </p>
             </div>
             <div class="other-a-loc-foot">
               <span>支持三步向导随时重配</span>
-              <button type="button" class="pill sm secondary" data-action="open-onboarding" data-bdd-label="次按钮：打开三步引导向导">打开三步引导向导</button>
+              <span class="pill sm secondary">按 ✕ 打开三步引导向导</span>
             </div>
-          </article>
+          </button>
         </div>
       `
     }
@@ -1146,9 +1156,7 @@
             <h2>第一步：选择备份存储位置（可多选）</h2>
             <p>整张卡片落焦后按 ✕ 切换启用；网络存储可按 ↓ 选择「填写地址与账号」打开手柄软键盘。</p>
           </div>
-          <button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="lan" data-bdd-label="次按钮：配置 WebDAV 连接">
-            <span>配置 WebDAV 连接</span>
-          </button>
+          <span class="badge blue">已启用 ${enabledLocs.length} / ${state.locations.length} 个存储位置</span>
         </div>
 
         <div class="wizard-locations-grid">
