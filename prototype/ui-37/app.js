@@ -85,6 +85,7 @@
       id: 'elf',
       order: 1,
       title: '系统插件与载荷',
+      shortTag: '12 项插件',
       countText: '12 项插件与自启服务',
       icon: 'bolt',
       size: '48 MB',
@@ -94,16 +95,18 @@
       id: 'desktop',
       order: 2,
       title: '游戏桌面展示',
+      shortTag: '14 款图标',
       countText: '14 款桌面游戏图标',
       icon: 'grid',
       size: '64 MB',
-      desc: '在主界面与游戏库还原原有游戏图标和列表记录。',
-      note: '仅恢复桌面图标，不含游戏本体',
+      desc: '在主界面与游戏库还原原有游戏图标和列表记录（仅恢复图标，不含游戏本体）。',
+      note: '不含本体',
     },
     {
       id: 'saves',
       order: 3,
       title: '全游戏通用存档',
+      shortTag: '46 个存档',
       countText: '19 款游戏 · 46 个存档',
       icon: 'save',
       size: '1.4 GB',
@@ -113,6 +116,7 @@
       id: 'settings',
       order: 4,
       title: '系统与账号设置',
+      shortTag: '系统偏好',
       countText: '离线激活与系统偏好',
       icon: 'settings',
       size: '6 MB',
@@ -122,6 +126,7 @@
       id: 'media',
       order: 5,
       title: '媒体图库',
+      shortTag: '86 项媒体',
       countText: '86 项截图与视频',
       icon: 'media',
       size: '3.9 GB',
@@ -138,17 +143,24 @@
 
   function formatAppleClock() {
     const now = new Date()
-    let hours = now.getHours()
+    let hours = new Date().getHours()
     const minutes = String(now.getMinutes()).padStart(2, '0')
     const period = hours >= 12 ? 'PM' : 'AM'
     hours = hours % 12 || 12
     return `${hours}:${minutes} ${period}`
   }
 
-  /* ==================== 已锁定的全站统一 BDD 交互与视觉规范（方案 A：tvOS 极速跟随 + 全站统一圆勾） ====================
+  /* ==================== 已锁定的全站统一 BDD 交互与视觉规范（方案 A：tvOS 极速跟随 + 卡片四色语义融合 + 短胶囊规范） ====================
      1. 全局焦点路由：各页面初始焦点直达主行动点；状态刷新保留焦点；◯ 返回按栈逐层后退并精确还原底坞/触发器焦点；恢复执行中拦截返回。
      2. 导航轨 / Tab 栏切换：主页底坞按 ✕ 确认展开子页；进入子页后，其他页左侧 4 项分类轨与子页底部紧凑控制坞均采用「落焦即切页（Selection Follows Focus）」。
-     3. 全站 4 处多选开关卡片（恢复页 5 项、引导页位置卡 & 范围卡、其他页位置卡 & 自动备份范围卡）：统一为「整张大卡片落焦 + 按 ✕ 切换 + 右上角统一圆形打勾 .check-indicator」。
+     3. 全站多选开关卡片（恢复页 5 项、引导页位置卡 & 范围卡、其他页位置卡 & 自动备份范围卡 & 恢复点锁定卡）：
+        - 取消右上角独立圆形打勾图标，将状态直接融进整张卡片的四色语义底色规范：
+          · 默认（未勾选 / 常态）：蓝色（Blue）
+          · 已勾选 / 已启用 / 已完成：绿色（Green）
+          · 警告 / 待处理 / 占用：黄色（Yellow）
+          · 错误 / 未完成：红色（Red）
+        - 步骤序号不放胶囊，融合为纯数字放在卡片末尾（.card-order-num）。
+        - 全站所有胶囊标签（.badge）缩短精炼为 2～4 字短词。
      4. 单选切换器：位置胶囊、时间点胶囊、恢复点大卡片与向导步骤胶囊统一按 ✕ 单选互斥切换。
      5. 恢复页 2×3 原地三态流转与主次按钮：按钮消失（全选 5 项、一键重试）时焦点自动顺移至相邻主按钮。
      6. WebDAV 软键盘弹窗：顶部 3 个输入字段（服务器地址 / 账号 / 密码）支持手柄方向键落焦并按 ✕ 切换当前输入目标，软键盘按 ✕ 连续输入。
@@ -292,9 +304,11 @@
     toastTimer = setTimeout(() => el.classList.remove('show'), 2600)
   }
 
-  /* 全站 4 处「多选开关卡片」统一右上角状态指示器（方案 A：统一为 Apple 圆形打勾 .check-indicator） */
-  function renderToggleIndicator() {
-    return `<div class="check-indicator" aria-hidden="true">${ICONS.check}</div>`
+  /* 卡片末尾融合序号数字（不再使用右上角圆形打勾图标，序号融合成数字放在卡片末尾） */
+  function renderCardOrderNum(num) {
+    if (!num) return ''
+    const formatted = String(num).padStart(2, '0')
+    return `<span class="card-order-num" aria-hidden="true">${formatted}</span>`
   }
 
   function syncUrl() {
@@ -486,28 +500,31 @@
           const retried = state.restoreResultRetried
           const isUnfinishedSaves = obj.id === 'saves' && !retried
           const isPendingDesktop = obj.id === 'desktop'
-          const stageClass = isUnfinishedSaves ? 'stage-active' : 'stage-done'
-          let statusBadge = `<span class="badge green">第 ${obj.order} 步 · 已恢复</span>`
-          let secondBadge = `<span class="badge muted">${obj.countText}</span>`
+          const toneClass = isUnfinishedSaves
+            ? 'card-tone-red stage-error'
+            : isPendingDesktop
+              ? 'card-tone-yellow stage-warn'
+              : 'card-tone-green stage-done'
+          let statusBadge = `<span class="badge green">已恢复</span>`
+          let secondBadge = `<span class="badge muted">${obj.shortTag}</span>`
           let rightStat = `<span class="stage-done-label">100% · ${obj.size}</span>`
           let subText = obj.desc
 
           if (obj.id === 'elf') {
             subText = '12 项系统插件与载荷服务已启用，外置游戏扫描配置已还原生效。'
-            secondBadge = `<span class="badge muted">12 项插件已启用</span>`
           } else if (isPendingDesktop) {
-            statusBadge = `<span class="badge green">第 2 步 · 已恢复 14 款</span>`
-            secondBadge = `<span class="badge gold">待处理 · 2 款待挂载外置盘</span>`
+            statusBadge = `<span class="badge green">已恢复 14</span>`
+            secondBadge = `<span class="badge gold">待挂载 2</span>`
             subText = '14 款桌面图标已还原；《战神：诸神黄昏》待挂载外置盘、《死亡回归》待安装本体后即可启动。'
           } else if (obj.id === 'saves') {
             if (!retried) {
-              statusBadge = `<span class="badge green">第 3 步 · 已恢复 18/19 款</span>`
-              secondBadge = `<span class="badge gold">未完成 · 1 项可重试</span>`
+              statusBadge = `<span class="badge red">未完成 1</span>`
+              secondBadge = `<span class="badge gold">可重试</span>`
               subText = '18 款游戏存档已恢复；《最后生还者 Part I》因恢复期间曾运行而跳过，关闭游戏后可一键重试。'
-              rightStat = `<strong class="stage-active-pct">18 / 19 款</strong>`
+              rightStat = `<strong class="stage-error-pct">18 / 19 款</strong>`
             } else {
-              statusBadge = `<span class="badge green">第 3 步 · 全部 19 款已恢复</span>`
-              secondBadge = `<span class="badge muted">46 个存档已对齐</span>`
+              statusBadge = `<span class="badge green">已恢复</span>`
+              secondBadge = `<span class="badge muted">46 个存档</span>`
               subText = '《最后生还者 Part I》存档已重试恢复成功，全部 19 款游戏存档均已绑定当前账号。'
             }
           } else if (obj.id === 'settings') {
@@ -517,7 +534,7 @@
           }
 
           return `
-            <div class="restore-horiz-card ${selected ? 'selected' : ''} ${stageClass}">
+            <div class="restore-horiz-card ${toneClass}">
               <div class="restore-horiz-top">
                 <div class="restore-horiz-left">
                   <div class="restore-step-icon-box">${ICONS[obj.icon]}</div>
@@ -526,9 +543,7 @@
                     <p>${subText}</p>
                   </div>
                 </div>
-                <div class="check-indicator ${isUnfinishedSaves ? 'active-pulse' : 'done'}">
-                  ${isUnfinishedSaves ? '<span style="font-size:14rem;font-weight:700;">!</span>' : ICONS.check}
-                </div>
+                ${renderCardOrderNum(obj.order)}
               </div>
               <div class="restore-horiz-foot">
                 <div class="restore-horiz-tags">
@@ -545,32 +560,39 @@
 
         const isDone = obj.order < 3
         const isActive = obj.order === 3
-        const stageClass = isDone ? 'stage-done' : isActive ? 'stage-active' : 'stage-pending'
+        const isConflict = isActive && mode === 'conflict'
+        const toneClass = isDone
+          ? 'card-tone-green stage-done'
+          : isConflict
+            ? 'card-tone-yellow stage-warn'
+            : isActive
+              ? 'card-tone-blue stage-active'
+              : 'card-tone-blue stage-pending'
         let statusBadge = ''
         let rightStat = `<strong>${obj.size}</strong>`
         let subText = obj.desc
 
         if (isDone) {
-          statusBadge = `<span class="badge green">第 ${obj.order} 步 · 已完成</span>`
+          statusBadge = `<span class="badge green">已完成</span>`
           rightStat = `<span class="stage-done-label">100% · ${obj.size}</span>`
         } else if (isActive) {
           if (mode === 'conflict') {
-            statusBadge = `<span class="badge gold">第 3 步 · 等待关闭冲突游戏 (14/19)</span>`
+            statusBadge = `<span class="badge gold">游戏占用</span>`
             subText = '检测到《最后生还者 Part I》正在运行，请先保存并关闭该游戏以继续写入存档。'
           } else if (mode === 'resumed') {
-            statusBadge = `<span class="badge blue">第 3 步 · 断点续做中 (15/19)</span>`
+            statusBadge = `<span class="badge blue">续传中</span>`
             subText = '已自动核验中断前进度，正从第 15 款游戏存档继续恢复。'
           } else {
-            statusBadge = `<span class="badge blue">第 3 步 · 正在恢复 (14/19)</span>`
+            statusBadge = `<span class="badge blue">恢复中</span>`
             subText = state.lockScene.currentDetail
           }
           rightStat = `<strong class="stage-active-pct">${state.lockScene.progress}%</strong>`
         } else {
-          statusBadge = `<span class="badge muted">第 ${obj.order} 步 · 等待恢复</span>`
+          statusBadge = `<span class="badge muted">排队中</span>`
         }
 
         return `
-          <div class="restore-horiz-card ${selected ? 'selected' : ''} ${stageClass}">
+          <div class="restore-horiz-card ${toneClass}">
             <div class="restore-horiz-top">
               <div class="restore-horiz-left">
                 <div class="restore-step-icon-box">${ICONS[obj.icon]}</div>
@@ -579,14 +601,12 @@
                   <p>${subText}</p>
                 </div>
               </div>
-              <div class="check-indicator ${isDone ? 'done' : isActive ? 'active-pulse' : ''}">
-                ${isDone ? ICONS.check : `<span style="font-size:13rem;font-weight:700;">${obj.order}</span>`}
-              </div>
+              ${renderCardOrderNum(obj.order)}
             </div>
             <div class="restore-horiz-foot">
               <div class="restore-horiz-tags">
                 ${statusBadge}
-                <span class="badge muted">${obj.countText}</span>
+                <span class="badge muted">${obj.shortTag}</span>
               </div>
               <div class="restore-horiz-stat">
                 ${rightStat}
@@ -599,7 +619,7 @@
       return `
         <button
           type="button"
-          class="restore-horiz-card ${selected ? 'selected' : ''}"
+          class="restore-horiz-card bdd-whole-toggle-card ${selected ? 'selected card-tone-green' : 'card-tone-blue'}"
           data-action="toggle-object"
           data-obj="${obj.id}"
           data-bdd-label="多选卡：${obj.order}. ${obj.title}"
@@ -612,15 +632,15 @@
                 <p>${obj.desc}</p>
               </div>
             </div>
-            ${renderToggleIndicator(selected, 'selection')}
+            ${renderCardOrderNum(obj.order)}
           </div>
           <div class="restore-horiz-foot">
             <div class="restore-horiz-tags">
-              <span class="badge blue">第 ${obj.order} 步</span>
-              ${obj.note ? `<span class="badge gold">${obj.note}</span>` : `<span class="badge muted">${obj.countText}</span>`}
+              <span class="badge muted">${obj.shortTag}</span>
+              ${obj.note ? `<span class="badge gold">${obj.note}</span>` : ''}
             </div>
             <div class="restore-horiz-stat">
-              ${obj.note ? `<span>${obj.countText}</span>` : ''}
+              <span>${obj.countText}</span>
               <strong>${obj.size}</strong>
             </div>
           </div>
@@ -650,7 +670,7 @@
             </div>
             <div class="restore-horiz-foot">
               <div class="restore-horiz-tags">
-                <span class="badge green">首次全量保护</span>
+                <span class="badge green">全量保护</span>
               </div>
               <div class="restore-horiz-stat">
                 <span>预计总体积</span>
@@ -690,15 +710,15 @@
               <div class="restore-inline-summary-strip">
                 <div class="restore-inline-summary-col">
                   <span class="summary-col-label">已恢复</span>
-                  <span class="badge green">${retried ? '全部 5 类完整' : '4 类 + 18 款存档'}</span>
+                  <span class="badge green">${retried ? '5 项全齐' : '4 项完成'}</span>
                 </div>
                 <div class="restore-inline-summary-col">
                   <span class="summary-col-label">待处理</span>
-                  <span class="badge gold">2 款待挂载外置盘</span>
+                  <span class="badge gold">2 款待挂载</span>
                 </div>
                 <div class="restore-inline-summary-col">
                   <span class="summary-col-label">未完成</span>
-                  <span class="badge ${retried ? 'green' : 'gold'}">${retried ? '0 项未完成' : '1 项可重试'}</span>
+                  <span class="badge ${retried ? 'green' : 'red'}">${retried ? '0 项' : '1 项未完'}</span>
                 </div>
               </div>
             </section>
@@ -879,20 +899,20 @@
         <div class="other-a-stage-head">
           <div>
             <h2>备份存储位置与网络凭据</h2>
-            <p>整张位置卡片落焦后按 ✕ 即可切换启用或暂停；WebDAV 位置支持按 ↓ 选择「修改凭据」唤起手柄软键盘。</p>
+            <p>整张位置卡片落焦后按 ✕ 即可切换启用（绿卡）或暂停（蓝卡）；WebDAV 位置支持按 ↓ 选择「修改凭据」唤起手柄软键盘。</p>
           </div>
-          <span class="badge blue">已启用 ${enabledCount} / ${state.locations.length} 个存储位置</span>
+          <span class="badge blue">启用 ${enabledCount}/${state.locations.length}</span>
         </div>
 
         <div class="other-a-loc-grid">
           ${state.locations
             .map((loc, idx) => {
-              const ringColors = ['#38BDF8', '#60A5FA', '#818CF8']
+              const ringColors = ['#34D399', '#38BDF8', '#60A5FA']
               return `
                 <div
                   role="button"
                   tabindex="0"
-                  class="other-a-loc-card bdd-whole-toggle-card ${loc.enabled ? 'is-enabled selected' : ''}"
+                  class="other-a-loc-card bdd-whole-toggle-card ${loc.enabled ? 'is-enabled selected card-tone-green' : 'card-tone-blue'}"
                   data-action="toggle-location"
                   data-loc="${loc.id}"
                   data-bdd-label="多选位置卡：${loc.name}"
@@ -906,11 +926,11 @@
                         <small>${loc.endpoint}</small>
                       </div>
                     </div>
-                    ${renderToggleIndicator(loc.enabled, 'location')}
+                    ${renderCardOrderNum(idx + 1)}
                   </div>
 
                   <div class="vb-ring-row" style="margin: 6rem 0;">
-                    ${renderRadialGauge(loc.freePercent, ringColors[idx % ringColors.length])}
+                    ${renderRadialGauge(loc.freePercent, loc.enabled ? ringColors[0] : ringColors[1])}
                     <div class="vb-ring-copy">
                       <strong style="font-size:21rem;">${loc.freeOnly} 可用</strong>
                       <span>总容量 ${loc.totalOnly}</span>
@@ -923,7 +943,7 @@
                     ${
                       loc.type === 'webdav'
                         ? `<button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="${loc.id}" data-bdd-label="次按钮：修改 ${loc.name} 凭据">修改凭据</button>`
-                        : `<span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已就绪' : '已暂停'}</span>`
+                        : `<span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已启用' : '已暂停'}</span>`
                     }
                   </div>
                 </div>
@@ -937,9 +957,9 @@
         <div class="other-a-stage-head">
           <div>
             <h2>自动备份内容范围</h2>
-            <p>关闭游戏或变更宿主配置后，后台守护服务将自动增量同步以下已勾选的数据类别。</p>
+            <p>关闭游戏或变更宿主配置后，后台守护服务将自动增量同步以下已勾选（绿色）的数据类别。</p>
           </div>
-          <span class="badge blue">已开启 ${state.autoBackupScope.length} / 5 类核心数据</span>
+          <span class="badge green">已选 ${state.autoBackupScope.length}/5</span>
         </div>
 
         <div class="other-a-scope-grid">
@@ -948,7 +968,7 @@
             return `
               <button
                 type="button"
-                class="other-a-scope-card bdd-whole-toggle-card ${on ? 'selected' : ''}"
+                class="other-a-scope-card bdd-whole-toggle-card ${on ? 'selected card-tone-green' : 'card-tone-blue'}"
                 data-action="toggle-auto-scope"
                 data-obj="${obj.id}"
                 data-bdd-label="多选范围卡：${obj.title}"
@@ -961,7 +981,7 @@
                       <small>${obj.countText} · ${obj.size}</small>
                     </div>
                   </div>
-                  ${renderToggleIndicator(on, 'scope')}
+                  ${renderCardOrderNum(obj.order)}
                 </div>
                 <p>${obj.desc}</p>
               </button>
@@ -975,9 +995,9 @@
         <div class="other-a-stage-head">
           <div>
             <h2>恢复点锁定保护与空间自动清理</h2>
-            <p>整张恢复点卡片落焦后按 ✕ 即可切换锁定保护；当空间不足时自动清理未锁定旧点并保底保留最新完整点。</p>
+            <p>整张恢复点卡片落焦后按 ✕ 即可切换锁定保护（绿卡）；空间不足时自动清理未锁定旧点并保底保留最新完整点。</p>
           </div>
-          <span class="badge blue">已锁定保护 ${protectedCount} / ${state.restorePoints.length} 个恢复点</span>
+          <span class="badge green">锁定 ${protectedCount}/${state.restorePoints.length}</span>
         </div>
 
         ${
@@ -988,7 +1008,7 @@
                 <strong style="display:block; font-size:15rem; color:#ffd4d2;">USB 存储设备可用空间不足</strong>
                 <span style="font-size:13rem; color:#e6c3c1;">已自动清理未锁定旧恢复点并保留最新完整点。</span>
               </div>
-              <span class="badge gold">已触发保底</span>
+              <span class="badge gold">空间告警</span>
             </div>
           `
             : ''
@@ -997,10 +1017,10 @@
         <div class="other-a-rp-grid">
           ${state.restorePoints
             .map(
-              (rp) => `
+              (rp, idx) => `
               <button
                 type="button"
-                class="other-a-rp-card bdd-whole-toggle-card ${rp.protected ? 'is-protected selected' : ''}"
+                class="other-a-rp-card bdd-whole-toggle-card ${rp.protected ? 'is-protected selected card-tone-green' : 'card-tone-blue'}"
                 data-action="toggle-rp-protect"
                 data-rp="${rp.id}"
                 data-bdd-label="多选保护卡：${rp.title}"
@@ -1008,7 +1028,7 @@
                 <div>
                   <div class="other-a-loc-top">
                     <strong style="font-size:19rem; color:#f8fafc;">${rp.title}</strong>
-                    ${renderToggleIndicator(rp.protected, 'rp-protect')}
+                    ${renderCardOrderNum(idx + 1)}
                   </div>
                   <p style="margin:10rem 0; font-size:13.5rem; color:#a8b8ce; line-height:1.5; text-align:left;">${rp.summary}</p>
                 </div>
@@ -1016,8 +1036,8 @@
                   <span>体积 ${rp.size} · ${rp.note}</span>
                   ${
                     rp.isLatestComplete
-                      ? '<span class="badge blue">最新完整点（保底）</span>'
-                      : `<span class="badge ${rp.protected ? 'green' : 'muted'}">${rp.protected ? '已锁定保护' : '未锁定（可自动清理）'}</span>`
+                      ? '<span class="badge green">保底保留</span>'
+                      : `<span class="badge ${rp.protected ? 'green' : 'muted'}">${rp.protected ? '已锁定' : '可清理'}</span>`
                   }
                 </div>
               </button>
@@ -1033,13 +1053,13 @@
             <h2>后台守护服务与初始化向导</h2>
             <p>守护服务在关闭界面后继续常驻运行；整张卡片落焦后按 ✕ 即可立即触发手动备份或重新打开三步引导向导。</p>
           </div>
-          <span class="badge green">守护进程常驻运行中</span>
+          <span class="badge green">常驻运行</span>
         </div>
 
         <div class="other-a-daemon-grid">
           <button
             type="button"
-            class="other-a-rp-card bdd-whole-toggle-card is-protected"
+            class="other-a-rp-card bdd-whole-toggle-card card-tone-green"
             data-action="manual-backup"
             data-bdd-label="动作大卡：立即手动增量备份"
           >
@@ -1049,7 +1069,7 @@
                   <span class="other-clean-icon">${ICONS.bolt}</span>
                   <strong>游戏退出后存档稳定监听</strong>
                 </div>
-                <span class="badge blue">零抢占读写</span>
+                ${renderCardOrderNum(1)}
               </div>
               <p style="margin:12rem 0 0; font-size:14rem; color:#b2c2d8; line-height:1.55; text-align:left;">
                 实时监测前台游戏生命周期与存档目录写入状态，仅在退出游戏且文件落盘稳定后触发增量备份，绝不干扰游玩帧率。
@@ -1057,13 +1077,13 @@
             </div>
             <div class="other-a-loc-foot">
               <span>上次触发：今天 19:10（《最后生还者 Part I》）</span>
-              <span class="pill sm primary">按 ✕ 立即手动备份</span>
+              <span class="badge green">零抢占</span>
             </div>
           </button>
 
           <button
             type="button"
-            class="other-a-rp-card bdd-whole-toggle-card"
+            class="other-a-rp-card bdd-whole-toggle-card card-tone-blue"
             data-action="open-onboarding"
             data-bdd-label="动作大卡：打开三步引导向导"
           >
@@ -1073,7 +1093,7 @@
                   <span class="other-clean-icon">${ICONS.settings}</span>
                   <strong>插件变更即时同步与向导重置</strong>
                 </div>
-                <span class="badge muted">全自动守护</span>
+                ${renderCardOrderNum(2)}
               </div>
               <p style="margin:12rem 0 0; font-size:14rem; color:#b2c2d8; line-height:1.55; text-align:left;">
                 当系统载荷、自启插件列表或外置盘游戏扫描路径发生变更时自动同步；您也可以随时重新进入三步初始化向导。
@@ -1081,7 +1101,7 @@
             </div>
             <div class="other-a-loc-foot">
               <span>支持三步向导随时重配</span>
-              <span class="pill sm secondary">按 ✕ 打开三步引导向导</span>
+              <span class="badge blue">重配向导</span>
             </div>
           </button>
         </div>
@@ -1154,19 +1174,19 @@
         <div class="wizard-stage-head">
           <div>
             <h2>第一步：选择备份存储位置（可多选）</h2>
-            <p>整张卡片落焦后按 ✕ 切换启用；网络存储可按 ↓ 选择「填写地址与账号」打开手柄软键盘。</p>
+            <p>整张卡片落焦后按 ✕ 切换启用（绿色）或暂停（蓝色）；网络存储可按 ↓ 选择「填写地址与账号」打开手柄软键盘。</p>
           </div>
-          <span class="badge blue">已启用 ${enabledLocs.length} / ${state.locations.length} 个存储位置</span>
+          <span class="badge green">启用 ${enabledLocs.length}/${state.locations.length}</span>
         </div>
 
         <div class="wizard-locations-grid">
           ${state.locations
             .map(
-              (loc) => `
+              (loc, idx) => `
             <div
               role="button"
               tabindex="0"
-              class="wizard-loc-card bdd-whole-toggle-card ${loc.enabled ? 'selected' : ''}"
+              class="wizard-loc-card bdd-whole-toggle-card ${loc.enabled ? 'selected card-tone-green' : 'card-tone-blue'}"
               data-action="toggle-location"
               data-loc="${loc.id}"
               data-bdd-label="多选位置卡：${loc.name}"
@@ -1178,7 +1198,7 @@
                     ${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}
                     <span>${loc.name}</span>
                   </div>
-                  ${renderToggleIndicator(loc.enabled, 'location')}
+                  ${renderCardOrderNum(idx + 1)}
                 </div>
                 <p style="margin:0 0 10rem; font-size:15.5rem; color:#b2c0d4;">
                   ${hasRp ? `最近备份：${loc.lastSync}` : '设备已就绪，可用于存放备份'}
@@ -1188,11 +1208,11 @@
                 </p>
               </div>
               <div style="display:flex; justify-content:space-between; align-items:center; padding-top:16rem; border-top:1rem solid rgba(255,255,255,0.08);">
-                <span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已启用此位置' : '未启用（按 ✕ 启用）'}</span>
+                <span class="badge ${loc.enabled ? 'green' : 'muted'}">${loc.enabled ? '已启用' : '已暂停'}</span>
                 ${
                   loc.type === 'webdav'
                     ? `<button type="button" class="pill sm secondary" data-action="open-webdav-osk" data-loc="${loc.id}" data-bdd-label="次按钮：填写 ${loc.name} 凭据">填写地址与账号</button>`
-                    : `<span class="badge blue">整卡按 ✕ 切换</span>`
+                    : `<span class="badge blue">按 ✕ 切换</span>`
                 }
               </div>
             </div>
@@ -1221,18 +1241,18 @@
           <div class="wizard-stage-head">
             <div>
               <h2>第二步：已发现可用恢复点</h2>
-              <p>已默认为您选中最新完整恢复点，您也可以切换至其他历史时间点。</p>
+              <p>已默认为您选中最新完整恢复点（绿色），您也可以切换至其他历史时间点。</p>
             </div>
-            <span class="badge blue">共发现 ${state.restorePoints.length} 份恢复点</span>
+            <span class="badge blue">${state.restorePoints.length} 份可用</span>
           </div>
 
           <div class="rp-cards-row">
             ${state.restorePoints
               .map(
-                (rp) => `
+                (rp, idx) => `
               <button
                 type="button"
-                class="rp-card ${state.selectedRestorePointId === rp.id ? 'selected' : ''}"
+                class="rp-card ${state.selectedRestorePointId === rp.id ? 'selected card-tone-green' : 'card-tone-blue'}"
                 data-action="select-rp"
                 data-rp="${rp.id}"
                 data-bdd-label="单选恢复点卡：${rp.title}"
@@ -1240,13 +1260,13 @@
                 <div>
                   <div class="rp-card-top">
                     <strong style="font-size:20rem;">${rp.title}</strong>
-                    ${rp.isLatestComplete ? '<span class="badge blue">默认推荐</span>' : ''}
+                    ${renderCardOrderNum(idx + 1)}
                   </div>
                   <div class="rp-card-desc" style="margin-top:12rem;">${rp.summary}</div>
                 </div>
                 <div class="rp-card-foot">
-                  <span>体积：${rp.size}</span>
-                  <span>${rp.note}</span>
+                  <span>体积：${rp.size} · ${rp.note}</span>
+                  ${rp.isLatestComplete ? '<span class="badge green">推荐</span>' : `<span class="badge ${state.selectedRestorePointId === rp.id ? 'green' : 'muted'}">${state.selectedRestorePointId === rp.id ? '已选' : '可选'}</span>`}
                 </div>
               </button>
             `,
@@ -1265,9 +1285,9 @@
           <div class="wizard-stage-head">
             <div>
               <h2>第二步：选择首次备份内容范围</h2>
-              <p>所选存储位置尚无历史恢复点，已默认为您全选全部 5 类核心数据。</p>
+              <p>所选存储位置尚无历史恢复点，已默认为您全选全部 5 类核心数据（绿色）。</p>
             </div>
-            <span class="badge green">已选 ${state.selectedObjects.length} / 5 项</span>
+            <span class="badge green">已选 ${state.selectedObjects.length}/5</span>
           </div>
 
           ${renderTwoByThreeObjectsGrid(false)}
@@ -1294,13 +1314,16 @@
             <h2>${hasRp ? '第三步：确认整机恢复方案' : '第三步：确认创建首份完整恢复点'}</h2>
             <p>${hasRp ? '核对以下恢复来源、目标时间点与执行顺序，确认后立即进入全屏专注恢复。' : '核对以下备份位置与数据范围，确认后立即启动首次全量备份并开启后台守护。'}</p>
           </div>
-          <span class="badge green">准备就绪</span>
+          <span class="badge green">已就绪</span>
         </div>
 
         <div class="wizard-summary-grid">
-          <div class="wizard-loc-card selected">
+          <div class="wizard-loc-card selected card-tone-green">
             <div>
-              <span class="badge blue" style="margin-bottom:14rem;">1. 存储位置</span>
+              <div class="loc-row-top" style="margin-bottom:14rem;">
+                <span class="badge green">位置</span>
+                ${renderCardOrderNum(1)}
+              </div>
               <h3 style="margin:0 0 10rem; font-size:24rem; font-weight:500;">已启用 ${enabledLocs.length} 个备份位置</h3>
               <p style="margin:0; font-size:15rem; color:#b5c3d7; line-height:1.6;">
                 ${enabledLocs.map((l) => `• ${l.name}（${l.freeSpace}）`).join('<br/>')}
@@ -1312,9 +1335,12 @@
             </div>
           </div>
 
-          <div class="wizard-loc-card selected">
+          <div class="wizard-loc-card selected card-tone-green">
             <div>
-              <span class="badge blue" style="margin-bottom:14rem;">${hasRp ? '2. 目标恢复点' : '2. 首次备份范围'}</span>
+              <div class="loc-row-top" style="margin-bottom:14rem;">
+                <span class="badge green">${hasRp ? '恢复点' : '范围'}</span>
+                ${renderCardOrderNum(2)}
+              </div>
               <h3 style="margin:0 0 10rem; font-size:24rem; font-weight:500;">
                 ${hasRp ? selectedRp.title : `共 ${state.selectedObjects.length} 类主机核心数据`}
               </h3>
@@ -1324,13 +1350,16 @@
             </div>
             <div class="rp-card-foot">
               <span>预计数据量：5.4 GB</span>
-              <span>${hasRp ? selectedRp.note : '块级去重复用'}</span>
+              <span>${hasRp ? selectedRp.note : '块级去重'}</span>
             </div>
           </div>
 
-          <div class="wizard-loc-card">
+          <div class="wizard-loc-card card-tone-blue">
             <div>
-              <span class="badge green" style="margin-bottom:14rem;">3. 安全保障策略</span>
+              <div class="loc-row-top" style="margin-bottom:14rem;">
+                <span class="badge blue">策略</span>
+                ${renderCardOrderNum(3)}
+              </div>
               <h3 style="margin:0 0 10rem; font-size:24rem; font-weight:500;">
                 ${hasRp ? '按依赖顺序还原 + 断点续做' : '退出游戏自动增量同步'}
               </h3>
@@ -1344,7 +1373,7 @@
             </div>
             <div class="rp-card-foot">
               <span>零抢占保护</span>
-              <span>始终保底最新完整点</span>
+              <span>保底最新点</span>
             </div>
           </div>
         </div>
@@ -1444,7 +1473,7 @@
               >
                 <div class="osk-field-head">
                   <label>服务器地址</label>
-                  <span class="badge ${activeField === 'url' ? 'blue' : 'muted'}">${activeField === 'url' ? '当前输入目标' : '按 ✕ 切换至此'}</span>
+                  <span class="badge ${activeField === 'url' ? 'green' : 'muted'}">${activeField === 'url' ? '输入中' : '可切换'}</span>
                 </div>
                 <div class="modal-input-display">${state.oskForm.url || '<span style="opacity:0.45">请输入地址</span>'}<i class="osk-caret"></i></div>
               </button>
@@ -1458,7 +1487,7 @@
                 >
                   <div class="osk-field-head">
                     <label>账号</label>
-                    <span class="badge ${activeField === 'user' ? 'blue' : 'muted'}">${activeField === 'user' ? '当前输入目标' : '按 ✕ 切换至此'}</span>
+                    <span class="badge ${activeField === 'user' ? 'green' : 'muted'}">${activeField === 'user' ? '输入中' : '可切换'}</span>
                   </div>
                   <div class="modal-input-display">${state.oskForm.user || '<span style="opacity:0.45">请输入账号</span>'}<i class="osk-caret"></i></div>
                 </button>
@@ -1471,7 +1500,7 @@
                 >
                   <div class="osk-field-head">
                     <label>密码</label>
-                    <span class="badge ${activeField === 'pass' ? 'blue' : 'muted'}">${activeField === 'pass' ? '当前输入目标' : '按 ✕ 切换至此'}</span>
+                    <span class="badge ${activeField === 'pass' ? 'green' : 'muted'}">${activeField === 'pass' ? '输入中' : '可切换'}</span>
                   </div>
                   <div class="modal-input-display">${state.oskForm.pass || '<span style="opacity:0.45">请输入密码</span>'}<i class="osk-caret"></i></div>
                 </button>
@@ -1489,7 +1518,7 @@
                 .join('')}
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:22rem;">
-              <span class="badge green">${ICONS.check}<span>连接测试正常</span></span>
+              <span class="badge green">${ICONS.check}<span>连接正常</span></span>
               <div style="display:flex; gap:12rem;">
                 <button type="button" class="pill secondary sm" data-action="close-modal" data-bdd-label="次按钮：取消并关闭弹窗">取消</button>
                 <button type="button" class="pill primary sm" data-action="save-webdav-osk" data-bdd-label="主按钮：保存并连接 WebDAV">保存并连接</button>

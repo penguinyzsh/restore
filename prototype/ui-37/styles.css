@@ -275,6 +275,12 @@ input:focus-visible,
   border: 1rem solid rgba(245, 196, 105, 0.26);
 }
 
+.badge.red {
+  background: rgba(239, 68, 68, 0.28);
+  color: #fecaca;
+  border: 1rem solid rgba(248, 113, 113, 0.38);
+}
+
 .badge.muted {
   background: rgba(255, 255, 255, 0.07);
   color: #9ba7b8;
@@ -1923,7 +1929,7 @@ input:focus-visible,
   transform: translateY(0) scale(1);
 }
 
-/* ==================== 全站统一多选卡片与可切换 WebDAV 输入框样式 ==================== */
+/* ==================== 全站统一四色语义卡片（蓝/绿/黄/红）+ 末尾融合数字 + WebDAV 输入框 ==================== */
 .bdd-whole-toggle-card {
   cursor: pointer;
   user-select: none;
@@ -1934,13 +1940,99 @@ input:focus-visible,
     border-color 180ms ease;
 }
 
-.other-a-loc-card.selected .check-indicator,
-.other-a-scope-card.selected .check-indicator,
-.other-a-rp-card.selected .check-indicator,
-.wizard-loc-card.selected .check-indicator {
-  background: var(--ps-blue-bright);
-  border-color: #8cc5ff;
-  color: #ffffff;
+/* 卡片末尾融合序号数字（无圆圈、无胶囊外框，直接融于卡片右上末尾） */
+.card-order-num {
+  font-size: 25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.6rem;
+  color: rgba(147, 197, 253, 0.52);
+  flex-shrink: 0;
+  user-select: none;
+  transition: color 180ms ease;
+}
+
+/* 1. 默认态：星际蓝（Blue — 未勾选 / 常态默认 / 正在执行） */
+.card-tone-blue {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(37, 99, 235, 0.24), transparent 65%),
+    rgba(15, 26, 48, 0.78) !important;
+  border-color: rgba(96, 165, 250, 0.34) !important;
+}
+
+.card-tone-blue .restore-step-icon-box,
+.card-tone-blue .other-clean-icon,
+.card-tone-blue .other-a-loc-title {
+  color: #60a5fa;
+}
+
+.card-tone-blue .card-order-num {
+  color: rgba(147, 197, 253, 0.56);
+}
+
+/* 2. 已勾选 / 已启用 / 已完成态：翡翠绿（Green — 选中即绿卡，取代右上角小圆勾） */
+.card-tone-green,
+.restore-horiz-card.selected.card-tone-green,
+.other-a-loc-card.selected.card-tone-green,
+.other-a-scope-card.selected.card-tone-green,
+.other-a-rp-card.selected.card-tone-green,
+.wizard-loc-card.selected.card-tone-green,
+.rp-card.selected.card-tone-green {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(16, 185, 129, 0.36), transparent 66%),
+    linear-gradient(155deg, rgba(13, 54, 43, 0.86), rgba(11, 31, 27, 0.9)) !important;
+  border-color: rgba(52, 211, 153, 0.68) !important;
+}
+
+.card-tone-green .restore-step-icon-box,
+.card-tone-green .other-clean-icon,
+.card-tone-green .other-a-loc-title {
+  color: #6ee7b7;
+}
+
+.card-tone-green .card-order-num {
+  color: rgba(110, 231, 183, 0.78);
+}
+
+/* 3. 警告 / 待处理 / 占用态：琥珀黄（Yellow / Gold） */
+.card-tone-yellow {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(245, 158, 11, 0.34), transparent 66%),
+    linear-gradient(155deg, rgba(58, 40, 14, 0.86), rgba(34, 24, 12, 0.9)) !important;
+  border-color: rgba(251, 191, 36, 0.68) !important;
+}
+
+.card-tone-yellow .restore-step-icon-box,
+.card-tone-yellow .other-clean-icon {
+  color: #fcd34d;
+}
+
+.card-tone-yellow .card-order-num {
+  color: rgba(252, 211, 77, 0.78);
+}
+
+/* 4. 错误 / 未完成态：珊瑚红（Red） */
+.card-tone-red {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(239, 68, 68, 0.36), transparent 66%),
+    linear-gradient(155deg, rgba(62, 20, 26, 0.86), rgba(36, 14, 18, 0.9)) !important;
+  border-color: rgba(248, 113, 113, 0.72) !important;
+}
+
+.card-tone-red .restore-step-icon-box,
+.card-tone-red .other-clean-icon {
+  color: #fca5a5;
+}
+
+.card-tone-red .card-order-num {
+  color: rgba(252, 165, 165, 0.82);
+}
+
+.stage-error-pct {
+  color: #fca5a5;
+  font-size: 18rem;
+  font-weight: 600;
 }
 
 .osk-field-selectable {
