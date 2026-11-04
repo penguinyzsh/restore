@@ -183,6 +183,7 @@
     otherTab: initialOtherTab,
     focusedDockId: hasInitialLock ? 'restore' : normalizeView(rawView) === 'other' ? 'other' : 'restore',
     devDockCollapsed: true,
+    gridOverlay: urlParams.get('grid') === '1',
     pendingFocusSelector: null,
     lastTriggerSelector: null,
     onboardingOpen: initialOnboardingOpen,
@@ -334,7 +335,24 @@
     } else {
       u.searchParams.delete('lock')
     }
+    if (state.gridOverlay) {
+      u.searchParams.set('grid', '1')
+    } else {
+      u.searchParams.delete('grid')
+    }
     window.history.replaceState({}, '', u)
+  }
+
+  /* ==================== 1920×1080 标准 12 列主机栅格辅助层（?grid=1 或底栏一键开关） ==================== */
+  function renderGridOverlay() {
+    if (!state.gridOverlay) return ''
+    const cols = Array.from({ length: 12 }, (_, i) => `<div class="grid-debug-col"><span>${String(i + 1).padStart(2, '0')}</span></div>`).join('')
+    return `
+      <div class="console-grid-overlay" aria-hidden="true">
+        <div class="console-grid-columns">${cols}</div>
+        <div class="console-grid-stage-box"></div>
+      </div>
+    `
   }
 
   /* ==================== 顶栏：右上角严格只有「时间 + 标准用户 Icon」 ==================== */
@@ -902,16 +920,7 @@
 
     let stageHtml = ''
     if (activeTab === 'locations') {
-      const enabledCount = state.locations.filter((l) => l.enabled).length
       stageHtml = `
-        <div class="other-a-stage-head">
-          <div>
-            <h2>备份存储位置与网络凭据</h2>
-            <p>整张位置卡片落焦后按 ✕ 即可切换启用或暂停；WebDAV 位置支持按 ↓ 选择「修改凭据」唤起手柄软键盘。</p>
-          </div>
-          <span class="badge green">启用 ${enabledCount}/${state.locations.length}</span>
-        </div>
-
         <div class="other-a-loc-grid">
           ${state.locations
             .map((loc, idx) => {
@@ -963,14 +972,6 @@
     } else if (activeTab === 'scope') {
       const allScopeOn = state.autoBackupScope.length === 5
       stageHtml = `
-        <div class="other-a-stage-head">
-          <div>
-            <h2>自动备份内容范围</h2>
-            <p>关闭游戏或变更宿主配置后，后台守护服务将自动增量同步以下已勾选的数据类别。</p>
-          </div>
-          <span class="badge green">已选 ${state.autoBackupScope.length}/5</span>
-        </div>
-
         <div class="other-a-scope-grid">
           ${FIVE_OBJECTS.map((obj) => {
             const on = state.autoBackupScope.includes(obj.id)
@@ -1022,16 +1023,7 @@
         </div>
       `
     } else if (activeTab === 'protect') {
-      const protectedCount = state.restorePoints.filter((rp) => rp.protected).length
       stageHtml = `
-        <div class="other-a-stage-head">
-          <div>
-            <h2>恢复点锁定保护与空间自动清理</h2>
-            <p>整张恢复点卡片落焦后按 ✕ 即可切换锁定保护；空间不足时自动清理未锁定旧点并保底保留最新完整点。</p>
-          </div>
-          <span class="badge green">锁定 ${protectedCount}/${state.restorePoints.length}</span>
-        </div>
-
         ${
           state.spaceLowSimulated
             ? `
@@ -1080,18 +1072,10 @@
       `
     } else {
       stageHtml = `
-        <div class="other-a-stage-head">
-          <div>
-            <h2>后台守护服务与初始化向导</h2>
-            <p>守护服务在关闭界面后继续常驻运行；整张卡片落焦后按 ✕ 即可立即触发手动备份或重新打开三步引导向导。</p>
-          </div>
-          <span class="badge green">常驻运行</span>
-        </div>
-
         <div class="other-a-daemon-grid">
           <button
             type="button"
-            class="other-a-rp-card bdd-whole-toggle-card card-tone-green"
+            class="other-a-rp-card bdd-whole-toggle-card selected card-tone-green"
             data-action="manual-backup"
             data-bdd-label="动作大卡：立即手动增量备份"
           >
@@ -1099,18 +1083,42 @@
               <div class="other-a-loc-top">
                 <div class="other-a-scope-title">
                   <span class="other-clean-icon">${ICONS.bolt}</span>
-                  <strong>游戏退出后存档稳定监听</strong>
+                  <strong>退游存档稳定监听</strong>
                 </div>
               </div>
               <p style="margin:12rem 0 0; font-size:14rem; color:#b2c2d8; line-height:1.55; text-align:left;">
-                实时监测前台游戏生命周期与存档目录写入状态，仅在退出游戏且文件落盘稳定后触发增量备份，绝不干扰游玩帧率。
+                监测前台游戏生命周期与存档写入状态，仅在退出游戏且落盘稳定后触发增量备份，不干扰游玩帧率。
               </p>
             </div>
             <div class="other-a-loc-foot">
-              <span>上次触发：今天 19:10（《最后生还者 Part I》）</span>
-              <span class="badge green">零抢占</span>
+              <span>今天 19:10 已触发</span>
+              <span class="badge green">按 ✕ 备份</span>
             </div>
             ${renderCardOrderNum(1)}
+          </button>
+
+          <button
+            type="button"
+            class="other-a-rp-card bdd-whole-toggle-card selected card-tone-green"
+            data-action="manual-backup"
+            data-bdd-label="动作大卡：同步宿主与插件配置"
+          >
+            <div>
+              <div class="other-a-loc-top">
+                <div class="other-a-scope-title">
+                  <span class="other-clean-icon">${ICONS.shield}</span>
+                  <strong>宿主与插件即时同步</strong>
+                </div>
+              </div>
+              <p style="margin:12rem 0 0; font-size:14rem; color:#b2c2d8; line-height:1.55; text-align:left;">
+                当系统载荷、自启插件列表或外置盘游戏扫描路径发生变更时，后台自动向已启用的存储位置同步。
+              </p>
+            </div>
+            <div class="other-a-loc-foot">
+              <span>12 项插件受保护</span>
+              <span class="badge green">实时守护</span>
+            </div>
+            ${renderCardOrderNum(2)}
           </button>
 
           <button
@@ -1123,18 +1131,18 @@
               <div class="other-a-loc-top">
                 <div class="other-a-scope-title">
                   <span class="other-clean-icon">${ICONS.settings}</span>
-                  <strong>插件变更即时同步与向导重置</strong>
+                  <strong>三步初始化引导向导</strong>
                 </div>
               </div>
               <p style="margin:12rem 0 0; font-size:14rem; color:#b2c2d8; line-height:1.55; text-align:left;">
-                当系统载荷、自启插件列表或外置盘游戏扫描路径发生变更时自动同步；您也可以随时重新进入三步初始化向导。
+                需要更换主备份设备、重新扫描历史恢复点或执行整机初始备份时，可随时重新进入三步分步引导。
               </p>
             </div>
             <div class="other-a-loc-foot">
-              <span>支持三步向导随时重配</span>
-              <span class="badge blue">重配向导</span>
+              <span>支持随时重配</span>
+              <span class="badge blue">打开向导</span>
             </div>
-            ${renderCardOrderNum(2)}
+            ${renderCardOrderNum(3)}
           </button>
         </div>
       `
@@ -1598,6 +1606,13 @@
         <aside class="proto-floating-dock" aria-label="开发者原型调试浮窗">
           <div class="proto-dock-row">
             <button type="button" class="proto-dev-tag" data-action="toggle-dev-dock">DEV 场景调试</button>
+            <button
+              type="button"
+              class="proto-dock-btn ${state.gridOverlay ? 'active' : ''}"
+              data-action="toggle-grid-overlay"
+            >
+              12列栅格
+            </button>
           </div>
         </aside>
       `
@@ -1607,6 +1622,13 @@
       <aside class="proto-floating-dock expanded" aria-label="开发者原型调试浮窗">
         <div class="proto-dock-row">
           <span class="proto-dev-tag">PROTOTYPE DEV</span>
+          <button
+            type="button"
+            class="proto-dock-btn ${state.gridOverlay ? 'active' : ''}"
+            data-action="toggle-grid-overlay"
+          >
+            12列栅格
+          </button>
           <button
             type="button"
             class="proto-dock-btn ${state.onboardingOpen && state.onboardingHasRp ? 'active' : ''}"
@@ -1740,6 +1762,7 @@
         data-onboarding-step="${state.onboardingOpen ? state.onboardingStep : ''}"
       >
         <div class="console-wallpaper" aria-hidden="true"></div>
+        ${renderGridOverlay()}
         ${renderHeader()}
         ${renderMainScene()}
         ${renderOnboardingOverlay()}
@@ -1856,6 +1879,10 @@
       }
       case 'toggle-dev-dock':
         state.devDockCollapsed = !state.devDockCollapsed
+        render('update')
+        break
+      case 'toggle-grid-overlay':
+        state.gridOverlay = !state.gridOverlay
         render('update')
         break
       case 'select-other-tab': {

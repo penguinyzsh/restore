@@ -35,7 +35,12 @@
   --glass-specular: inset 0 1.5rem 0 rgba(255, 255, 255, 0.24), inset 0 0 0 1rem rgba(255, 255, 255, 0.05);
   --glass-shadow: 0 22rem 50rem rgba(0, 0, 0, 0.42);
 
-  --page-x: 88rem;
+  /* 1920×1080 12 列主机栅格令牌：左右安全边距 120rem、舞台总宽 1680rem、列间距 24rem、单列宽 118rem */
+  --page-x: 120rem;
+  --grid-cols: 12;
+  --grid-gap: 24rem;
+  --stage-width: 1680rem;
+  --stage-height: 648rem;
 }
 
 * {
@@ -167,14 +172,14 @@ input:focus-visible,
 
 /* ==================== 顶栏：左页面标题 + 右上角「时间 + 标准 Icon 头像」胶囊 ==================== */
 .system-header {
-  height: 98rem;
+  height: 108rem;
   flex-shrink: 0;
   position: relative;
   z-index: 25;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22rem var(--page-x) 0;
+  padding: 28rem var(--page-x) 0;
 }
 
 .header-subview-title {
@@ -357,12 +362,12 @@ input:focus-visible,
   box-shadow: none;
 }
 
-/* ==================== 主屏幕壳层：上中无交互 Bento 概览 + 底部居中常驻四纯图标控制坞 ==================== */
+/* ==================== 主屏幕壳层：12 列主机栅格舞台 + 底部居中常驻双图标控制坞 ==================== */
 .home-stage,
 .subpage-stage {
   flex: 1;
   min-height: 0;
-  padding: 8rem var(--page-x) 0;
+  padding: 60rem var(--page-x) 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -370,22 +375,30 @@ input:focus-visible,
 }
 
 .overview-showcase {
-  flex: 1;
-  min-height: 0;
+  flex: 0 0 var(--stage-height);
+  height: var(--stage-height);
+  min-height: var(--stage-height);
+  max-height: var(--stage-height);
   pointer-events: none !important;
   user-select: none !important;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: stretch;
 }
 
 .vb-bento-grid {
+  width: 100%;
+  max-width: var(--stage-width);
+  height: var(--stage-height);
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20rem;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: var(--grid-gap);
 }
 
 .vb-bento-card {
+  grid-column: span 4;
   padding: 26rem 30rem;
   border-radius: var(--radius-card);
   background: var(--glass-bg);
@@ -400,7 +413,7 @@ input:focus-visible,
 }
 
 .vb-bento-card.span-2 {
-  grid-column: span 2;
+  grid-column: span 8;
 }
 
 .vb-bento-head {
@@ -494,10 +507,10 @@ input:focus-visible,
   color: #7eb8ff;
 }
 
-/* ==================== 底部居中常驻双纯图标控制坞（恢复、其他） ==================== */
+/* ==================== 底部居中常驻双纯图标控制坞（恢复、其他，严格对齐 12 列中心第 5–8 列） ==================== */
 .vb-dock-shell {
   align-self: center;
-  width: 472rem;
+  width: 544rem;
   max-width: 100%;
   padding: 14rem;
   border-radius: var(--radius-dock);
@@ -510,12 +523,12 @@ input:focus-visible,
     0 26rem 64rem rgba(0, 0, 0, 0.56);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16rem;
+  gap: var(--grid-gap);
   flex-shrink: 0;
 }
 
 .vb-dock-shell.is-compact {
-  width: 368rem;
+  width: 402rem;
   padding: 10rem;
   border-radius: 40rem;
 }
@@ -561,17 +574,19 @@ input:focus-visible,
 
 /* ==================== 子页面公共布局与「恢复」页 2 列 × 3 行横向卡片 ==================== */
 .subpage-content-body {
-  flex: 1;
-  min-height: 0;
+  flex: 0 0 var(--stage-height);
+  height: var(--stage-height);
+  min-height: var(--stage-height);
+  max-height: var(--stage-height);
   display: flex;
   flex-direction: column;
   gap: 16rem;
 }
 
 .subpage-content-body.restore-centered-body {
-  align-items: center;
-  justify-content: center;
-  padding: 20rem 60rem 28rem;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
 }
 
 .subpage-toolbar {
@@ -589,20 +604,22 @@ input:focus-visible,
   flex-wrap: wrap;
 }
 
-/* 恢复页：一行两个、三行即可的横向 Bento 卡片网格（四周充足留白） */
+/* 恢复页：12 列栅格中每张卡占 6 列（1..6 与 7..12），3 行等高共 648rem，左右边缘与顶栏标题/时间胶囊严格对齐 */
 .restore-two-by-three-grid {
   width: 100%;
-  max-width: 1460rem;
+  max-width: var(--stage-width);
+  height: var(--stage-height);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-template-rows: repeat(3, 184rem);
-  gap: 20rem 24rem;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: var(--grid-gap);
   align-items: stretch;
 }
 
 .restore-horiz-card {
-  padding: 18rem 24rem;
+  grid-column: span 6;
+  padding: 20rem 26rem;
   border-radius: var(--radius-card);
   background: var(--glass-bg);
   backdrop-filter: blur(34rem) saturate(165%);
@@ -933,11 +950,11 @@ input:focus-visible,
   height: 15rem;
 }
 
-/* ==================== 「其他」页面（A / B / C 三套高设计感空间设置方案，统一 30rem 圆角） ==================== */
+/* ==================== 「其他」页面（12 列栅格 3 + 9 左导右景舞台，统一 30rem 圆角） ==================== */
 .other-showcase-body {
   align-items: center;
   justify-content: center;
-  padding: 16rem 56rem 24rem;
+  padding: 0;
 }
 
 .other-clean-icon {
@@ -1016,38 +1033,37 @@ input:focus-visible,
   margin-top: 4rem;
 }
 
-/* ---------- 方案 A：Apple tvOS / PS5 左导右景聚焦舞台 ---------- */
+/* ---------- 方案 A：12 列栅格 3 列左导（01..03）+ 9 列右景（04..12），去除多余嵌套外框使每张卡片直接对齐 12 列 ---------- */
 .other-style-a-shell {
   width: 100%;
-  max-width: 1460rem;
-  height: 580rem;
+  max-width: var(--stage-width);
+  height: var(--stage-height);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 360rem minmax(0, 1fr);
-  gap: 24rem;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--grid-gap);
   align-items: stretch;
 }
 
 .other-a-sidebar {
-  padding: 18rem;
-  border-radius: var(--radius-card);
-  background: var(--glass-bg);
-  backdrop-filter: blur(36rem) saturate(170%);
-  -webkit-backdrop-filter: blur(36rem) saturate(170%);
-  border: 1rem solid var(--glass-border);
-  box-shadow: var(--glass-specular), 0 20rem 48rem rgba(0, 0, 0, 0.38);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 12rem;
+  grid-column: span 3;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  display: grid;
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: var(--grid-gap);
 }
 
 .other-a-nav-btn {
-  flex: 1;
-  padding: 16rem 20rem;
-  border-radius: var(--radius-inner);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1.5rem solid transparent;
+  padding: 18rem 24rem;
+  border-radius: var(--radius-card);
+  background: rgba(14, 20, 32, 0.68);
+  backdrop-filter: blur(34rem) saturate(165%);
+  -webkit-backdrop-filter: blur(34rem) saturate(165%);
+  border: 1.5rem solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--glass-specular), 0 16rem 38rem rgba(0, 0, 0, 0.34);
   display: flex;
   align-items: center;
   gap: 16rem;
@@ -1059,15 +1075,17 @@ input:focus-visible,
 }
 
 .other-a-nav-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(24, 34, 52, 0.78);
 }
 
 .other-a-nav-btn.active {
   background:
-    radial-gradient(circle at 15% 25%, rgba(59, 130, 246, 0.38), transparent 65%),
-    rgba(24, 38, 66, 0.85);
-  border-color: rgba(147, 197, 253, 0.65);
-  box-shadow: inset 0 1rem 0 rgba(255, 255, 255, 0.22);
+    radial-gradient(circle at 18% 25%, rgba(29, 107, 243, 0.38), transparent 65%),
+    rgba(20, 28, 42, 0.86);
+  border-color: rgba(118, 190, 255, 0.62);
+  box-shadow:
+    inset 0 1.5rem 0 rgba(255, 255, 255, 0.24),
+    0 18rem 42rem rgba(0, 0, 0, 0.38);
 }
 
 .other-a-nav-copy strong {
@@ -1085,38 +1103,43 @@ input:focus-visible,
 }
 
 .other-a-stage {
-  padding: 28rem 34rem;
-  border-radius: var(--radius-card);
-  background: var(--glass-bg);
-  backdrop-filter: blur(36rem) saturate(170%);
-  -webkit-backdrop-filter: blur(36rem) saturate(170%);
-  border: 1rem solid var(--glass-border);
-  box-shadow: var(--glass-specular), 0 22rem 52rem rgba(0, 0, 0, 0.4);
+  grid-column: span 9;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 20rem;
+  gap: var(--grid-gap);
 }
 
 .other-a-stage-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 20rem;
-  padding-bottom: 16rem;
-  border-bottom: 1rem solid rgba(255, 255, 255, 0.09);
+  padding: 20rem 28rem;
+  border-radius: var(--radius-card);
+  background:
+    radial-gradient(circle at 18% 24%, rgba(29, 107, 243, 0.28), transparent 64%),
+    rgba(20, 28, 42, 0.84);
+  backdrop-filter: blur(34rem) saturate(165%);
+  -webkit-backdrop-filter: blur(34rem) saturate(165%);
+  border: 1.5rem solid rgba(118, 190, 255, 0.44);
+  box-shadow: var(--glass-specular), 0 16rem 38rem rgba(0, 0, 0, 0.34);
 }
 
 .other-a-stage-head h2 {
-  margin: 0 0 6rem;
-  font-size: 25rem;
+  margin: 0 0 4rem;
+  font-size: 23rem;
   font-weight: 500;
   color: #f8fafc;
 }
 
 .other-a-stage-head p {
   margin: 0;
-  font-size: 14.5rem;
+  font-size: 14rem;
   color: #a4b5cc;
 }
 
@@ -1125,7 +1148,7 @@ input:focus-visible,
   flex: 1;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18rem;
+  gap: var(--grid-gap);
   align-items: stretch;
 }
 
@@ -1196,8 +1219,9 @@ input:focus-visible,
 .other-a-scope-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: var(--grid-gap);
   align-items: stretch;
 }
 
@@ -1257,12 +1281,12 @@ input:focus-visible,
 .other-a-daemon-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--grid-gap);
   align-items: stretch;
 }
 
-/* ==================== 首次引导分步向导（Step 1 → Step 2 → Step 3 单屏单步推进） ==================== */
+/* ==================== 首次引导分步向导（统一 12 列 1680rem 栅格边界，去除外层嵌套框） ==================== */
 .fullscreen-overlay {
   position: fixed;
   inset: 0;
@@ -1274,7 +1298,7 @@ input:focus-visible,
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 46rem 140rem 100rem;
+  padding: 28rem var(--page-x) 92rem;
 }
 
 .wizard-header {
@@ -1343,44 +1367,54 @@ input:focus-visible,
 }
 
 .wizard-stage-card {
-  flex: 1;
-  margin: 24rem 0;
-  padding: 36rem 42rem;
-  border-radius: var(--radius-card);
-  background: var(--glass-bg-strong);
-  border: 1rem solid var(--glass-border);
-  box-shadow: var(--glass-specular), var(--glass-shadow);
+  flex: 0 0 var(--stage-height);
+  height: var(--stage-height);
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 24rem;
+  gap: var(--grid-gap);
 }
 
 .wizard-stage-head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 20rem;
+  padding: 20rem 28rem;
+  border-radius: var(--radius-card);
+  background:
+    radial-gradient(circle at 18% 24%, rgba(29, 107, 243, 0.28), transparent 64%),
+    rgba(20, 28, 42, 0.84);
+  backdrop-filter: blur(34rem) saturate(165%);
+  -webkit-backdrop-filter: blur(34rem) saturate(165%);
+  border: 1.5rem solid rgba(118, 190, 255, 0.44);
+  box-shadow: var(--glass-specular), 0 16rem 38rem rgba(0, 0, 0, 0.34);
 }
 
 .wizard-stage-head h2 {
-  margin: 0 0 8rem;
-  font-size: 28rem;
+  margin: 0 0 4rem;
+  font-size: 24rem;
   font-weight: 500;
   color: #f8fafc;
 }
 
 .wizard-stage-head p {
   margin: 0;
-  font-size: 16rem;
+  font-size: 14.5rem;
   color: #a4b3c6;
 }
 
 .wizard-locations-grid,
-.rp-cards-row {
+.rp-cards-row,
+.wizard-summary-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 22rem;
+  gap: var(--grid-gap);
   flex: 1;
   align-items: stretch;
 }
@@ -2142,4 +2176,59 @@ input:focus-visible,
 
 .osk-field-selectable.is-active-field .osk-caret {
   display: inline-block;
+}
+
+/* ==================== 1920×1080 标准 12 列主机栅格可视参考层（?grid=1 或底栏一键开关） ==================== */
+.console-grid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  pointer-events: none;
+  padding: 0 var(--page-x);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.console-grid-columns {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--page-x);
+  right: var(--page-x);
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--grid-gap);
+}
+
+.grid-debug-col {
+  height: 100%;
+  background: rgba(56, 189, 248, 0.055);
+  border-left: 1rem dashed rgba(56, 189, 248, 0.28);
+  border-right: 1rem dashed rgba(56, 189, 248, 0.28);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 8rem;
+}
+
+.grid-debug-col span {
+  font-size: 11rem;
+  font-weight: 700;
+  letter-spacing: 0.5rem;
+  color: rgba(125, 211, 252, 0.72);
+  background: rgba(15, 23, 42, 0.78);
+  padding: 2rem 7rem;
+  border-radius: 6rem;
+  border: 1rem solid rgba(56, 189, 248, 0.28);
+}
+
+.console-grid-stage-box {
+  position: absolute;
+  left: var(--page-x);
+  right: var(--page-x);
+  top: 168rem;
+  height: var(--stage-height);
+  border-top: 1rem dashed rgba(244, 114, 182, 0.45);
+  border-bottom: 1rem dashed rgba(244, 114, 182, 0.45);
 }
