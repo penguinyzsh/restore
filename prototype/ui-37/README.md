@@ -1,6 +1,6 @@
 # ReStore 高保真可交互 UI 原型（PROTOTYPE — #37 / #45 / #46 / #47）
 
-> **PROTOTYPE — Throwaway UI Prototype for [ReStore 本机界面各页面的粗框架结构如何排布](https://github.com/penguinyzsh/restore/issues/45)、[ReStore 本机界面的固定交互逻辑与设计如何规定](https://github.com/penguinyzsh/restore/issues/46)、[ReStore 本机界面如何完成精细化交互与设计落地](https://github.com/penguinyzsh/restore/issues/47) & [交付融合 ReStore 官方 Logo 的高保真可交互 UI 原型（含商店锁定遮罩外观）](https://github.com/penguinyzsh/restore/issues/37)**
+> **PROTOTYPE — Throwaway UI Prototype for [ReStore 本机界面各页面的粗框架结构如何排布](https://github.com/penguinyzsh/restore/issues/45)、[ReStore 本机界面的固定交互逻辑与设计如何规定](https://github.com/penguinyzsh/restore/issues/46)、[ReStore 本机界面如何完成精细化交互与设计落地](https://github.com/penguinyzsh/restore/issues/47) & [交付融合 ReStore 官方 Logo 的第一阶段高保真可交互 UI 原型](https://github.com/penguinyzsh/restore/issues/37)**
 > 本目录遵循 `prototype` 规范保存在独立分支 `prototype/restore-ui-37` 上，采用 **1920×1080 标准 12 列主机栅格（`1680rem × 648rem`）× PlayStation 5 蓝宝石毛玻璃卡片 × 底部常驻双图标控制坞（恢复、其他）** 体系。
 > **第二阶段页面归档说明**：「软件（`?view=apps`）」「商店（`?view=store`）」「搜索（`?view=search`）」完整可交互版本已归档保存在提交 [`4f9954b`](https://github.com/penguinyzsh/restore/commit/4f9954b)，待第二阶段开发商店与搜索功能时直接调取启用。
 
