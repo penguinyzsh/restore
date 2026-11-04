@@ -23,8 +23,8 @@
 | [ReStore 引导载荷部署调查](bootstrap-deployment.md) | 引导载荷下载应用包、miniz 解包、写入扫描目录并衔接登记与启动的候选链路。 | #7, #30, #44 |
 | [PS5 原生应用直接登记调查](direct-app-registration.md) | SDK `sceAppInstUtilAppInstallTitleDir` 直接登记示例与 ShadowMountPlus 12.40 ShellCore TitleDir 登记桥对比。 | #17, #33, #38 |
 | [ShadowMountPlus 目录与镜像部署调查](shadowmount-directory.md) | 原生应用目录与镜像文件的扫描、`nullfs` 挂载及 TitleDir 登记流程分析。 | #32, #38, #42 |
-| [GitHub 开源软件版本与安装调查](github-software-workflow.md) | GitHub Releases 资源获取及独立应用、OnionHEN 插件、独立载荷三类产物的安装参考（第一版仅用于商店外观预览参考）。 | #20, #25, #26, #27, #37 |
-| [网盘游戏资源获取与处理调查](cloud-game-workflow.md) | 百度网盘、夸克 TV 扫码授权与多格式游戏资源处理参考（第一版仅用于商店外观预览参考）。 | #21, #22, #23, #24, #28, #37 |
+| [GitHub 开源软件版本与安装调查](github-software-workflow.md) | GitHub Releases 资源获取及独立应用、OnionHEN 插件、独立载荷三类产物的安装参考（留待第二阶段商店开发参考）。 | #20, #25, #26, #27, #37 |
+| [网盘游戏资源获取与处理调查](cloud-game-workflow.md) | 百度网盘、夸克 TV 扫码授权与多格式游戏资源处理参考（留待第二阶段商店开发参考）。 | #21, #22, #23, #24, #28, #37 |
 
 ---
 
