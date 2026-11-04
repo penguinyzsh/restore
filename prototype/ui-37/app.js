@@ -420,7 +420,7 @@
       <main class="home-stage">
         <section class="overview-showcase" aria-label="Bento 存储与设备状态矩阵">
           <div class="vb-bento-grid">
-            <div class="vb-bento-card span-2">
+            <div class="vb-bento-card span-2 card-tone-blue">
               <div class="vb-bento-head">
                 <span class="vb-bento-label">${ICONS.ssd}<span>ReStore 整机概览</span></span>
               </div>
@@ -442,7 +442,7 @@
               </div>
             </div>
 
-            <div class="vb-bento-card">
+            <div class="vb-bento-card card-tone-green">
               <div class="vb-bento-head">
                 <span class="vb-bento-label">${ICONS.shield}<span>守护服务与最新恢复点</span></span>
               </div>
@@ -461,18 +461,19 @@
             ${state.locations
               .map((loc, idx) => {
                 return `
-                  <div class="vb-bento-card">
+                  <div class="vb-bento-card ${loc.enabled ? 'card-tone-green' : 'card-tone-blue'}" style="position:relative; overflow:hidden;">
                     <div class="vb-bento-head">
                       <span class="vb-bento-label">${loc.type === 'usb' ? ICONS.usb : ICONS.cloud}<span>${loc.name}</span></span>
                     </div>
                     <div class="vb-ring-row">
-                      ${renderRadialGauge(loc.freePercent, ringColors[idx % ringColors.length])}
+                      ${renderRadialGauge(loc.freePercent, loc.enabled ? '#34D399' : ringColors[idx % ringColors.length])}
                       <div class="vb-ring-copy">
                         <strong>${loc.freeOnly} 可用</strong>
                         <span>总容量 ${loc.totalOnly} · ${loc.endpoint}</span>
                         <small>${!loc.enabled ? '已暂停同步' : loc.statusText}</small>
                       </div>
                     </div>
+                    ${renderCardOrderNum(idx + 1)}
                   </div>
                 `
               })
@@ -639,7 +640,6 @@
               ${obj.note ? `<span class="badge gold">${obj.note}</span>` : ''}
             </div>
             <div class="restore-horiz-stat">
-              <span>${obj.countText}</span>
               <strong>${obj.size}</strong>
             </div>
           </div>
@@ -674,11 +674,9 @@
                 <span class="badge green">全量保护</span>
               </div>
               <div class="restore-horiz-stat">
-                <span>预计总体积</span>
                 <strong>5.4 GB</strong>
               </div>
             </div>
-            ${renderCardOrderNum(6)}
           </button>
         </div>
       `
@@ -723,7 +721,6 @@
                   <span class="badge ${retried ? 'green' : 'red'}">${retried ? '0 项' : '1 项未完'}</span>
                 </div>
               </div>
-              ${renderCardOrderNum(6)}
             </section>
           </div>
         `
@@ -770,7 +767,6 @@
                 <span>正在恢复数据，请勿启动游戏或关闭主机 · 全部项目完成后将自动解锁并汇总结果</span>
               </div>
             </div>
-            ${renderCardOrderNum(6)}
           </button>
         </div>
       `
@@ -848,7 +844,6 @@
               </div>
             </div>
           </div>
-          ${renderCardOrderNum(6)}
         </section>
       </div>
     `
