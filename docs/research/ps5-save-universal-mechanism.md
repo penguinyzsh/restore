@@ -17,9 +17,22 @@ ReStore 需要支持任意 PS5 游戏存档的自动变化备份与恢复，并�
 
 | 层级 | 系统路径 | 存储内容与作用 |
 | --- | --- | --- |
-| **1. PFS 加密容器** | `/user/home/<uid>/savedata_prospero/<title_id>/sdimg_<slot>` | 加密镜像文件（偏移 `0x800` 处存放由主机密封的 `pfsSKKey`）。挂载解密后包含游戏实际进度文件（如 `USR-DATA`、`ICN-ID`）以及 `sce_sys/param.sfo`、`sce_sys/keystone`、`sce_sys/icon0.png`。 |
-| **2. 外部元数据缓存** | `/user/home/<uid>/savedata_prospero_meta/user/<title_id>/` | 存放明文副本 `<slot>.sfo`（或 `sce_bu_<slot>.sfo`）与槽位图标 `<slot>_icon0.png`，供系统菜单快速读取展示。 |
-| **3. 系统存档数据库** | `/system_data/savedata_prospero/<uid>/db/user/savedata.db` | SQLite 数据库（回滚日志模式，无 WAL，`user_version = 10`）。其中 `savedata` 表每个槽位占一行，缓存 `main_title`、`sub_title`、`detail`、`user_param`、`blocks`、`free_blocks`、`size_kib`、`mtime`、`account_id`、`user_id`、`game_title_id` 等字段。 |
+| **1. PFS 加密容器** | `/user/home/<uid>/savedata_prospero/<title_id>/sdimg_<slot>` | 加密镜像文件（偏移 `0x800` 处存放由主机密封的 `pfsSKKey`）。挂载解密后包含游戏实际进度文件（如 `USR-DATA`、`ICN-ID`）以及 `sce_sys/param.sfo`、`sce_sys/keystone`、`sce_sys/icon0.png`。此外系统还会为部分槽位生成 `sdimg_sce_bu_<slot>` 备份容器。 |
+| **2. 外部元数据缓存** | `/user/home/<uid>/savedata_prospero_meta/user/<title_id>/` | 实机验证确认：正常活跃槽位在此目录下仅存放槽位图标 `<slot>_icon0.png`（其 `.sfo` 真身位于 PFS 容器内 `sce_sys/param.sfo`）；仅 `sdimg_sce_bu_<slot>` 自动备份槽在此目录下额外存有明文 `sce_bu_<slot>.sfo` 与 `sce_bu_<slot>_icon0.png`。 |
+| **3. 系统存档数据库** | `/system_data/savedata_prospero/<uid>/db/user/savedata.db` | SQLite 数据库（回滚日志模式，无 WAL，12.40 实机 `user_version = 11`）。包含 `title` 与 `savedata` 等 5 张表；其中 `savedata` 表（32 列）每个槽位占一行，缓存 `main_title`、`sub_title`、`detail`、`user_param`、`blocks`、`free_blocks`、`size_kib`、`system_blocks`、`mtime`、`account_id`、`user_id`、`game_title_id` 等字段。 |
+
+### 12.40 实机多游戏存档槽位与字段实测样本（用户 `1066f6d7` `"Peng"`，`account_id = 0xea53d6993286bdfc`）
+
+在 `192.168.0.111` 主机上直接解析 `/system_data/savedata_prospero/1066f6d7/db/user/savedata.db` 得到的 6 条真实槽位记录如下：
+
+| `id` | `title_id` | `dir_name` | `main_title` | `sub_title` | `detail` | `blocks` / `free_blocks` | `size_kib` | `system_blocks` | `mtime` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `1` | `PPSA01650` | `STARBOARD` | `YouTube` | `User Information & Settings` | `""` | `96` / `72` | `6144` | `0` | `2026-11-01T10:36:14Z` |
+| `2` | `PPSA01650` | `sce_sdmemory` | `セーブデータ` | `""` | `""` | `48` / `8` | `3072` | `0` | `2026-11-01T10:36:15Z` |
+| `3` | `PPSA02796` | `RELEASESAVEDATA` | `Tales of ARISE` | `""` | `""` | `627` / `578` | `40128` | `0` | `2026-11-01T12:20:32Z` |
+| `4` | `PPSA30117` | `save170` | `序章“父亲、起程”　　　　　　＜Normal＞` | `洛连特市` | `"2026/11/03 23:20:09\n游击士艾丝蒂尔　　 \n等级4\n游玩时间　0:09:49"` | `160` / `19` | `10240` | `80` | `2026-11-03T15:20:09Z` |
+| `5` | `PPSA30117` | `save000` | `序章“父亲、起程”　　　　　　＜Normal＞` | `洛连特市` | `"2026/11/03 23:22:07\n游击士艾丝蒂尔　　 \n等级4\n游玩时间　0:11:37"` | `160` / `16` | `10240` | `80` | `2026-11-03T15:22:07Z` |
+| `6` | `PPSA30117` | `sce_sdmemory` | `空之轨迹the1st` | `系统数据` | `"记录环境设置等系统数据。"` | `96` / `24` | `6144` | `48` | `2026-11-03T15:22:08Z` |
 
 ### 实机现象验证（为何仅替换游戏数据会导致列表显示脱节）
 在 12.40 实机测试中，将状态 A（序章，4分28秒）的 `USR-DATA` 与 `ICN-ID` 写入状态 B（8分35秒）的容器并提交后：
@@ -51,13 +64,16 @@ ReStore 需要支持任意 PS5 游戏存档的自动变化备份与恢复，并�
 ### 2. 通用恢复（同时支持“已有槽覆盖”与“无槽从零建槽”）
 1. **准备或创建容器**：
    - **当目标槽位已存在时**：复制现有 `sdimg_<slot>` 为同目录或暂存区的可写工作副本。
-   - **当目标槽位不存在时（如初始化后尚未启动过该游戏）**：通过 `dlopen("libSceFsInternalForVsh.sprx")` 解析 `sceFsInitCreatePfsSaveDataOpt`、`sceFsCreatePprPfsSaveDataImage` 与 `sceFsUfsAllocateSaveData`，按备份记录的原始容量创建并格式化一个新的 PFS 加密容器（由当前主机自动生成 `0x800` 处的密封密钥）。
+   - **当目标槽位不存在时（如初始化后尚未启动过该游戏）**：通过 `dlopen("libSceFsInternalForVsh.sprx", RTLD_LAZY)` 解析三个内部接口直接从零建槽：
+     - 调用 `sceFsInitCreatePfsSaveDataOpt(&opt)`（`sizeof(CreatePfsSaveDataOpt) == 0x20`）并将 `opt.flags[1]` 置为 `0x02`；
+     - 按备份记录的原始容量计算字节大小（`1 block = 65536` 字节，新建容器最小容量为 `31,457,280` 字节即 `480` blocks，含 `system_blocks = 80` 开销），打开目标 `sdimg_<slot>` 并调用 `sceFsUfsAllocateSaveData(fd, capacity, 0, 0)` 预分配磁盘块（失败时回退 `ftruncate(fd, capacity)`）；
+     - 调用 `sceFsCreatePprPfsSaveDataImage(&opt, sdimg_path, 0, capacity, zero_key_32B)`（传入 32 字节全 `0` 密钥，由当前主机自动生成偏移 `0x800` 处的密封密钥并格式化 PFS 超块）。
 2. **反向合成通用 `sce_sys`**：
-   - 直接采用备份归档中的原始 `param.sfo`、`keystone` 与 `icon0.png` 作为底本（完整保留源存档的所有标题、详情、自定义参数、块大小与保存时间戳）；
-   - 从当前主机目标用户的已有配置或模板存档中读取当前用户的 `account_id`（8 字节）与 `user_id`（4 字节），写入 `param.sfo` 的 `ACCOUNT_ID` 与 `PARAMS+0x04`。
+   - 直接采用备份归档中的原始 `param.sfo`、`keystone` 与 `icon0.png` 作为底本（完整保留源存档的所有标题、详情、自定义参数、块大小与保存时间戳）；若备份缺少 `param.sfo` 则按 12 个标准键（`ACCOUNT_ID`、`ATTRIBUTE`、`CATEGORY="sd"`、`DETAIL`、`FORMAT="obs"`、`MAINTITLE`、`PARAMS`、`SAVEDATA_BLOCKS`、`SAVEDATA_DIRECTORY`、`SAVEDATA_LIST_PARAM`、`SUBTITLE`、`TITLE_ID`）与 96 字节 `keystone` 动态合成；
+   - 从当前主机目标用户的已有配置（`/system_data/priv/home/<uid>/config.dat`）中读取当前用户的 `account_id`（8 字节）与 `user_id`（4 字节），写入 `param.sfo` 的 `ACCOUNT_ID` 与 `PARAMS+0x04`。
 3. **挂载写入与同目录重命名提交**：
    - 挂载暂存容器，清空旧游戏数据文件后写入备份的游戏数据文件与合成后的 `sce_sys/*`，随后卸载容器并 `fsync`。
    - **提交方式（12.40 实机实证）**：12.40 主机上对存档目录调用 `link(target, rollback)` 创建硬链接会返回失败；必须采用**先将原容器复制为回滚备份文件并 `fsync`，再使用同目录 `rename(staged, target)` 原子替换**的方式提交。
 4. **同步外部缓存与 `savedata.db`**：
-   - 将合成后的明文 `.sfo` 与 `icon0.png` 同步写入 `/user/home/<uid>/savedata_prospero_meta/user/<title_id>/`；
-   - 在 `/system_data/savedata_prospero/<uid>/db/user/savedata.db` 的 `savedata` 表中，通过 SQLite 事务更新（或插入）对应 `(title_id, dir_name)` 行，使 `main_title`、`sub_title`、`detail`、`user_param`、`blocks`、`size_kib`、`mtime`、`account_id`、`user_id` 与容器内 `param.sfo` 完全对齐。
+   - 将槽位图标同步写入 `/user/home/<uid>/savedata_prospero_meta/user/<title_id>/<slot>_icon0.png`（若有 `sdimg_sce_bu_<slot>` 备份槽则同步更新 `sce_bu_<slot>.sfo` 与 `sce_bu_<slot>_icon0.png`）；
+   - 在 `/system_data/savedata_prospero/<uid>/db/user/savedata.db`（`user_version = 11`）中开启 `BEGIN IMMEDIATE` 事务，确保 `title` 表存在对应 `title_id` 记录，并在 `savedata` 表中更新或插入对应 `(title_id, dir_name)` 行，使 `main_title`、`sub_title`、`detail`、`user_param`、`blocks`、`free_blocks`、`size_kib`、`system_blocks`、`mtime`、`account_id`、`user_id` 与容器内 `param.sfo` 完全对齐。

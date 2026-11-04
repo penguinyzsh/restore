@@ -9,8 +9,8 @@
 | 文档 | 核心内容 | 关联工单 |
 | --- | --- | --- |
 | [12.40 后台载荷启动安全与权限恢复实证](ps5-1240-runtime-safety.md) | 定位 SDK 默认 CRT 中 `kernel_find_iommu_softc` 内核堆扫描导致的启动死机（`CE-108262-9`），给出 CPU-only CRT 修复方案与进程凭据（authid/caps/rootdir/jaildir）先读后改、回读校验的安全规范。 | #6, #34, #38 |
-| [12.40 全游戏通用存档备份与恢复机制](ps5-save-universal-mechanism.md) | 对比 Save Mounter、PS5Save、PSCloud 源码与 12.40 实机《最后生还者 Part I》实验，剖析 PS5 存档三层结构（PFS 加密容器、`savedata_prospero_meta`、`savedata.db`）与 `param.sfo` 通用字段规律，确立支持“已有槽覆盖”与“初始化后无槽直接建槽”的跨账号通用恢复流程及同目录 `rename` 提交方案。 | #6, #18, #40 |
-| [12.40 环境配置、账号激活与桌面数据实机基线](ps5-1240-environment-and-data.md) | 记录 Y2JB 自动加载链、关闭 YouTube 后 6 项后台服务驻留结果、35 个环境与 ELF 插件/载荷配置文件清单、原生 16 KB 账号离线激活修复、`libSceRegMgr` 设置读写实证及 `/user/app/<TITLE_ID>` 轻量游戏桌面展示结构。 | #6, #15, #39, #41, #42 |
+| [12.40 全游戏通用存档备份与恢复机制](ps5-save-universal-mechanism.md) | 对比 Save Mounter、PS5Save、PSCloud 源码与 12.40 实机多游戏（《最后生还者 Part I》《空之轨迹 the 1st》《破晓传奇》等）验证，剖析 PS5 存档三层结构（PFS 加密容器、`savedata_prospero_meta` 图标/备份槽 `.sfo`、`savedata.db` `user_version=11`）与 `libSceFsInternalForVsh.sprx` 无槽直接建槽、跨账号重绑及同目录 `rename` 提交方案。 | #6, #18, #36, #40 |
+| [12.40 环境配置、账号激活与桌面数据实机基线](ps5-1240-environment-and-data.md) | 记录 Y2JB 自动加载链与后台驻留端口、ELF 插件/载荷配置清单、原生 16 KB 账号离线激活修复、`libSceRegMgr`（`sysreg.000..003`）837 项注册表扫描与分类白名单、`app.db` 12 项应用/游戏桌面展示结构、`av_content.db`（67 列 `tbl_PhotoVideo`）媒体画廊免重建恢复及全类型数据高稳定性后台监听策略。 | #6, #15, #36, #39, #41, #42 |
 
 ---
 
