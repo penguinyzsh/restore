@@ -1,0 +1,17 @@
+{
+  "applicationCategoryType": 65536,
+  "titleId": "RSTR00001",
+  "deeplinkUri": "http://127.0.0.1:9090/",
+  "localizedParameters": {
+    "defaultLanguage": "zh-Hans",
+    "en-US": {
+      "titleName": "ReStore"
+    },
+    "zh-Hans": {
+      "titleName": "ReStore"
+    },
+    "zh-Hant": {
+      "titleName": "ReStore"
+    }
+  }
+}
